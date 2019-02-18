@@ -1,0 +1,47 @@
+# fltrdr config
+#
+# refer to the 'Commands' section of the help output with
+# '--help' or '-h' to view all commands and their descriptions
+
+# set default words per minute
+wpm 250
+
+# set number of words visible to the left of the focused word
+prev 1
+
+# set number of words visible to the right of the focused word
+next 3
+
+# set various styles
+style border 2c323c
+style countdown 2c323c
+style prompt 2c323c
+style success 55ff00
+style error ff5500
+
+# set status bar styles
+style status-primary 2c323c
+style status-secondary 4feae7
+style status-background 4feae7
+
+# set progress bar styles
+style progress-primary 2c323c
+style progress-secondary 4feae7
+
+# set text styles
+style text c0c0c0
+style text-primary f0f0f0
+style text-secondary c0c0c0
+style text-highlight 4feae7
+style text-punct 4feae7
+style text-quote 4feae7
+style text-brace 4feae7
+
+# set border symbols
+sym border-top ─
+sym border-top-mark ┬
+sym border-bottom ─
+sym border-bottom-mark ┴
+
+# set progress bar symbol
+sym progress ▁
