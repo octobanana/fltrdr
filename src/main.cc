@@ -222,7 +222,7 @@ int program_options(Parg& pg)
 
   if (pg.get<bool>("help"))
   {
-    std::cerr << pg.help();
+    std::cout << pg.help();
 
     return 1;
   }
