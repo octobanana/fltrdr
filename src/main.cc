@@ -222,21 +222,21 @@ int program_options(Parg& pg)
 
   if (pg.get<bool>("help"))
   {
-    std::cerr << pg.help();
+    std::cout << pg.help();
 
     return 1;
   }
 
   if (pg.get<bool>("version"))
   {
-    std::cerr << pg.name() << " v" << pg.version() << "\n";
+    std::cout << pg.name() << " v" << pg.version() << "\n";
 
     return 1;
   }
 
   if (pg.get<bool>("license"))
   {
-    std::cerr << R"(MIT License
+    std::cout << R"(MIT License
 
 Copyright (c) 2019 Brett Robinson
 
