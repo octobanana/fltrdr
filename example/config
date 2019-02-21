@@ -35,7 +35,6 @@ style text-secondary c0c0c0
 style text-highlight 4feae7
 style text-punct 4feae7
 style text-quote 4feae7
-style text-brace 4feae7
 
 # set border symbols
 sym border-top ─
