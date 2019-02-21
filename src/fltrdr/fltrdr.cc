@@ -45,18 +45,8 @@ bool Fltrdr::parse(std::istream& input)
   std::size_t word_count {0};
   while (input >> std::ws >> word)
   {
-    while (word.size() > _ctx.width_min)
-    {
-      _ctx.text += " " + word.substr(0, _ctx.width_min);
-      word.erase(0, _ctx.width_min);
-      ++word_count;
-    }
-
-    if (! word.empty())
-    {
-      _ctx.text += " " + word;
-      ++word_count;
-    }
+    _ctx.text += " " + word;
+    ++word_count;
   }
 
   if (word_count == 0)
