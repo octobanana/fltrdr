@@ -1,15 +1,19 @@
 # Fltrdr
 A TUI text reader for the terminal.
 
-![default](https://raw.githubusercontent.com/octobanana/fltrdr/master/assets/default.png)
+[![fltrdr](https://raw.githubusercontent.com/octobanana/fltrdr/master/assets/fltrdr.png)](https://octobanana.com/software/fltrdr/blob/assets/fltrdr.mp4#file)
+
+Click the above picture to view a video of __Fltrdr__ in action.
 
 ## About
 __Fltrdr__, or *flat-reader*, is an interactive text reader for the terminal.
 It is *flat* in the sense that the reader is word-based. It creates a
-horizontal stream of words, ignoring all newline characters and reducing extra whitespace.
+horizontal stream of words by ignoring all newline characters and removing
+sequential whitespace.
 Its purpose is to facilitate reading, scanning, and searching text.
 The program has a play mode that moves the reader forward one word at a time,
-along with a configurable words per minute (WPM), setting.
+along with a configurable words per minute (WPM) setting.
+It can be used to read ASCII text from either a file or a pipe.
 
 ### Features
 * word-based text reader
@@ -28,12 +32,18 @@ along with a configurable words per minute (WPM), setting.
 * chars/symbols can be customized
 * show/hide parts of the interface
 
+### Limitations
+Currently, it only handles ASCII text properly. Reading unicode characters may result
+in strange or improper output. This can be worked around by filtering the text
+through a program like __iconv__ with a command such as
+`cat <file> | iconv -f utf-8 -t ascii//translit`.
+
 ## Usage
 View the usage and help output with the `--help` or `-h` flag.
-The help output also contains the documentation for the key bindings
+The help output contains the documentation for the key bindings
 and commands for customization.
 
-## Config File
+## Configuration
 The default config locations are `${XDG_CONFIG_HOME}/fltrdr/config` and `${HOME}/.fltrdr/config`.
 A custom path can also be passed to override the default locations using the `--config` option.
 The config directory and file must be created by the user.
@@ -63,17 +73,37 @@ and any third party libraries used.
 
 ### Environment
 * Linux (supported)
-* BSD (untested)
-* macOS (untested)
+* BSD (supported)
+* macOS (supported)
+
+### macOS
+Using a new version of *gcc* or *llvm* is __required__, as the default
+*Apple llvm compiler* does __not__ support C++17 Standard Library features such as `std::filesystem`.
+
+A new compiler can be installed through a third party package manager such as *Brew*.
+Assuming you have *Brew* already installed, the following commands should install
+the latest *gcc* compiler.
+
+```
+brew install gcc
+brew link gcc
+```
+
+The following line will then need to be appended to the CMakeLists.txt file.
+Where `<path-to-*>` is the canonical path to the new *gcc* binary.
+
+```
+set (CMAKE_CXX_COMPILER <path-to-g++>)
+```
 
 ### Requirements
 * C++17 compiler/library
 * CMake >= 3.8
 
 ### Dependencies
-* stdc++fs (libstdc++fs)
+* stdc++fs (libstdc++fs) included in the C++17 Standard Library
 
-### Libraries:
+### Included Libraries:
 * [parg](https://github.com/octobanana/parg):
   for parsing CLI args, included as `./src/ob/parg.hh`
 
