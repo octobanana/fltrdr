@@ -450,6 +450,10 @@ void Tui::draw_content()
   for (std::size_t i = 0; i < line.curr.size(); ++i)
   {
     auto const it = i + line.prev.size();
+    if (it >= buf.size())
+    {
+      break;
+    }
 
     buf.at(it).value = line.curr.at(i);
 
