@@ -1983,7 +1983,7 @@ std::optional<std::pair<bool, std::string>> Tui::command(std::string const& inpu
 
   // set offset
   else if (match_opt = OB::String::match(input,
-    std::regex("^offset\\s+([0-8]{1})$")))
+    std::regex("^offset\\s+([0-6]{1})$")))
   {
     auto const match = std::move(match_opt.value().at(1));
 

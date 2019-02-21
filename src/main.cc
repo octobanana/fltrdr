@@ -63,7 +63,7 @@ int program_options(Parg& pg)
     "goto <int>\n    goto specified word number",
     "prev <0-8>\n    set number of prev words to show",
     "next <0-8>\n    set number of next words to show",
-    "offset <0-8>\n    set offset of focus point from center",
+    "offset <0-6>\n    set offset of focus point from center",
 
     R"RAW(
   reset <value>
