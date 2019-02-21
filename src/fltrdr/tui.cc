@@ -1147,26 +1147,24 @@ std::optional<std::pair<bool, std::string>> Tui::command(std::string const& inpu
   {
     // 24-bit color
     auto const match = std::move(match_opt.value().at(1));
-    _ctx.style.primary = aec::fg_true(match);
+    _ctx.style.secondary = aec::fg_true(match);
     _ctx.style.background = aec::bg_true(match);
     _ctx.style.border = aec::fg_true(match);
     _ctx.style.progress_fill = aec::fg_true(match);
     _ctx.style.word_primary = aec::fg_true(match);
     _ctx.style.prompt = aec::fg_true(match);
-    _ctx.style.success = aec::fg_true(match);
   }
   else if (match_opt = OB::String::match(input,
     std::regex("^style\\s+primary\\s+([0-9]{1,3})$")))
   {
     // 8-bit color
     auto const match = std::move(match_opt.value().at(1));
-    _ctx.style.primary = aec::fg_256(match);
+    _ctx.style.secondary = aec::fg_256(match);
     _ctx.style.background = aec::bg_256(match);
     _ctx.style.border = aec::fg_256(match);
     _ctx.style.progress_fill = aec::fg_256(match);
     _ctx.style.word_primary = aec::fg_256(match);
     _ctx.style.prompt = aec::fg_256(match);
-    _ctx.style.success = aec::fg_256(match);
   }
   else if (match_opt = OB::String::match(input,
     std::regex("^style\\s+primary\\s+(black|red|green|yellow|blue|magenta|cyan|white)(:?\\s+(bright))?$")))
@@ -1174,13 +1172,12 @@ std::optional<std::pair<bool, std::string>> Tui::command(std::string const& inpu
     // 4-bit color
     auto const match = std::move(match_opt.value().at(1));
     auto const bright = ! OB::String::trim(match_opt.value().at(2)).empty();
-    _ctx.style.primary = aec::str_to_fg_color(match, bright);
+    _ctx.style.secondary = aec::str_to_fg_color(match, bright);
     _ctx.style.background = aec::str_to_bg_color(match, bright);
     _ctx.style.border = aec::str_to_fg_color(match, bright);
     _ctx.style.progress_fill = aec::str_to_fg_color(match, bright);
     _ctx.style.word_primary = aec::str_to_fg_color(match, bright);
     _ctx.style.prompt = aec::str_to_fg_color(match, bright);
-    _ctx.style.success = aec::str_to_fg_color(match, bright);
   }
 
   // two-tone secondary color
@@ -1189,26 +1186,24 @@ std::optional<std::pair<bool, std::string>> Tui::command(std::string const& inpu
   {
     // 24-bit color
     auto const match = std::move(match_opt.value().at(1));
-    _ctx.style.secondary = aec::fg_true(match);
+    _ctx.style.primary = aec::fg_true(match);
     _ctx.style.progress_bar = aec::fg_true(match);
     _ctx.style.word_secondary = aec::fg_true(match);
     _ctx.style.word_highlight = aec::fg_true(match);
     _ctx.style.word_punct = aec::fg_true(match);
     _ctx.style.word_quote = aec::fg_true(match);
-    _ctx.style.error = aec::fg_true(match);
   }
   else if (match_opt = OB::String::match(input,
     std::regex("^style\\s+secondary\\s+([0-9]{1,3})$")))
   {
     // 8-bit color
     auto const match = std::move(match_opt.value().at(1));
-    _ctx.style.secondary = aec::fg_256(match);
+    _ctx.style.primary = aec::fg_256(match);
     _ctx.style.progress_bar = aec::fg_256(match);
     _ctx.style.word_secondary = aec::fg_256(match);
     _ctx.style.word_highlight = aec::fg_256(match);
     _ctx.style.word_punct = aec::fg_256(match);
     _ctx.style.word_quote = aec::fg_256(match);
-    _ctx.style.error = aec::fg_256(match);
   }
   else if (match_opt = OB::String::match(input,
     std::regex("^style\\s+secondary\\s+(black|red|green|yellow|blue|magenta|cyan|white)(:?\\s+(bright))?$")))
@@ -1216,13 +1211,12 @@ std::optional<std::pair<bool, std::string>> Tui::command(std::string const& inpu
     // 4-bit color
     auto const match = std::move(match_opt.value().at(1));
     auto const bright = ! OB::String::trim(match_opt.value().at(2)).empty();
-    _ctx.style.secondary = aec::str_to_fg_color(match, bright);
+    _ctx.style.primary = aec::str_to_fg_color(match, bright);
     _ctx.style.progress_bar = aec::str_to_fg_color(match, bright);
     _ctx.style.word_secondary = aec::str_to_fg_color(match, bright);
     _ctx.style.word_highlight = aec::str_to_fg_color(match, bright);
     _ctx.style.word_punct = aec::str_to_fg_color(match, bright);
     _ctx.style.word_quote = aec::str_to_fg_color(match, bright);
-    _ctx.style.error = aec::str_to_fg_color(match, bright);
   }
 
   // text color
