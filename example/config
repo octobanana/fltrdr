@@ -3,44 +3,145 @@
 # refer to the 'Commands' section of the help output with
 # '--help' or '-h' to view all commands and their descriptions
 
-# set default words per minute
+# set the reader speed in words per minute (wpm)
+# <60-1200>
 wpm 250
 
 # set number of words visible to the left of the focused word
+# <0-8>
 prev 1
 
 # set number of words visible to the right of the focused word
+# <0-8>
 next 3
 
-# set various styles
-style border 2c323c
-style countdown 2c323c
-style prompt 2c323c
-style success 55ff00
-style error ff5500
+# set the offset of the focus point
+# <0-6>
+# 0 will center the focus point
+# 1-6 will make the focus point increasingly more left-oriented
+offset 2
 
-# set status bar styles
-style status-primary 2c323c
-style status-secondary 4feae7
-style status-background 4feae7
+# toggle full text line visibility
+# <on|off>
+set view off
 
-# set progress bar styles
-style progress-primary 2c323c
-style progress-secondary 4feae7
+# toggle progress bar visibility
+# <on|off>
+set progress on
 
-# set text styles
-style text c0c0c0
-style text-primary f0f0f0
-style text-secondary c0c0c0
-style text-highlight 4feae7
-style text-punct 4feae7
-style text-quote 4feae7
+# toggle status bar visibility
+# <on|off>
+set status on
 
-# set border symbols
+# toggle border top and bottom visibility
+# <on|off>
+set border on
+
+# toggle border top visibility
+# <on|off>
+set border-top on
+
+# toggle border bottom visibility
+# <on|off>
+set border-bottom on
+
+# border top symbol
+# <char|unicode-char>
 sym border-top ─
+
+# border top mark symbol
+# <char|unicode-char>
 sym border-top-mark ┬
+
+# border top and border top mark symbol
+# <char|unicode-char>
+# sym border-top-line ─
+
+# border bottom symbol
+# <char|unicode-char>
 sym border-bottom ─
+
+# border bottom mark symbol
+# <char|unicode-char>
 sym border-bottom-mark ┴
 
-# set progress bar symbol
+# border bottom and border bottom mark symbol
+# <char|unicode-char>
+# sym border-bottom-line ─
+
+# progress bar symbol
+# <char|unicode-char>
 sym progress ▁
+
+# meta style, sets the primary colour of the program
+# <#000000-#ffffff|0-255|Colour>
+# style primary 4feae7
+
+# meta style, sets the secondary colour of the program
+# <#000000-#ffffff|0-255|Colour>
+# style secondary 2c323c
+
+# meta style, sets the colours of all input text shown in the reader
+# <#000000-#ffffff|0-255|Colour>
+# style text f0f0f0
+
+# set the text background colour shown to countdown
+# after play is pressed and before the reader begins
+# <#000000-#ffffff|0-255|Colour>
+style countdown 2c323c
+
+# set the colour of the border surrounding the reader
+# <#000000-#ffffff|0-255|Colour>
+style border 2c323c
+
+# set the colour of the command prompt symbol shown at the start of the line
+# <#000000-#ffffff|0-255|Colour>
+style prompt 2c323c
+
+# set the success status message colour
+# <#000000-#ffffff|0-255|Colour>
+style success 55ff00
+
+# set the error status message colour
+# <#000000-#ffffff|0-255|Colour>
+style error ff5500
+
+# set the progress bar primary colour
+# <#000000-#ffffff|0-255|Colour>
+style progress-primary 2c323c
+
+# set progress bar secondary colour
+# <#000000-#ffffff|0-255|Colour>
+style progress-secondary 4feae7
+
+# set the colour of the text in the status bar
+# <#000000-#ffffff|0-255|Colour>
+style status-primary 2c323c
+
+# set the colour of the file path in the status bar
+# <#000000-#ffffff|0-255|Colour>
+style status-secondary 4feae7
+
+# set the background colour of the status bar
+# <#000000-#ffffff|0-255|Colour>
+style status-background 4feae7
+
+# set the colour of the current word in the reader
+# <#000000-#ffffff|0-255|Colour>
+style text-primary f0f0f0
+
+# set the colour of the words shown on either side of the current word
+# <#000000-#ffffff|0-255|Colour>
+style text-secondary c0c0c0
+
+# set the colour of the focus point character highlighted in the current word
+# <#000000-#ffffff|0-255|Colour>
+style text-highlight 4feae7
+
+# set the colour of the punctuation shown in the reader
+# <#000000-#ffffff|0-255|Colour>
+style text-punct 4feae7
+
+# set the colour of the quotes shown in the reader
+# <#000000-#ffffff|0-255|Colour>
+style text-quote 4feae7
