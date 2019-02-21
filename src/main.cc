@@ -75,17 +75,17 @@ int program_options(Parg& pg)
 
     R"RAW(set <value> <on|off>
     view
-      toggle full text line view
+      toggle full text line visibility
     progress
-      toggle progress bar
+      toggle progress bar visibility
     status
-      toggle status bar
+      toggle status bar visibility
     border
-      toggle border
+      toggle border top and bottom visibility
     border-top
-      toggle border top
+      toggle border top visibility
     border-bottom
-      toggle border bottom
+      toggle border bottom visibility
 )RAW",
 
     R"RAW(sym <value> <char|unicode-char>
@@ -107,41 +107,42 @@ int program_options(Parg& pg)
 
     R"RAW(style <value> <#000000-#ffffff|0-255|Colour>
     primary
-      set primary two-tone colour to 24-bit, 8-bit, or 4-bit value
+      meta style, sets the primary colour of the program
     secondary
-      set secondary two-tone colour to 24-bit, 8-bit, or 4-bit value
+      meta style, sets the secondary colour of the program
     text
-      set text colour to 24-bit, 8-bit, or 4-bit value
+      meta style, sets the colours of all input text shown in the reader
     countdown
-      set countdown colour to 24-bit, 8-bit, or 4-bit value
+      set the text background colour shown to countdown
+      after play is pressed and before the reader begins
     border
-      set border colour to 24-bit, 8-bit, or 4-bit value
+      set the colour of the border surrounding the reader
     prompt
-      set prompt colour to 24-bit, 8-bit, or 4-bit value
+      set the colour of the command prompt symbol shown at the start of the line
     success
-      set success status message colour to 24-bit, 8-bit, or 4-bit value
+      set the success status message colour
     error
-      set error status message colour to 24-bit, 8-bit, or 4-bit value
+      set the error status message colour
     progress-primary
-      set progress bar primary colour to 24-bit, 8-bit, or 4-bit value
+      set the progress bar primary colour
     progress-secondary
-      set progress bar secondary colour to 24-bit, 8-bit, or 4-bit value
+      set progress bar secondary colour
     status-primary
-      set status primary colour to 24-bit, 8-bit, or 4-bit value
+      set the colour of the text in the status bar
     status-secondary
-      set status secondary colour to 24-bit, 8-bit, or 4-bit value
+      set the colour of the file path in the status bar
     status-background
-      set status background colour to 24-bit, 8-bit, or 4-bit value
+      set the background colour of the status bar
     text-primary
-      set text primary colour to 24-bit, 8-bit, or 4-bit value
+      set the colour of the current word in the reader
     text-secondary
-      set text secondary colour to 24-bit, 8-bit, or 4-bit value
+      set the colour of the words shown on either side of the current word
     text-highlight
-      set text highlight colour to 24-bit, 8-bit, or 4-bit value
+      set the colour of the focus point character highlighted in the current word
     text-punct
-      set text punctuation colour to 24-bit, 8-bit, or 4-bit value
+      set the colour of the punctuation shown in the reader
     text-quote
-      set text quote colour to 24-bit, 8-bit, or 4-bit value)RAW",
+      set the colour of the quotes shown in the reader)RAW",
   });
 
   pg.info("Colour", {
