@@ -156,6 +156,19 @@ int program_options(Parg& pg)
     "white [bright]",
   });
 
+  pg.info("Configuration", {
+    R"RAW(The default config locations are ${XDG_CONFIG_HOME}/fltrdr/config and
+  ${HOME}/.fltrdr/config. A custom path can also be passed to override
+  the default locations using the --config option. The config directory
+  and file must be created by the user. If the file does not exist, the
+  program continues as normal.
+
+  The file, 'config', is a plain text file that can contain any of the
+  commands listed in the Commands section of the --help output.
+  Each command must be on its own line. Lines that begin with the '#'
+  character are treated as comments.)RAW"
+  });
+
   pg.info("Config Directory Locations", {
     "${XDG_CONFIG_HOME}/fltrdr",
     "${HOME}/.fltrdr",
