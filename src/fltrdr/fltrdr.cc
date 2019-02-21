@@ -266,17 +266,27 @@ void Fltrdr::set_line(std::size_t offset)
   auto const width_left = (_ctx.width / 2) - 1 - offset;
   auto const width_right = (_ctx.width / 2) + 1 + offset;
 
-  std::size_t pad_left {width_left - _ctx.focus_point - _ctx.line.prev.size()};
-  std::size_t pad_right {width_right - _ctx.word.size() + _ctx.focus_point - _ctx.line.next.size()};
+  auto pad_left {static_cast<int>(width_left - _ctx.focus_point - _ctx.line.prev.size())};
+  auto pad_right {static_cast<int>(width_right - _ctx.word.size() + _ctx.focus_point - _ctx.line.next.size())};
 
   if (_ctx.width % 2 != 0)
   {
     ++pad_right;
   }
 
-  _ctx.line.prev = OB::String::repeat(pad_left, aec::space) + _ctx.line.prev;
+  if (pad_left < 0)
+  {
+    pad_left = 0;
+  }
+
+  if (pad_right < 0)
+  {
+    pad_right = 0;
+  }
+
+  _ctx.line.prev = OB::String::repeat(static_cast<std::size_t>(pad_left), aec::space) + _ctx.line.prev;
   _ctx.line.curr += _ctx.word;
-  _ctx.line.next +=  OB::String::repeat(pad_right, aec::space);
+  _ctx.line.next +=  OB::String::repeat(static_cast<std::size_t>(pad_right), aec::space);
 }
 
 Fltrdr::Line Fltrdr::get_line()
