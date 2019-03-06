@@ -13,12 +13,12 @@ sequential whitespace.
 Its purpose is to facilitate reading, scanning, and searching text.
 The program has a play mode that moves the reader forward one word at a time,
 along with a configurable words per minute (WPM) setting.
-It can be used to read ASCII text from either a file or a pipe.
+It can be used to read text from either a file or stdin.
 
 ### Features
 * word-based text reader
 * *vi* inspired key-bindings
-* read text from a file or stdin
+* read UTF-8 encoded text from a file or stdin
 * play mode with variable speed controlled through WPM
 * in play mode, longer pauses occur on words that end in punctuation
 * focus point to align the current word
@@ -32,11 +32,8 @@ It can be used to read ASCII text from either a file or a pipe.
 * chars/symbols can be customized
 * show/hide parts of the interface
 
-### Limitations
-Currently, it only handles ASCII text properly. Reading unicode characters may result
-in strange or improper output. This can be worked around by filtering the text
-through a program like __iconv__ with a command such as
-`cat <file> | iconv -f utf-8 -t ascii//translit`.
+### Future Features
+* 
 
 ## Usage
 View the usage and help output with the `--help` or `-h` flag.
@@ -72,17 +69,31 @@ and any third party libraries used.
 > root directory of this repository.
 
 ### Environment
-* Linux (supported)
-* BSD (supported)
-* macOS (supported)
+* __Linux__ (supported)
+* __BSD__ (supported)
+* __macOS__ (supported)
+
+### Dependencies
+* C++17 compiler/library
+* CMake >= 3.8
+* ICU >= 62.1
+
+### Linked Libraries
+* stdc++fs (libstdc++fs) included in the C++17 Standard Library
+* icuuc (libicuuc) part of the ICU library
+* icui18n (libicui18n) part of the ICU library
+
+### Included Libraries:
+* [parg](https://github.com/octobanana/parg):
+  for parsing CLI args, included as `./src/ob/parg.hh`
 
 ### macOS
-Using a new version of *gcc* or *llvm* is __required__, as the default
-*Apple llvm compiler* does __not__ support C++17 Standard Library features such as `std::filesystem`.
+Using a new version of __gcc__ or __llvm__ is __required__, as the default
+__Apple llvm compiler__ does __not__ support C++17 Standard Library features such as `std::filesystem`.
 
-A new compiler can be installed through a third party package manager such as *Brew*.
-Assuming you have *Brew* already installed, the following commands should install
-the latest *gcc* compiler.
+A new compiler can be installed through a third-party package manager such as __Brew__.
+Assuming you have __Brew__ already installed, the following commands should install
+the latest __gcc__.
 
 ```
 brew install gcc
@@ -90,22 +101,11 @@ brew link gcc
 ```
 
 The following line will then need to be appended to the CMakeLists.txt file.
-Where `<path-to-*>` is the canonical path to the new *gcc* binary.
+Replace the placeholder `<path-to-g++>` with the canonical path to the new __g++__ compiler binary.
 
 ```
 set (CMAKE_CXX_COMPILER <path-to-g++>)
 ```
-
-### Requirements
-* C++17 compiler/library
-* CMake >= 3.8
-
-### Dependencies
-* stdc++fs (libstdc++fs) included in the C++17 Standard Library
-
-### Included Libraries:
-* [parg](https://github.com/octobanana/parg):
-  for parsing CLI args, included as `./src/ob/parg.hh`
 
 ## Build
 The following shell command will build the project in release mode:
