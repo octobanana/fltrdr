@@ -986,14 +986,14 @@ void Tui::get_input(int& wait)
     else if (key == '*')
     {
       pause();
-      _fltrdr.search_forward(_fltrdr.word());
+      _fltrdr.search(_fltrdr.word(), true);
     }
 
     // search prev current word
     else if (key == '#')
     {
       pause();
-      _fltrdr.search_backward(_fltrdr.word());
+      _fltrdr.search(_fltrdr.word(), false);
     }
 
     // search next
@@ -2104,7 +2104,7 @@ void Tui::search_forward()
     return;
   }
 
-  else if (! input.empty() && ! _fltrdr.search_forward(input))
+  else if (! input.empty() && ! _fltrdr.search(input, true))
   {
     _ctx.prompt.str = input;
     std::cout
@@ -2146,7 +2146,7 @@ void Tui::search_backward()
     return;
   }
 
-  else if (! input.empty() && ! _fltrdr.search_backward(input))
+  else if (! input.empty() && ! _fltrdr.search(input, false))
   {
     _ctx.prompt.str = input;
     std::cout

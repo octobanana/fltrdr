@@ -82,8 +82,7 @@ public:
 
   bool search_next();
   bool search_prev();
-  bool search_forward(std::string const& rx);
-  bool search_backward(std::string const& rx);
+  bool search(std::string const& rx, bool forward);
 
   void reset_timer();
   void reset_wpm_avg();
@@ -163,6 +162,8 @@ private:
     OB::UString sentence_end {".!?"};
   } _ctx;
 
+  bool search_forward();
+  bool search_backward();
 };
 
 #endif // FLTRDR_HH

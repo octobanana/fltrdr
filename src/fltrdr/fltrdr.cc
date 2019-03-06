@@ -647,167 +647,95 @@ std::size_t Fltrdr::progress()
   return static_cast<std::size_t>(_ctx.index / static_cast<double>(_ctx.index_max) * 100);
 }
 
-bool Fltrdr::search_next()
+bool Fltrdr::search_forward()
 {
   if (_ctx.search.it.empty())
   {
     return false;
   }
 
-  if (_ctx.search.forward)
+  bool last {false};
+  auto const index = get_index();
+  next_word();
+
+  for (auto const& e : _ctx.search.it)
   {
-    bool last {false};
-    auto const index = get_index();
-    next_word();
+    auto const pos = _ctx.text.byte_to_char(e.pos);
 
-    for (auto const& e : _ctx.search.it)
+    if (_ctx.pos < pos)
     {
-      auto const pos = _ctx.text.byte_to_char(e.pos);
-
-      if (_ctx.pos < pos)
+      while (_ctx.pos < pos)
       {
-        while (_ctx.pos < pos)
+        if (! next_word())
         {
-          if (! next_word())
-          {
-            last = true;
+          last = true;
 
-            break;
-          }
+          break;
         }
-
-        break;
       }
-    }
 
-    auto const index_new = get_index();
-
-    if (index != _ctx.index_max)
-    {
-      if (! last || (index_new != index && index_new != _ctx.index_max))
-      {
-        prev_word();
-      }
+      break;
     }
   }
-  else
+
+  auto const index_new = get_index();
+
+  if (index != _ctx.index_max)
   {
-    std::size_t end {_ctx.search.it.size()};
-
-    for (std::size_t i = 0, j = 0; j < end; j = i, ++i)
+    if (! last || (index_new != index && index_new != _ctx.index_max))
     {
-      if (i == end || _ctx.text.byte_to_char(_ctx.search.it.at(i).pos) > _ctx.pos)
-      {
-        auto const pos = _ctx.text.byte_to_char(_ctx.search.it.at(j).pos);
-
-        while (_ctx.pos > pos)
-        {
-          if (! prev_word())
-          {
-            break;
-          }
-        }
-
-        break;
-      }
+      prev_word();
     }
   }
 
   return true;
+}
+
+bool Fltrdr::search_backward()
+{
+  if (_ctx.search.it.empty())
+  {
+    return false;
+  }
+
+  std::size_t end {_ctx.search.it.size()};
+
+  for (std::size_t i = 0, j = 0; j < end; j = i, ++i)
+  {
+    if (i == end || _ctx.text.byte_to_char(_ctx.search.it.at(i).pos) > _ctx.pos)
+    {
+      auto const pos = _ctx.text.byte_to_char(_ctx.search.it.at(j).pos);
+
+      while (_ctx.pos > pos)
+      {
+        if (! prev_word())
+        {
+          break;
+        }
+      }
+
+      break;
+    }
+  }
+
+  return true;
+}
+
+bool Fltrdr::search_next()
+{
+  return _ctx.search.forward ? search_forward() : search_backward();
 }
 
 bool Fltrdr::search_prev()
 {
-  if (_ctx.search.it.empty())
-  {
-    return false;
-  }
-
-  if (_ctx.search.forward)
-  {
-    std::size_t end {_ctx.search.it.size()};
-
-    for (std::size_t i = 0, j = 0; j < end; j = i, ++i)
-    {
-      if (i == end || _ctx.text.byte_to_char(_ctx.search.it.at(i).pos) > _ctx.pos)
-      {
-        auto const pos = _ctx.text.byte_to_char(_ctx.search.it.at(j).pos);
-
-        while (_ctx.pos > pos)
-        {
-          if (! prev_word())
-          {
-            break;
-          }
-        }
-
-        break;
-      }
-    }
-  }
-  else
-  {
-    bool last {false};
-    auto const index = get_index();
-    next_word();
-
-    for (auto const& e : _ctx.search.it)
-    {
-      auto const pos = _ctx.text.byte_to_char(e.pos);
-
-      if (pos > _ctx.pos)
-      {
-        while (_ctx.pos < pos)
-        {
-          if (! next_word())
-          {
-            last = true;
-
-            break;
-          }
-        }
-
-        break;
-      }
-    }
-
-    auto const index_new = get_index();
-
-    if (index != _ctx.index_max)
-    {
-      if (! last || (index_new != index && index_new != _ctx.index_max))
-      {
-        prev_word();
-      }
-    }
-  }
-
-  return true;
+  return _ctx.search.forward ? search_backward() : search_forward();
 }
 
-bool Fltrdr::search_forward(std::string const& rx)
+bool Fltrdr::search(std::string const& rx, bool forward)
 {
   try
   {
-    _ctx.search.forward = true;
-    _ctx.search.rx = rx;
-    _ctx.search.it.match(_ctx.search.rx, _ctx.str);
-
-    return search_next();
-  }
-  catch (...)
-  {
-    _ctx.search.it.clear();
-
-    return false;
-  }
-}
-
-bool Fltrdr::search_backward(std::string const& rx)
-{
-  try
-  {
-    _ctx.search.forward = false;
+    _ctx.search.forward = forward;
     _ctx.search.rx = rx;
     _ctx.search.it.match(_ctx.search.rx, _ctx.str);
 
