@@ -115,7 +115,6 @@ OB::Text Fltrdr::buf_prev(std::size_t offset)
   }
 
   auto const width = (_ctx.width / 2) - 1 - offset;
-
   auto pos = _ctx.pos + 1;
   auto size = static_cast<int>(width - _ctx.prefix_width);
   auto count = size;
@@ -127,6 +126,7 @@ OB::Text Fltrdr::buf_prev(std::size_t offset)
   }
 
   size = size - count;
+
   if (size < 1)
   {
     return {};
@@ -145,15 +145,16 @@ OB::Text Fltrdr::buf_prev(std::size_t offset)
   {
     pos = _ctx.text.rfind(" "s, static_cast<std::size_t>(--pos));
 
-    if (pos == OB::Text::npos || pos == 0)
+    if (pos <= min || pos == OB::Text::npos || pos == 0)
     {
       break;
     }
   }
 
-  auto const start = pos > min ? pos : min;
+  auto const start = pos < min ? min : pos;
   auto const len = _ctx.pos + 1 - start < static_cast<std::size_t>(size) ?
     _ctx.pos + 1 - start : static_cast<std::size_t>(size);
+
   return _ctx.text.substr(start, len);
 }
 
@@ -168,7 +169,6 @@ OB::Text Fltrdr::buf_next(std::size_t offset)
   }
 
   auto const width = (_ctx.width / 2) + 1 + offset;
-
   auto p = pos;
   auto size = static_cast<int>(width - (_ctx.word.size() - _ctx.prefix_width));
 
@@ -197,7 +197,7 @@ OB::Text Fltrdr::buf_next(std::size_t offset)
   {
     pos = _ctx.text.find(" "s, ++pos);
 
-    if (pos == OB::Text::npos)
+    if (pos - start + 1 >= max || pos == OB::Text::npos)
     {
       pos = _ctx.text.size() - 1;
 
@@ -206,7 +206,8 @@ OB::Text Fltrdr::buf_next(std::size_t offset)
   }
 
   auto const end = pos - start + 1;
-  return _ctx.text.substr(start, end > max ? max : end);
+
+  return _ctx.text.substr(start, end < max ? end : max);
 }
 
 void Fltrdr::set_focus_point()
