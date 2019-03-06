@@ -150,7 +150,7 @@ private:
     int show_prev {1};
     int show_next {1};
     int show_min {0};
-    int show_max {8};
+    int show_max {60};
 
     struct Search
     {

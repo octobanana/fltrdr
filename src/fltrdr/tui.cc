@@ -1916,7 +1916,7 @@ std::optional<std::pair<bool, std::string>> Tui::command(std::string const& inpu
   }
 
   else if (match_opt = OB::String::match(input,
-    std::regex("^prev(:?\\s+([0-8]{1}))?$")))
+    std::regex("^prev(:?\\s+([0-9]{1,2}))?$")))
   {
     auto const match = OB::String::trim(match_opt.value().at(1));
 
@@ -1926,12 +1926,19 @@ std::optional<std::pair<bool, std::string>> Tui::command(std::string const& inpu
     }
     else
     {
-      _fltrdr.set_show_prev(std::stoi(match));
+      auto const val = std::stoi(match);
+
+      if (val < 0 || val > 60)
+      {
+        return std::make_pair(false, "error: value '" + std::to_string(val) + "' is out of range <0-60>");
+      }
+
+      _fltrdr.set_show_prev(val);
     }
   }
 
   else if (match_opt = OB::String::match(input,
-    std::regex("^next(:?\\s+([0-8]{1}))?$")))
+    std::regex("^next(:?\\s+([0-60]{1}))?$")))
   {
     auto const match = OB::String::trim(match_opt.value().at(1));
 
@@ -1941,7 +1948,14 @@ std::optional<std::pair<bool, std::string>> Tui::command(std::string const& inpu
     }
     else
     {
-      _fltrdr.set_show_next(std::stoi(match));
+      auto const val = std::stoi(match);
+
+      if (val < 0 || val > 60)
+      {
+        return std::make_pair(false, "error: value '" + std::to_string(val) + "' is out of range <0-60>");
+      }
+
+      _fltrdr.set_show_next(val);
     }
   }
 

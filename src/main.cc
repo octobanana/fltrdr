@@ -61,8 +61,8 @@ int program_options(Parg& pg)
     "open <path>\n    open file for reading",
     "wpm <60-1200>\n    set wpm value",
     "goto <int>\n    goto specified word number",
-    "prev <0-8>\n    set number of prev words to show",
-    "next <0-8>\n    set number of next words to show",
+    "prev <0-60>\n    set number of prev words to show",
+    "next <0-60>\n    set number of next words to show",
     "offset <0-6>\n    set offset of focus point from center",
 
     R"RAW(
