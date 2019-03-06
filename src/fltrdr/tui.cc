@@ -2,6 +2,7 @@
 
 #include "ob/algorithm.hh"
 #include "ob/string.hh"
+#include "ob/text.hh"
 #include "ob/term.hh"
 namespace aec = OB::Term::ANSI_Escape_Codes;
 
@@ -10,6 +11,7 @@ namespace aec = OB::Term::ANSI_Escape_Codes;
 #include <cctype>
 #include <cstdio>
 #include <cstddef>
+#include <cstdint>
 #include <cstdlib>
 
 #include <string>
@@ -23,6 +25,7 @@ namespace aec = OB::Term::ANSI_Escape_Codes;
 #include <regex>
 #include <utility>
 #include <optional>
+#include <limits>
 
 #include <filesystem>
 namespace fs = std::filesystem;
@@ -390,22 +393,28 @@ void Tui::draw_content()
   // get args for building the line
   auto const line = _fltrdr.get_line();
 
-  auto width_left = static_cast<double>((_ctx.width / 2) - _ctx.offset);
-  auto width_right = static_cast<double>((_ctx.width / 2) + _ctx.offset) +
-    (_ctx.width % 2 != 0 ? 1 : 0);
+  // get text views for each line
+  OB::Text prev {line.prev};
+  OB::Text curr {line.curr};
+  OB::Text next {line.next};
 
-  auto perc_left = static_cast<std::size_t>(width_left * (_ctx.state.count_down / static_cast<double>(_ctx.state.count_total)));
-  auto perc_right = static_cast<std::size_t>(width_right * (_ctx.state.count_down / static_cast<double>(_ctx.state.count_total)));
+  std::size_t width_left {(_ctx.width / 2) - _ctx.offset};
+  std::size_t width_right {(_ctx.width / 2) + _ctx.offset + (_ctx.width % 2 != 0 ? 1 : 0)};
 
-  auto pad_left = static_cast<std::size_t>(width_left) - perc_left;
-  auto pad_right = static_cast<std::size_t>(width_right) - perc_right;
+  auto perc_left = static_cast<std::size_t>(static_cast<double>(width_left) * (_ctx.state.count_down / static_cast<double>(_ctx.state.count_total)));
+  auto perc_right = static_cast<std::size_t>(static_cast<double>(width_right) * (_ctx.state.count_down / static_cast<double>(_ctx.state.count_total)));
+
+  auto pad_left = width_left - perc_left;
+  auto pad_right = width_right - perc_right;
 
   // add background style if counting down
   if (_ctx.state.counting_down)
   {
     if (_ctx.state.count_down)
     {
-      for (auto i = pad_left; i < pad_left + perc_left + perc_right; ++i)
+      auto const end = pad_left + perc_left + perc_right;
+
+      for (auto i = pad_left; i < end; ++i)
       {
         buf.at(i).before += _ctx.style.countdown;
       }
@@ -416,62 +425,78 @@ void Tui::draw_content()
     }
   }
 
+  // number of display columns used
+  // reset to 0 for each segment of the line (prev, curr, next)
+  std::size_t cols {0};
+
   // add line prev to buf
-  for (std::size_t i = 0; i < line.prev.size(); ++i)
+  // iterate in reverse in case display columns exceed buf size
+  std::size_t const npos {std::numeric_limits<std::size_t>::max()};
+  for (std::size_t i = prev.size() - 1; i != npos; --i)
   {
-    auto const it = i;
+    auto const& val = prev.at(i);
 
-    buf.at(it).value = line.prev.at(i);
+    cols += val.cols;
+    if (cols > prev.size())
+    {
+      // add padding
+      buf.at(i).value = OB::String::repeat(prev.size() - (cols - val.cols), " ");
 
-    if (line.prev.at(i) == ' ')
+      break;
+    }
+
+    buf.at(i).value = val.str;
+
+    if (buf.at(i).value == " ")
     {
       continue;
     }
 
-    if (line.prev.at(i) == '-')
+    if (buf.at(i).value == "'" || buf.at(i).value == "\"")
     {
-      buf.at(it).before += _ctx.style.word_secondary;
+      buf.at(i).before += _ctx.style.word_quote;
     }
-    else if (line.prev.at(i) == '\'' || line.prev.at(i) == '"')
+    else if (OB::Text::is_punct(OB::Text::to_int32(buf.at(i).value)))
     {
-      buf.at(it).before += _ctx.style.word_quote;
-    }
-    else if (std::ispunct(static_cast<unsigned char>(line.prev.at(i))))
-    {
-      buf.at(it).before += _ctx.style.word_punct;
+      buf.at(i).before += _ctx.style.word_punct;
     }
     else
     {
-      buf.at(it).before += _ctx.style.word_secondary;
+      buf.at(i).before += _ctx.style.word_secondary;
     }
   }
 
   // add line curr to buf
-  for (std::size_t i = 0; i < line.curr.size(); ++i)
+  cols = 0;
+  bool highlight {false};
+  for (std::size_t i = 0; i < curr.size(); ++i)
   {
-    auto const it = i + line.prev.size();
+    auto const val = curr.at(i);
+
+    cols += val.cols;
+    if (cols > prev.size() + curr.size())
+    {
+      break;
+    }
+
+    auto const it = i + prev.size();
     if (it >= buf.size())
     {
       break;
     }
 
-    buf.at(it).value = line.curr.at(i);
+    buf.at(it).value = val.str;
 
-    // buf.at(it).before += aec::bold;
-
-    if (i + line.prev.size() == width_left - 1)
+    if (! highlight && cols + prev.size() >= width_left)
     {
+      highlight = true;
       buf.at(it).before += _ctx.style.word_highlight;
     }
-    else if (line.curr.at(i) == '-')
-    {
-      buf.at(it).before += _ctx.style.word_secondary;
-    }
-    else if (line.curr.at(i) == '\'' || line.curr.at(i) == '"')
+    else if (buf.at(it).value == "'" || buf.at(it).value == "\"")
     {
       buf.at(it).before += _ctx.style.word_quote;
     }
-    else if (std::ispunct(static_cast<unsigned char>(line.curr.at(i))))
+    else if (OB::Text::is_punct(OB::Text::to_int32(buf.at(it).value)))
     {
       buf.at(it).before += _ctx.style.word_punct;
     }
@@ -482,26 +507,31 @@ void Tui::draw_content()
   }
 
   // add line next to buf
-  for (std::size_t i = 0; i < line.next.size(); ++i)
+  cols = 0;
+  for (std::size_t i = 0; i < next.size(); ++i)
   {
-    auto const it = i + line.prev.size() + line.curr.size();
+    auto const val = next.at(i);
 
-    buf.at(it).value = line.next.at(i);
+    cols += val.cols;
+    if (cols > buf.size())
+    {
+      break;
+    }
 
-    if (line.next.at(i) == ' ')
+    auto const it = i + prev.size() + curr.size();
+
+    buf.at(it).value = val.str;
+
+    if (buf.at(it).value == " ")
     {
       continue;
     }
 
-    if (line.next.at(i) == '-')
-    {
-      buf.at(it).before += _ctx.style.word_secondary;
-    }
-    else if (line.next.at(i) == '\'' || line.next.at(i) == '"')
+    if (buf.at(it).value == "'" || buf.at(it).value == "\"")
     {
       buf.at(it).before += _ctx.style.word_quote;
     }
-    else if (std::ispunct(static_cast<unsigned char>(line.next.at(i))))
+    else if (OB::Text::is_punct(OB::Text::to_int32(buf.at(it).value)))
     {
       buf.at(it).before += _ctx.style.word_punct;
     }
@@ -557,7 +587,6 @@ void Tui::draw_progress_bar()
   << aec::cursor_save
   << aec::cursor_set(0, height)
   << aec::erase_line
-  // << aec::bold
   << _ctx.style.progress_bar
   << OB::String::repeat(_ctx.width, _ctx.sym.progress)
   << aec::clear
@@ -599,7 +628,6 @@ void Tui::draw_status()
   _ctx.buf
   << _ctx.style.background
   << _ctx.style.primary
-  // << aec::bold
   << aec::space
   << _ctx.status.mode
   << aec::space
@@ -646,7 +674,7 @@ void Tui::draw_status()
     {
       _ctx.buf
       << _ctx.style.secondary
-      << '<'
+      << "<"
       << _ctx.file.name.substr(static_cast<std::size_t>(std::abs(len_center)) + 1)
       << aec::clear
       << aec::space
@@ -684,7 +712,7 @@ void Tui::draw_status()
       << _ctx.style.background
       << _ctx.style.primary
       << aec::space
-      << '<'
+      << "<"
       << stats.substr(static_cast<std::size_t>(std::abs(len_center)) - _ctx.file.name.size())
       << aec::space
       << aec::clear;

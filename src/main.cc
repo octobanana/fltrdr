@@ -285,6 +285,8 @@ int main(int argc, char *argv[])
   if (pstatus > 0) return 0;
   if (pstatus < 0) return 1;
 
+  std::ios_base::sync_with_stdio(false);
+
   try
   {
     Tui tui;
@@ -324,11 +326,13 @@ int main(int argc, char *argv[])
   catch(std::exception const& e)
   {
     std::cerr << "Error: " << e.what() << "\n";
+
     return 1;
   }
   catch(...)
   {
     std::cerr << "Error: an unexpected error occurred\n";
+
     return 1;
   }
 

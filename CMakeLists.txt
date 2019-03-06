@@ -51,6 +51,8 @@ target_include_directories(
 target_link_libraries (
   ${TARGET}
   stdc++fs
+  icuuc
+  icui18n
 )
 
 install (

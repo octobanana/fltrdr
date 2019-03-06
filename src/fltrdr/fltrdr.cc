@@ -2,6 +2,7 @@
 
 #include "ob/string.hh"
 #include "ob/timer.hh"
+#include "ob/text.hh"
 #include "ob/term.hh"
 namespace aec = OB::Term::ANSI_Escape_Codes;
 
@@ -19,12 +20,16 @@ namespace aec = OB::Term::ANSI_Escape_Codes;
 #include <thread>
 #include <algorithm>
 #include <stdexcept>
-#include <regex>
 #include <iterator>
 #include <random>
 
+using namespace std::string_literals;
+
 void Fltrdr::init()
 {
+  _ctx.str.clear();
+  _ctx.str.shrink_to_fit();
+
   _ctx.text.clear();
   _ctx.text.shrink_to_fit();
 
@@ -33,31 +38,49 @@ void Fltrdr::init()
   _ctx.wpm_avg = 0;
   _ctx.wpm_count = 0;
   _ctx.wpm_total = 0;
-  _ctx.slow = false;
-  _ctx.search.it = std::sregex_iterator();
 }
 
 bool Fltrdr::parse(std::istream& input)
 {
   init();
 
-  std::string word;
+  OB::UString word;
   std::size_t word_count {0};
-  while (input >> std::ws >> word)
+
+  while (input >> std::ws >> word.str)
   {
-    _ctx.text += " " + word;
-    ++word_count;
+    word.sync();
+
+    if (word.txt.size() > 1 && word.txt.cols() == word.txt.size() * 2)
+    {
+      for (auto const& e : word.txt)
+      {
+        _ctx.str += " " + std::string(e.str);
+        ++word_count;
+      }
+    }
+    else
+    {
+      _ctx.str += " " + word.str;
+      ++word_count;
+    }
+
   }
 
   if (word_count == 0)
   {
-    _ctx.text = " fltrdr";
+    _ctx.str = " fltrdr";
     ++word_count;
+
+    _ctx.text.str(_ctx.str);
     _ctx.index_max = word_count;
+
     return false;
   }
 
+  _ctx.text.str(_ctx.str);
   _ctx.index_max = word_count;
+
   return true;
 }
 
@@ -84,7 +107,7 @@ Fltrdr& Fltrdr::screen_size(std::size_t const width, std::size_t const height)
   return *this;
 }
 
-std::string Fltrdr::buf_prev(std::size_t offset)
+OB::Text Fltrdr::buf_prev(std::size_t offset)
 {
   if (! _ctx.pos)
   {
@@ -94,7 +117,7 @@ std::string Fltrdr::buf_prev(std::size_t offset)
   auto const width = (_ctx.width / 2) - 1 - offset;
 
   auto pos = _ctx.pos + 1;
-  int size {static_cast<int>(width - _ctx.focus_point)};
+  auto size = static_cast<int>(width - _ctx.prefix_width);
   auto count = size;
 
   while (pos && count)
@@ -120,9 +143,9 @@ std::string Fltrdr::buf_prev(std::size_t offset)
 
   for (int i = 0; i < _ctx.show_prev; ++i)
   {
-    pos = _ctx.text.rfind(" ", --pos);
+    pos = _ctx.text.rfind(" "s, static_cast<std::size_t>(--pos));
 
-    if (pos == std::string::npos || pos == 0)
+    if (pos == OB::Text::npos || pos == 0)
     {
       break;
     }
@@ -134,12 +157,12 @@ std::string Fltrdr::buf_prev(std::size_t offset)
   return _ctx.text.substr(start, len);
 }
 
-std::string Fltrdr::buf_next(std::size_t offset)
+OB::Text Fltrdr::buf_next(std::size_t offset)
 {
-  auto pos = _ctx.text.find(" ", _ctx.pos + 1);
+  auto pos = _ctx.text.find(" "s, static_cast<std::size_t>(_ctx.pos + 1));
   auto const start = pos;
 
-  if (pos == std::string::npos)
+  if (pos == OB::Text::npos)
   {
     return {};
   }
@@ -147,7 +170,7 @@ std::string Fltrdr::buf_next(std::size_t offset)
   auto const width = (_ctx.width / 2) + 1 + offset;
 
   auto p = pos;
-  int size {static_cast<int>(width - (_ctx.word.size() - _ctx.focus_point))};
+  auto size = static_cast<int>(width - (_ctx.word.size() - _ctx.prefix_width));
 
   if (_ctx.width % 2 != 0)
   {
@@ -172,9 +195,9 @@ std::string Fltrdr::buf_next(std::size_t offset)
 
   for (int i = 0; i < _ctx.show_next; ++i)
   {
-    pos = _ctx.text.find(" ", ++pos);
+    pos = _ctx.text.find(" "s, ++pos);
 
-    if (pos == std::string::npos)
+    if (pos == OB::Text::npos)
     {
       pos = _ctx.text.size() - 1;
 
@@ -194,7 +217,7 @@ void Fltrdr::set_focus_point()
   // check for punct at beginning of word
   for (auto i = _ctx.word.begin(); i != _ctx.word.end(); ++i)
   {
-    if (std::isalpha(static_cast<unsigned char>(*i)) != 0)
+    if (! OB::Text::is_punct(OB::Text::to_int32(i->str)))
     {
       break;
     }
@@ -205,9 +228,10 @@ void Fltrdr::set_focus_point()
   // check for punct at end of word
   for (auto i = _ctx.word.rbegin(); i != _ctx.word.rend(); ++i)
   {
-    if (std::isalpha(static_cast<unsigned char>(*i)) != 0)
+    if (! OB::Text::is_punct(OB::Text::to_int32(i->str)))
     {
-      if (*i == 's' && ++i != _ctx.word.rend() && *i == '\'')
+      if (i->str == "s" && ++i != _ctx.word.rend() &&
+        OB::Text::is_punct(OB::Text::to_int32(i->str)))
       {
         end -= 2;
       }
@@ -237,37 +261,47 @@ void Fltrdr::set_focus_point()
   {
     _ctx.focus_point += begin;
   }
+
+  // calc display columns needed up to focus point position
+  _ctx.prefix_width = 0;
+  for (std::size_t i = 0; i < _ctx.focus_point; ++i)
+  {
+    _ctx.prefix_width += _ctx.word.at(i).cols;
+  }
 }
 
 void Fltrdr::set_line(std::size_t offset)
 {
   _ctx.line = {};
+  _ctx.prev.clear();
+  _ctx.next.clear();
+
   current_word();
   set_focus_point();
 
   if (_ctx.show_line)
   {
-    _ctx.line.prev = buf_prev(offset);
-    _ctx.line.next = buf_next(offset);
+    _ctx.prev = buf_prev(offset);
+    _ctx.next = buf_next(offset);
   }
   else
   {
     if (_ctx.show_prev)
     {
-      _ctx.line.prev = buf_prev(offset);
+      _ctx.prev = buf_prev(offset);
     }
 
     if (_ctx.show_next)
     {
-      _ctx.line.next = buf_next(offset);
+      _ctx.next = buf_next(offset);
     }
   }
 
   auto const width_left = (_ctx.width / 2) - 1 - offset;
   auto const width_right = (_ctx.width / 2) + 1 + offset;
 
-  auto pad_left {static_cast<int>(width_left - _ctx.focus_point - _ctx.line.prev.size())};
-  auto pad_right {static_cast<int>(width_right - _ctx.word.size() + _ctx.focus_point - _ctx.line.next.size())};
+  auto pad_left {static_cast<int>(width_left - _ctx.prefix_width - _ctx.prev.size())};
+  auto pad_right {static_cast<int>(width_right - _ctx.word.size() + _ctx.prefix_width - _ctx.next.size())};
 
   if (_ctx.width % 2 != 0)
   {
@@ -284,9 +318,12 @@ void Fltrdr::set_line(std::size_t offset)
     pad_right = 0;
   }
 
-  _ctx.line.prev = OB::String::repeat(static_cast<std::size_t>(pad_left), aec::space) + _ctx.line.prev;
-  _ctx.line.curr += _ctx.word;
-  _ctx.line.next +=  OB::String::repeat(static_cast<std::size_t>(pad_right), aec::space);
+
+  _ctx.line.prev = OB::String::repeat(static_cast<std::size_t>(pad_left), aec::space) + std::string(_ctx.prev.str());
+
+  _ctx.line.curr = _ctx.word;
+
+  _ctx.line.next += std::string(_ctx.next.str()) + OB::String::repeat(static_cast<std::size_t>(pad_right), aec::space);
 }
 
 Fltrdr::Line Fltrdr::get_line()
@@ -302,10 +339,10 @@ void Fltrdr::prev_sentence()
   }
 
   prev_word();
-  if (_ctx.word.find_first_of(".!?") != std::string::npos)
+  if (_ctx.word.find_first_of(_ctx.sentence_end.txt) != OB::Text::npos)
   {
     prev_word();
-    if (_ctx.word.find_first_of(".!?") != std::string::npos)
+    if (_ctx.word.find_first_of(_ctx.sentence_end.txt) != OB::Text::npos)
     {
       next_word();
       return;
@@ -314,7 +351,7 @@ void Fltrdr::prev_sentence()
   while (_ctx.index > _ctx.index_min)
   {
     prev_word();
-    if (_ctx.word.find_first_of(".!?") != std::string::npos)
+    if (_ctx.word.find_first_of(_ctx.sentence_end.txt) != OB::Text::npos)
     {
       next_word();
       break;
@@ -331,7 +368,7 @@ void Fltrdr::next_sentence()
 
   while (_ctx.index < _ctx.index_max)
   {
-    if (_ctx.word.find_first_of(".!?") != std::string::npos)
+    if (_ctx.word.find_first_of(_ctx.sentence_end.txt) != OB::Text::npos)
     {
       next_word();
       break;
@@ -350,7 +387,7 @@ void Fltrdr::prev_chapter()
   while (_ctx.index > _ctx.index_min)
   {
     prev_word();
-    if (OB::String::lowercase(_ctx.word).find("chapter") != std::string::npos)
+    if (_ctx.word.str() == "chapter")
     {
       break;
     }
@@ -367,22 +404,22 @@ void Fltrdr::next_chapter()
   while (_ctx.index < _ctx.index_max)
   {
     next_word();
-    if (OB::String::lowercase(_ctx.word).find("chapter") != std::string::npos)
+    if (_ctx.word.str() == "chapter")
     {
       break;
     }
   }
 }
 
-std::string Fltrdr::word()
+OB::Text Fltrdr::word()
 {
   return _ctx.word;
 }
 
 void Fltrdr::current_word()
 {
-  auto const pos = _ctx.text.find(" ", _ctx.pos + 1);
-  if (pos != std::string::npos)
+  auto const pos = _ctx.text.find(" "s, _ctx.pos + 1);
+  if (pos != OB::Text::npos)
   {
     _ctx.word = _ctx.text.substr(_ctx.pos + 1, pos - _ctx.pos - 1);
   }
@@ -398,8 +435,8 @@ bool Fltrdr::prev_word()
   {
     --_ctx.index;
 
-    auto const pos = _ctx.text.rfind(" ", _ctx.pos - 1);
-    if (pos != std::string::npos)
+    auto const pos = _ctx.text.rfind(" "s, _ctx.pos - 1);
+    if (pos != OB::Text::npos)
     {
       _ctx.pos = pos;
       current_word();
@@ -417,8 +454,8 @@ bool Fltrdr::next_word()
   {
     ++_ctx.index;
 
-    auto const pos = _ctx.text.find(" ", _ctx.pos + 1);
-    if (pos != std::string::npos && _ctx.text.at(pos))
+    auto const pos = _ctx.text.find(" "s, _ctx.pos + 1);
+    if (pos != OB::Text::npos)
     {
       _ctx.pos = pos;
       current_word();
@@ -469,17 +506,22 @@ int Fltrdr::get_wait()
   // check for punct at end of word
   for (auto i = _ctx.word.rbegin(); i != _ctx.word.rend(); ++i)
   {
-    if (std::isalpha(static_cast<unsigned char>(*i)) == 0)
+    if (OB::Text::is_punct(OB::Text::to_int32(i->str)))
     {
-      switch (*i)
+      switch (OB::Text::to_int32(i->str))
       {
-        case ',': case '.': case ';':
-        case ':': case '?': case '!':
-        case '\"': case '-': case ')':
+        case U',': case U'.': case U';':
+        case U':': case U'?': case U'!':
+        case U'…':
           punc = true;
           break;
         default:
           break;
+      }
+
+      if (punc)
+      {
+        break;
       }
     }
     else
@@ -488,27 +530,17 @@ int Fltrdr::get_wait()
     }
   }
 
-  int ms {60000 / _ctx.wpm};
-  int wait_std {static_cast<int>(ms * (1 + (_ctx.word.size() / 100 * 4.0)))};
-  int wait_lng {wait_std * 2};
+  auto const wait_std = static_cast<int>((60000 / _ctx.wpm) * (1 + (_ctx.word.size() / 100 * 4.0)));
 
-  if (_ctx.slow)
-  {
-    wait_std = static_cast<int>(wait_std * 1.10);
-    wait_lng = static_cast<int>(wait_lng * 1.10);
-  }
-
+  // set ms
   if (punc)
   {
-    ms = wait_lng;
+    _ctx.ms = wait_std * 2;
   }
   else
   {
-    ms = wait_std;
+    _ctx.ms = wait_std;
   }
-
-  // set ms
-  _ctx.ms = ms;
 
   return _ctx.ms;
 }
@@ -616,9 +648,7 @@ std::size_t Fltrdr::progress()
 
 bool Fltrdr::search_next()
 {
-  auto const end = std::sregex_iterator();
-
-  if (_ctx.search.it == end)
+  if (_ctx.search.it.empty())
   {
     return false;
   }
@@ -629,17 +659,18 @@ bool Fltrdr::search_next()
     auto const index = get_index();
     next_word();
 
-    for (auto ptr = _ctx.search.it; ptr != end; ++ptr)
+    for (auto const& e : _ctx.search.it)
     {
-      if (static_cast<std::size_t>(ptr->position()) > _ctx.pos)
-      {
-        auto pos = static_cast<std::size_t>(ptr->position());
+      auto const pos = _ctx.text.byte_to_char(e.pos);
 
+      if (_ctx.pos < pos)
+      {
         while (_ctx.pos < pos)
         {
           if (! next_word())
           {
             last = true;
+
             break;
           }
         }
@@ -649,6 +680,7 @@ bool Fltrdr::search_next()
     }
 
     auto const index_new = get_index();
+
     if (index != _ctx.index_max)
     {
       if (! last || (index_new != index && index_new != _ctx.index_max))
@@ -659,11 +691,13 @@ bool Fltrdr::search_next()
   }
   else
   {
-    for (auto ptr = _ctx.search.it, prev = _ctx.search.it; prev != end; ++ptr)
+    std::size_t end {_ctx.search.it.size()};
+
+    for (std::size_t i = 0, j = 0; j < end; j = i, ++i)
     {
-      if (ptr == end || static_cast<std::size_t>(ptr->position()) > _ctx.pos)
+      if (i == end || _ctx.text.byte_to_char(_ctx.search.it.at(i).pos) > _ctx.pos)
       {
-        auto pos = static_cast<std::size_t>(prev->position());
+        auto const pos = _ctx.text.byte_to_char(_ctx.search.it.at(j).pos);
 
         while (_ctx.pos > pos)
         {
@@ -675,8 +709,6 @@ bool Fltrdr::search_next()
 
         break;
       }
-
-      prev = ptr;
     }
   }
 
@@ -685,20 +717,20 @@ bool Fltrdr::search_next()
 
 bool Fltrdr::search_prev()
 {
-  auto const end = std::sregex_iterator();
-
-  if (_ctx.search.it == end)
+  if (_ctx.search.it.empty())
   {
     return false;
   }
 
   if (_ctx.search.forward)
   {
-    for (auto ptr = _ctx.search.it, prev = _ctx.search.it; prev != end; ++ptr)
+    std::size_t end {_ctx.search.it.size()};
+
+    for (std::size_t i = 0, j = 0; j < end; j = i, ++i)
     {
-      if (ptr == end || static_cast<std::size_t>(ptr->position()) > _ctx.pos)
+      if (i == end || _ctx.text.byte_to_char(_ctx.search.it.at(i).pos) > _ctx.pos)
       {
-        auto pos = static_cast<std::size_t>(prev->position());
+        auto const pos = _ctx.text.byte_to_char(_ctx.search.it.at(j).pos);
 
         while (_ctx.pos > pos)
         {
@@ -710,8 +742,6 @@ bool Fltrdr::search_prev()
 
         break;
       }
-
-      prev = ptr;
     }
   }
   else
@@ -720,17 +750,18 @@ bool Fltrdr::search_prev()
     auto const index = get_index();
     next_word();
 
-    for (auto ptr = _ctx.search.it; ptr != end; ++ptr)
+    for (auto const& e : _ctx.search.it)
     {
-      if (static_cast<std::size_t>(ptr->position()) > _ctx.pos)
-      {
-        auto pos = static_cast<std::size_t>(ptr->position());
+      auto const pos = _ctx.text.byte_to_char(e.pos);
 
+      if (pos > _ctx.pos)
+      {
         while (_ctx.pos < pos)
         {
           if (! next_word())
           {
             last = true;
+
             break;
           }
         }
@@ -740,6 +771,7 @@ bool Fltrdr::search_prev()
     }
 
     auto const index_new = get_index();
+
     if (index != _ctx.index_max)
     {
       if (! last || (index_new != index && index_new != _ctx.index_max))
@@ -754,48 +786,38 @@ bool Fltrdr::search_prev()
 
 bool Fltrdr::search_forward(std::string const& rx)
 {
-  _ctx.search.forward = true;
-  _ctx.search.begin = _ctx.text.begin();
-  _ctx.search.end = _ctx.text.end();
-
   try
   {
-    _ctx.search.rgx = std::regex(rx, std::regex::optimize | std::regex::icase);
-    _ctx.search.it = std::sregex_iterator(
-      _ctx.search.begin, _ctx.search.end, _ctx.search.rgx,
-      std::regex_constants::match_not_null);
+    _ctx.search.forward = true;
+    _ctx.search.rx = rx;
+    _ctx.search.it.match(_ctx.search.rx, _ctx.str);
+
+    return search_next();
   }
   catch (...)
   {
-    _ctx.search.rgx = {};
-    _ctx.search.it = std::sregex_iterator();
+    _ctx.search.it.clear();
+
     return false;
   }
-
-  return search_next();
 }
 
 bool Fltrdr::search_backward(std::string const& rx)
 {
-  _ctx.search.forward = false;
-  _ctx.search.begin = _ctx.text.begin();
-  _ctx.search.end = _ctx.text.end();
-
   try
   {
-    _ctx.search.rgx = std::regex(rx, std::regex::optimize | std::regex::icase);
-    _ctx.search.it = std::sregex_iterator(
-      _ctx.search.begin, _ctx.search.end, _ctx.search.rgx,
-      std::regex_constants::match_not_null);
+    _ctx.search.forward = false;
+    _ctx.search.rx = rx;
+    _ctx.search.it.match(_ctx.search.rx, _ctx.str);
+
+    return search_next();
   }
   catch (...)
   {
-    _ctx.search.rgx = {};
-    _ctx.search.it = std::sregex_iterator();
+    _ctx.search.it.clear();
+
     return false;
   }
-
-  return search_next();
 }
 
 void Fltrdr::reset_timer()

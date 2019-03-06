@@ -2,6 +2,7 @@
 #define FLTRDR_HH
 
 #include "ob/timer.hh"
+#include "ob/text.hh"
 #include "ob/term.hh"
 namespace aec = OB::Term::ANSI_Escape_Codes;
 
@@ -11,7 +12,6 @@ namespace aec = OB::Term::ANSI_Escape_Codes;
 #include <vector>
 #include <sstream>
 #include <iostream>
-#include <regex>
 
 class Fltrdr
 {
@@ -37,8 +37,8 @@ public:
   void begin();
   void end();
 
-  std::string buf_prev(std::size_t offset = 0);
-  std::string buf_next(std::size_t offset = 0);
+  OB::Text buf_prev(std::size_t offset = 0);
+  OB::Text buf_next(std::size_t offset = 0);
 
   void set_focus_point();
 
@@ -69,7 +69,7 @@ public:
 
   std::size_t progress();
 
-  std::string word();
+  OB::Text word();
   void current_word();
   bool prev_word();
   bool next_word();
@@ -105,8 +105,12 @@ private:
     double const focus {0.25};
     std::size_t focus_point {0};
 
+    // current word display width in columns before focus point
+    std::size_t prefix_width {0};
+
     // text buffer
-    std::string text;
+    std::string str;
+    OB::Text text;
 
     // current rendered line
     Line line;
@@ -124,7 +128,10 @@ private:
     std::size_t index_max {1};
 
     // current word
-    std::string word;
+    OB::Text word;
+
+    OB::Text prev;
+    OB::Text next;
 
     // words per minute
     int const wpm_diff {10};
@@ -138,9 +145,6 @@ private:
     // wait time in milliseconds
     int ms {0};
 
-    // wait time slow
-    bool slow {false};
-
     // toggle prev and next buffer surrounding current word in line
     bool show_line {false};
     int show_prev {1};
@@ -150,13 +154,15 @@ private:
 
     struct Search
     {
-      std::string::const_iterator begin;
-      std::string::const_iterator end;
-      std::regex rgx;
-      std::sregex_iterator it;
+      OB::Regex it;
+      std::string rx;
       bool forward {true};
     } search;
+
+    // sentence end characters
+    OB::UString sentence_end {".!?"};
   } _ctx;
+
 };
 
 #endif // FLTRDR_HH
