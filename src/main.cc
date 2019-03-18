@@ -57,7 +57,7 @@ int program_options(Parg& pg)
   });
 
   pg.info("Commands", {
-    "quit\n    quit the program",
+    "quit|exit\n    quit the program",
     "open <path>\n    open file for reading",
     "wpm <60-1200>\n    set wpm value",
     "goto <int>\n    goto specified word number",

@@ -1163,7 +1163,7 @@ std::optional<std::pair<bool, std::string>> Tui::command(std::string const& inpu
 
   // quit
   if (match_opt = OB::String::match(input,
-    std::regex("^(q|Q|quit|Quit)$")))
+    std::regex("^(q|Q|quit|Quit|exit)$")))
   {
     _ctx.is_running = false;
     return {};
