@@ -1,15 +1,17 @@
 #ifndef TUI_HH
 #define TUI_HH
 
-#include "fltrdr/readline.hh"
 #include "fltrdr/fltrdr.hh"
 
+#include "ob/readline.hh"
 #include "ob/string.hh"
+#include "ob/text.hh"
 #include "ob/term.hh"
 namespace aec = OB::Term::ANSI_Escape_Codes;
 
 #include <cstdio>
 #include <cstddef>
+#include <cstdint>
 #include <cstdlib>
 
 #include <array>
@@ -31,18 +33,8 @@ public:
 
 private:
 
-  enum Key
-  {
-    up = 1000,
-    down,
-    left,
-    right,
-    del,
-  };
-  int get_key() const;
-  int ctrl_key(int const c) const;
   void get_input(int& wait);
-  bool press_to_continue(std::string const& str = "ANY KEY", int val = 0);
+  bool press_to_continue(std::string const& str = "ANY KEY", char32_t val = 0);
 
   std::optional<std::pair<bool, std::string>> command(std::string const& input);
   void command_prompt();
@@ -72,8 +64,8 @@ private:
 
   OB::Term::Mode _term_mode;
   bool const _colorterm;
-  Readline _readline;
-  Readline _readline_search;
+  OB::Readline _readline;
+  OB::Readline _readline_search;
   Fltrdr _fltrdr;
 
   struct Ctx
@@ -128,7 +120,8 @@ private:
     } status;
 
     // input char buffer
-    std::array<char, 2> chars {'\0', '\0'};
+    std::array<OB::Text::Char32, 2> chars;
+    std::string keybuf;
 
     // command prompt
     struct Prompt

@@ -32,9 +32,9 @@ message ("CMAKE_BUILD_TYPE is ${CMAKE_BUILD_TYPE}")
 set (SOURCES
   src/main.cc
   src/ob/string.cc
+  src/ob/readline.cc
   src/fltrdr/tui.cc
   src/fltrdr/fltrdr.cc
-  src/fltrdr/readline.cc
 )
 
 add_executable (

@@ -83,7 +83,7 @@ Tui& Tui::init(std::string const& file_path)
   return *this;
 }
 
-bool Tui::press_to_continue(std::string const& str, int val)
+bool Tui::press_to_continue(std::string const& str, char32_t val)
 {
   std::cerr
   << "Press " << str << " to continue";
@@ -92,8 +92,8 @@ bool Tui::press_to_continue(std::string const& str, int val)
   _term_mode.set_raw();
 
   bool res {false};
-  int key {0};
-  if ((key = get_key()) > 0)
+  char32_t key {0};
+  if ((key = OB::Term::get_key()) > 0)
   {
     res = (val == 0 ? true : val == key);
   }
@@ -254,19 +254,23 @@ void Tui::event_loop()
       pause();
       std::this_thread::sleep_for(std::chrono::milliseconds(_ctx.input_interval));
 
-      int key {0};
-      if ((key = get_key()) > 0)
+      char32_t key {0};
+      if ((key = OB::Term::get_key()) > 0)
       {
-        // quit
-        if (key == 'q' || key == 'Q')
+        switch (key)
         {
-          _ctx.is_running = false;
-        }
+          case 'q': case 'Q':
+          case OB::Term::ctrl_key('c'):
+          {
+            _ctx.is_running = false;
 
-        // ctrl-c
-        else if (key == ctrl_key('c'))
-        {
-          _ctx.is_running = false;
+            break;
+          }
+
+          default:
+          {
+            break;
+          }
         }
       }
 
@@ -330,9 +334,9 @@ void Tui::event_loop()
         wait = 0;
       }
 
-      if (_ctx.chars.at(1) != '\0')
+      if (_ctx.chars.at(1).val != 0)
       {
-        _ctx.chars.fill('\0');
+        _ctx.chars.fill(OB::Text::Char32());
       }
 
       get_input(wait);
@@ -394,9 +398,9 @@ void Tui::draw_content()
   auto const line = _fltrdr.get_line();
 
   // get text views for each line
-  OB::Text prev {line.prev};
-  OB::Text curr {line.curr};
-  OB::Text next {line.next};
+  OB::Text::View prev {line.prev};
+  OB::Text::View curr {line.curr};
+  OB::Text::View next {line.next};
 
   std::size_t width_left {(_ctx.width / 2) - _ctx.offset};
   std::size_t width_right {(_ctx.width / 2) + _ctx.offset + (_ctx.width % 2 != 0 ? 1 : 0)};
@@ -785,313 +789,277 @@ void Tui::set_wait()
   }
 }
 
-int Tui::get_key() const
-{
-  int key {0};
-  int ec = read(STDIN_FILENO, &key, 1);
-
-  if ((ec == -1) && (errno != EAGAIN))
-  {
-    throw std::runtime_error("read failed");
-  }
-
-  // esc / esc sequence
-  if (key == 27)
-  {
-    char seq[3];
-    if (read(STDIN_FILENO, &seq[0], 1) != 1)
-    {
-      return key;
-    }
-
-    if (read(STDIN_FILENO, &seq[1], 1) != 1)
-    {
-      return key;
-    }
-
-    if (seq[0] == '[')
-    {
-      if (seq[1] >= '0' && seq[1] <= '9')
-      {
-        if (read(STDIN_FILENO, &seq[2], 1) != 1)
-        {
-          return key;
-        }
-
-        if (seq[2] == '~')
-        {
-          switch (seq[1])
-          {
-            case '3':
-            {
-              // key_del
-              return Key::del;
-            }
-
-            default:
-            {
-              return key;
-            }
-          }
-        }
-      }
-      else
-      {
-        switch (seq[1])
-        {
-          case 'A':
-          {
-            // key_up
-            return Key::up;
-          }
-
-          case 'B':
-          {
-            // key_down
-            return Key::down;
-          }
-
-          case 'C':
-          {
-            return Key::right;
-          }
-
-          case 'D':
-          {
-            return Key::left;
-          }
-
-          default:
-          {
-            return key;
-          }
-        }
-      }
-    }
-  }
-
-  return key;
-}
-
 void Tui::get_input(int& wait)
 {
-  int key {0};
   bool single {true};
-  while ((key = get_key()) > 0)
+  char32_t key {0};
+  while ((key = OB::Term::get_key(&_ctx.keybuf)) > 0)
   {
     // set input char value
-    if (_ctx.chars.at(0) == '\0')
+    if (_ctx.chars.at(0).val == 0)
     {
-      _ctx.chars.at(0) = key;
+      _ctx.chars.at(0) = OB::Text::Char32(key, _ctx.keybuf);
     }
     else
     {
-      _ctx.chars.at(1) = key;
-      key = _ctx.chars.at(0);
+      _ctx.chars.at(1) = OB::Text::Char32(key, _ctx.keybuf);
+      key = _ctx.chars.at(0).val;
     }
 
-    // quit
-    if (key == 'q' || key == 'Q')
+    switch (key)
     {
-      _ctx.is_running = false;
-      return;
-    }
-
-    // ctrl-c
-    else if (key == ctrl_key('c'))
-    {
-      _ctx.is_running = false;
-      return;
-    }
-
-    // enter
-    else if (key == ctrl_key('j'))
-    {
-      // ignore
-      _ctx.chars.fill('\0');
-    }
-
-    // esc
-    else if (key == ctrl_key('['))
-    {
-      // pause
-      pause();
-      _ctx.prompt.count = 0;
-      _ctx.chars.fill('\0');
-    }
-
-    // goto beginning
-    else if (key == 'g')
-    {
-      if (_ctx.chars.at(1) == 'g')
+      case 'q': case 'Q':
       {
-        pause();
-        _fltrdr.begin();
-      }
-      else
-      {
-        single = false;
-      }
-    }
+        _ctx.is_running = false;
 
-    // goto end
-    else if (key == 'G')
-    {
-      pause();
-      _fltrdr.end();
-    }
-
-    // toggle play
-    else if (key == ' ')
-    {
-      if (_ctx.state.play)
-      {
-        pause();
-      }
-      else
-      {
-        play();
-
-        _ctx.chars.fill('\0');
-        wait = 0;
         return;
       }
-    }
 
-    // increase show prev word by one
-    else if (key == 'i')
-    {
-      _fltrdr.set_show_prev(_fltrdr.get_show_prev() + 1);
-    }
+      case OB::Term::ctrl_key('c'):
+      {
+        _ctx.is_running = false;
 
-    // decrease show prev word by one
-    else if (key == 'I')
-    {
-      _fltrdr.set_show_prev(_fltrdr.get_show_prev() - 1);
-    }
+        return;
+      }
 
-    // increase show next word by one
-    else if (key == 'o')
-    {
-      _fltrdr.set_show_next(_fltrdr.get_show_next() + 1);
-    }
+      case OB::Term::Key::escape:
+      {
+        // pause
+        pause();
+        _ctx.prompt.count = 0;
+        _ctx.chars.fill(OB::Text::Char32());
 
-    // decrease show next word by one
-    else if (key == 'O')
-    {
-      _fltrdr.set_show_next(_fltrdr.get_show_next() - 1);
-    }
+        break;
+      }
 
-    // search next current word
-    else if (key == '*')
-    {
-      pause();
-      _fltrdr.search(_fltrdr.word(), true);
-    }
+      // goto beginning
+      case 'g':
+      {
+        if (_ctx.chars.at(1).val == 'g')
+        {
+          pause();
+          _fltrdr.begin();
+        }
+        else
+        {
+          single = false;
+        }
 
-    // search prev current word
-    else if (key == '#')
-    {
-      pause();
-      _fltrdr.search(_fltrdr.word(), false);
-    }
+        break;
+      }
 
-    // search next
-    else if (key == 'n')
-    {
-      pause();
-      _fltrdr.search_next();
-    }
+      // goto end
+      case 'G':
+      {
+        pause();
+        _fltrdr.end();
 
-    // search prev
-    else if (key == 'N')
-    {
-      pause();
-      _fltrdr.search_prev();
-    }
+        break;
+      }
 
-    // move index backwards
-    else if (key == 'h' || key == Key::left)
-    {
-      pause();
-      _fltrdr.prev_word();
-    }
+      // toggle play
+      case OB::Term::Key::space:
+      {
+        if (_ctx.state.play)
+        {
+          pause();
+        }
+        else
+        {
+          play();
 
-    // move index forwards
-    else if (key == 'l' || key == Key::right)
-    {
-      pause();
-      _fltrdr.next_word();
-    }
+          _ctx.chars.fill(OB::Text::Char32());
+          wait = 0;
 
-    // move sentence backwards
-    else if (key == 'H')
-    {
-      pause();
-      _fltrdr.prev_sentence();
-    }
+          return;
+        }
 
-    // move sentence forwards
-    else if (key == 'L')
-    {
-      pause();
-      _fltrdr.next_sentence();
-    }
+        break;
+      }
 
-    // increase wpm
-    else if (key == 'k' || key == Key::up)
-    {
-      _fltrdr.inc_wpm();
-    }
+      // increase show prev word by one
+      case 'i':
+      {
+        _fltrdr.set_show_prev(_fltrdr.get_show_prev() + 1);
 
-    // decrease wpm
-    else if (key == 'j' || key == Key::down)
-    {
-      _fltrdr.dec_wpm();
-    }
+        break;
+      }
 
-    // move chapter backwards
-    else if (key == 'J')
-    {
-      pause();
-      _fltrdr.prev_chapter();
-    }
+      // decrease show prev word by one
+      case 'I':
+      {
+        _fltrdr.set_show_prev(_fltrdr.get_show_prev() - 1);
 
-    // move chapter forwards
-    else if (key == 'K')
-    {
-      pause();
-      _fltrdr.next_chapter();
-    }
+        break;
+      }
 
-    // toggle extra words
-    else if (key == 'v')
-    {
-      _fltrdr.set_show_line(! _fltrdr.get_show_line());
-    }
+      // increase show next word by one
+      case 'o':
+      {
+        _fltrdr.set_show_next(_fltrdr.get_show_next() + 1);
 
-    // command prompt
-    else if (key == ':')
-    {
-      pause();
-      command_prompt();
-      _ctx.chars.fill('\0');
-    }
+        break;
+      }
 
-    // search forward
-    else if (key == '/')
-    {
-      pause();
-      search_forward();
-      _ctx.chars.fill('\0');
-    }
+      // decrease show next word by one
+      case 'O':
+      {
+        _fltrdr.set_show_next(_fltrdr.get_show_next() - 1);
 
-    // search backward
-    else if (key == '?')
-    {
-      pause();
-      search_backward();
-      _ctx.chars.fill('\0');
+        break;
+      }
+
+      // search next current word
+      case '*':
+      {
+        pause();
+        _fltrdr.search(_fltrdr.word(), true);
+
+        break;
+      }
+
+      // search prev current word
+      case '#':
+      {
+        pause();
+        _fltrdr.search(_fltrdr.word(), false);
+
+        break;
+      }
+
+      // search next
+      case 'n':
+      {
+        pause();
+        _fltrdr.search_next();
+
+        break;
+      }
+
+      // search prev
+      case 'N':
+      {
+        pause();
+        _fltrdr.search_prev();
+
+        break;
+      }
+
+      // move index backwards
+      case 'h': case OB::Term::Key::left:
+      {
+        pause();
+        _fltrdr.prev_word();
+
+        break;
+      }
+
+      // move index forwards
+      case 'l': case OB::Term::Key::right:
+      {
+        pause();
+        _fltrdr.next_word();
+
+        break;
+      }
+
+      // move sentence backwards
+      case 'H':
+      {
+        pause();
+        _fltrdr.prev_sentence();
+
+        break;
+      }
+
+      // move sentence forwards
+      case 'L':
+      {
+        pause();
+        _fltrdr.next_sentence();
+
+        break;
+      }
+
+      // increase wpm
+      case 'k': case OB::Term::Key::up:
+      {
+        _fltrdr.inc_wpm();
+
+        break;
+      }
+
+      // decrease wpm
+      case 'j': case OB::Term::Key::down:
+      {
+        _fltrdr.dec_wpm();
+
+        break;
+      }
+
+      // move chapter backwards
+      case 'J':
+      {
+        pause();
+        _fltrdr.prev_chapter();
+
+        break;
+      }
+
+      // move chapter forwards
+      case 'K':
+      {
+        pause();
+        _fltrdr.next_chapter();
+
+        break;
+      }
+
+      // toggle extra words
+      case 'v':
+      {
+        _fltrdr.set_show_line(! _fltrdr.get_show_line());
+
+        break;
+      }
+
+      // command prompt
+      case ':':
+      {
+        pause();
+        command_prompt();
+        _ctx.chars.fill(OB::Text::Char32());
+
+        break;
+      }
+
+      // search forward
+      case '/':
+      {
+        pause();
+        search_forward();
+        _ctx.chars.fill(OB::Text::Char32());
+
+        break;
+      }
+
+      // search backward
+      case '?':
+      {
+        pause();
+        search_backward();
+        _ctx.chars.fill(OB::Text::Char32());
+
+        break;
+      }
+
+      default:
+      {
+        // ignore
+        _ctx.chars.fill(OB::Text::Char32());
+
+        break;
+      }
     }
 
     // render new content
@@ -1102,7 +1070,7 @@ void Tui::get_input(int& wait)
 
     if (single)
     {
-      _ctx.chars.fill('\0');
+      _ctx.chars.fill(OB::Text::Char32());
     }
   }
 }
@@ -2158,11 +2126,6 @@ void Tui::search_backward()
   std::cout
   << aec::cursor_load
   << std::flush;
-}
-
-int Tui::ctrl_key(int const c) const
-{
-  return (c & 0x1f);
 }
 
 int Tui::screen_size()

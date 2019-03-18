@@ -37,8 +37,8 @@ public:
   void begin();
   void end();
 
-  OB::Text buf_prev(std::size_t offset = 0);
-  OB::Text buf_next(std::size_t offset = 0);
+  OB::Text::View buf_prev(std::size_t offset = 0);
+  OB::Text::View buf_next(std::size_t offset = 0);
 
   void set_focus_point();
 
@@ -69,7 +69,7 @@ public:
 
   std::size_t progress();
 
-  OB::Text word();
+  OB::Text::View word();
   void current_word();
   bool prev_word();
   bool next_word();
@@ -109,7 +109,7 @@ private:
 
     // text buffer
     std::string str;
-    OB::Text text;
+    OB::Text::View text;
 
     // current rendered line
     Line line;
@@ -127,10 +127,10 @@ private:
     std::size_t index_max {1};
 
     // current word
-    OB::Text word;
+    OB::Text::View word;
 
-    OB::Text prev;
-    OB::Text next;
+    OB::Text::View prev;
+    OB::Text::View next;
 
     // words per minute
     int const wpm_diff {10};
@@ -153,13 +153,13 @@ private:
 
     struct Search
     {
-      OB::Regex it;
+      OB::Text::Regex it;
       std::string rx;
       bool forward {true};
     } search;
 
     // sentence end characters
-    OB::UString sentence_end {".!?"};
+    OB::Text::String sentence_end {".!?"};
   } _ctx;
 
   bool search_forward();

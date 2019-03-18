@@ -44,16 +44,16 @@ bool Fltrdr::parse(std::istream& input)
 {
   init();
 
-  OB::UString word;
+  OB::Text::String word;
   std::size_t word_count {0};
 
-  while (input >> std::ws >> word.str)
+  while (input >> std::ws >> word)
   {
     word.sync();
 
-    if (word.txt.size() > 1 && word.txt.cols() == word.txt.size() * 2)
+    if (word.size() > 1 && word.cols() == word.size() * 2)
     {
-      for (auto const& e : word.txt)
+      for (auto const& e : word)
       {
         _ctx.str += " " + std::string(e.str);
         ++word_count;
@@ -61,10 +61,9 @@ bool Fltrdr::parse(std::istream& input)
     }
     else
     {
-      _ctx.str += " " + word.str;
+      _ctx.str.append(" " + word.str());
       ++word_count;
     }
-
   }
 
   if (word_count == 0)
@@ -107,7 +106,7 @@ Fltrdr& Fltrdr::screen_size(std::size_t const width, std::size_t const height)
   return *this;
 }
 
-OB::Text Fltrdr::buf_prev(std::size_t offset)
+OB::Text::View Fltrdr::buf_prev(std::size_t offset)
 {
   if (! _ctx.pos)
   {
@@ -115,8 +114,14 @@ OB::Text Fltrdr::buf_prev(std::size_t offset)
   }
 
   auto const width = (_ctx.width / 2) - 1 - offset;
-  auto pos = _ctx.pos + 1;
   auto size = static_cast<int>(width - _ctx.prefix_width);
+
+  if (size < 1)
+  {
+    return {};
+  }
+
+  auto pos = _ctx.pos + 1;
   auto count = size;
 
   while (pos && count)
@@ -145,7 +150,7 @@ OB::Text Fltrdr::buf_prev(std::size_t offset)
   {
     pos = _ctx.text.rfind(" "s, static_cast<std::size_t>(--pos));
 
-    if (pos <= min || pos == OB::Text::npos || pos == 0)
+    if (pos <= min || pos == OB::Text::String::npos || pos == 0)
     {
       break;
     }
@@ -158,31 +163,31 @@ OB::Text Fltrdr::buf_prev(std::size_t offset)
   return _ctx.text.substr(start, len);
 }
 
-OB::Text Fltrdr::buf_next(std::size_t offset)
+OB::Text::View Fltrdr::buf_next(std::size_t offset)
 {
   auto pos = _ctx.text.find(" "s, static_cast<std::size_t>(_ctx.pos + 1));
   auto const start = pos;
 
-  if (pos == OB::Text::npos)
+  if (pos == OB::Text::String::npos)
   {
     return {};
   }
 
   auto const width = (_ctx.width / 2) + 1 + offset;
-  auto p = pos;
   auto size = static_cast<int>(width - (_ctx.word.size() - _ctx.prefix_width));
+
+  if (size < 1)
+  {
+    return {};
+  }
 
   if (_ctx.width % 2 != 0)
   {
     ++size;
   }
 
+  auto p = pos;
   auto count = size;
-
-  if (size < 1)
-  {
-    return {};
-  }
 
   while (++count != size && ++p != _ctx.text.size() - 1);
 
@@ -197,7 +202,7 @@ OB::Text Fltrdr::buf_next(std::size_t offset)
   {
     pos = _ctx.text.find(" "s, ++pos);
 
-    if (pos - start + 1 >= max || pos == OB::Text::npos)
+    if (pos - start + 1 >= max || pos == OB::Text::String::npos)
     {
       pos = _ctx.text.size() - 1;
 
@@ -264,11 +269,7 @@ void Fltrdr::set_focus_point()
   }
 
   // calc display columns needed up to focus point position
-  _ctx.prefix_width = 0;
-  for (std::size_t i = 0; i < _ctx.focus_point; ++i)
-  {
-    _ctx.prefix_width += _ctx.word.at(i).cols;
-  }
+  _ctx.prefix_width = _ctx.word.at(_ctx.focus_point).tcols;
 }
 
 void Fltrdr::set_line(std::size_t offset)
@@ -340,10 +341,10 @@ void Fltrdr::prev_sentence()
   }
 
   prev_word();
-  if (_ctx.word.find_first_of(_ctx.sentence_end.txt) != OB::Text::npos)
+  if (_ctx.word.find_first_of(_ctx.sentence_end) != OB::Text::String::npos)
   {
     prev_word();
-    if (_ctx.word.find_first_of(_ctx.sentence_end.txt) != OB::Text::npos)
+    if (_ctx.word.find_first_of(_ctx.sentence_end) != OB::Text::String::npos)
     {
       next_word();
       return;
@@ -352,7 +353,7 @@ void Fltrdr::prev_sentence()
   while (_ctx.index > _ctx.index_min)
   {
     prev_word();
-    if (_ctx.word.find_first_of(_ctx.sentence_end.txt) != OB::Text::npos)
+    if (_ctx.word.find_first_of(_ctx.sentence_end) != OB::Text::String::npos)
     {
       next_word();
       break;
@@ -369,7 +370,7 @@ void Fltrdr::next_sentence()
 
   while (_ctx.index < _ctx.index_max)
   {
-    if (_ctx.word.find_first_of(_ctx.sentence_end.txt) != OB::Text::npos)
+    if (_ctx.word.find_first_of(_ctx.sentence_end) != OB::Text::String::npos)
     {
       next_word();
       break;
@@ -412,7 +413,7 @@ void Fltrdr::next_chapter()
   }
 }
 
-OB::Text Fltrdr::word()
+OB::Text::View Fltrdr::word()
 {
   return _ctx.word;
 }
@@ -420,7 +421,7 @@ OB::Text Fltrdr::word()
 void Fltrdr::current_word()
 {
   auto const pos = _ctx.text.find(" "s, _ctx.pos + 1);
-  if (pos != OB::Text::npos)
+  if (pos != OB::Text::String::npos)
   {
     _ctx.word = _ctx.text.substr(_ctx.pos + 1, pos - _ctx.pos - 1);
   }
@@ -437,7 +438,7 @@ bool Fltrdr::prev_word()
     --_ctx.index;
 
     auto const pos = _ctx.text.rfind(" "s, _ctx.pos - 1);
-    if (pos != OB::Text::npos)
+    if (pos != OB::Text::String::npos)
     {
       _ctx.pos = pos;
       current_word();
@@ -456,7 +457,7 @@ bool Fltrdr::next_word()
     ++_ctx.index;
 
     auto const pos = _ctx.text.find(" "s, _ctx.pos + 1);
-    if (pos != OB::Text::npos)
+    if (pos != OB::Text::String::npos)
     {
       _ctx.pos = pos;
       current_word();

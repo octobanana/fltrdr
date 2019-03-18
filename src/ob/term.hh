@@ -16,6 +16,7 @@
 #include <iostream>
 #include <sstream>
 #include <string>
+#include <string_view>
 #include <vector>
 #include <regex>
 #include <chrono>
@@ -30,65 +31,204 @@ namespace OB::Term
 
 enum Key
 {
-  up = 1000,
+  null = 0,
+  bell = 7,
+  tab = 9,
+  newline = 10,
+  enter = 13,
+  escape = 27,
+  space = 32,
+  backspace = 127,
+
+  up = 0xF0000,
   down,
   left,
   right,
-  del,
+  home,
+  end,
+  delete_,
+  insert,
+  page_up,
+  page_down
 };
 
-inline int ctrl_key(int const c)
+inline int constexpr ctrl_key(int const c)
 {
   return (c & 0x1f);
 }
 
-// NOTE term mode should be in raw state before call to this func
-inline int get_key()
+inline char32_t utf8_to_char32(std::string_view str)
 {
-  int key {0};
-  int ec = read(STDIN_FILENO, &key, 1);
+  if (str.empty())
+  {
+    return 0;
+  }
+
+  if ((str.at(0) & 0x80) == 0)
+  {
+    return static_cast<char32_t>(str.at(0));
+  }
+  else if ((str.at(0) & 0xE0) == 0xC0 && str.size() == 2)
+  {
+    return (static_cast<char32_t>(str[0] & 0x1F) << 6) |
+      static_cast<char32_t>(str[1] & 0x3F);
+  }
+  else if ((str.at(0) & 0xF0) == 0xE0 && str.size() == 3)
+  {
+    return (static_cast<char32_t>(str[0] & 0x0F) << 12) |
+      (static_cast<char32_t>(str[1] & 0x3F) << 6) |
+      static_cast<char32_t>(str[2] & 0x3F);
+  }
+  else if ((str.at(0) & 0xF8) == 0xF0 && str.size() == 4)
+  {
+    return (static_cast<char32_t>(str[0] & 0x07) << 18) |
+      (static_cast<char32_t>(str[1] & 0x3F) << 12) |
+      (static_cast<char32_t>(str[2] & 0x3F) << 6) |
+      static_cast<char32_t>(str[3] & 0x3F);
+  }
+
+  return 0;
+}
+
+inline char32_t get_key(std::string* str = nullptr)
+{
+  // NOTE term mode should be in raw state before call to this func
+
+  char c {0};
+  std::string key;
+  int ec = read(STDIN_FILENO, &c, 1);
 
   if ((ec == -1) && (errno != EAGAIN))
   {
     throw std::runtime_error("read failed");
   }
 
-  // esc / esc sequence
-  if (key == 27)
+  if (ec == 0)
   {
-    char seq[3];
-    if (read(STDIN_FILENO, &seq[0], 1) != 1)
+    return 0;
+  }
+
+  key += c;
+
+  // utf-8 multibyte code point
+  if (c & 0x80)
+  {
+    int i {1};
+
+    for (; i < 4; ++i)
     {
-      return key;
+      if (! (c & (0x80 >> i)))
+      {
+        break;
+      }
     }
 
-    if (read(STDIN_FILENO, &seq[1], 1) != 1)
+    for (; i > 1; --i)
     {
-      return key;
+      ec = read(STDIN_FILENO, &c, 1);
+
+      if ((ec == -1) && (errno != EAGAIN))
+      {
+        throw std::runtime_error("read failed");
+      }
+
+      if (ec != 1)
+      {
+        break;
+      }
+
+      key += c;
+    }
+
+    if (str != nullptr)
+    {
+      *str = key;
+    }
+
+    return utf8_to_char32(key);
+  }
+
+  // utf-8 single-byte code point
+  if (str != nullptr)
+  {
+    *str = key;
+  }
+
+  // esc / esc sequence
+  if (c == Key::escape)
+  {
+    char seq[3];
+    if ((ec = read(STDIN_FILENO, &seq[0], 1)) != 1)
+    {
+      if ((ec == -1) && (errno != EAGAIN))
+      {
+        throw std::runtime_error("read failed");
+      }
+
+      return static_cast<char32_t>(c);
+    }
+
+    if ((ec = read(STDIN_FILENO, &seq[1], 1)) != 1)
+    {
+      if ((ec == -1) && (errno != EAGAIN))
+      {
+        throw std::runtime_error("read failed");
+      }
+
+      return static_cast<char32_t>(c);
     }
 
     if (seq[0] == '[')
     {
       if (seq[1] >= '0' && seq[1] <= '9')
       {
-        if (read(STDIN_FILENO, &seq[2], 1) != 1)
+        if ((ec = read(STDIN_FILENO, &seq[2], 1)) != 1)
         {
-          return key;
+          if ((ec == -1) && (errno != EAGAIN))
+          {
+            throw std::runtime_error("read failed");
+          }
+
+          return static_cast<char32_t>(c);
         }
 
         if (seq[2] == '~')
         {
           switch (seq[1])
           {
+            case '1':
+            {
+              return Key::home;
+            }
+
+            case '2':
+            {
+              return Key::insert;
+            }
+
             case '3':
             {
-              // key_del
-              return Key::del;
+              return Key::delete_;
+            }
+
+            case '4':
+            {
+              return Key::end;
+            }
+
+            case '5':
+            {
+              return Key::page_up;
+            }
+
+            case '6':
+            {
+              return Key::page_down;
             }
 
             default:
             {
-              return key;
+              return static_cast<char32_t>(c);
             }
           }
         }
@@ -99,13 +239,11 @@ inline int get_key()
         {
           case 'A':
           {
-            // key_up
             return Key::up;
           }
 
           case 'B':
           {
-            // key_down
             return Key::down;
           }
 
@@ -121,14 +259,14 @@ inline int get_key()
 
           default:
           {
-            return key;
+            return static_cast<char32_t>(c);
           }
         }
       }
     }
   }
 
-  return key;
+  return static_cast<char32_t>(c);
 }
 
 class Stdin
@@ -298,7 +436,7 @@ private:
   int _min {0};
 }; // class Mode
 
-inline bool press_to_continue(std::string const& str = "ANY KEY", int val = 0)
+inline bool press_to_continue(std::string const& str = "ANY KEY", char32_t val = 0)
 {
   std::cerr
   << "Press " << str << " to continue";
@@ -308,7 +446,7 @@ inline bool press_to_continue(std::string const& str = "ANY KEY", int val = 0)
   _term_mode.set_raw();
 
   bool res {false};
-  int key {0};
+  char32_t key {0};
   if ((key = get_key()) > 0)
   {
     res = (val == 0 ? true : val == key);

@@ -11,7 +11,9 @@
 #include <cstdint>
 
 #include <string>
+#include <sstream>
 #include <string_view>
+#include <array>
 #include <vector>
 #include <limits>
 #include <memory>
@@ -19,16 +21,15 @@
 #include <iterator>
 #include <algorithm>
 
-namespace OB
+namespace OB::Text
 {
 
-template<typename T>
-class Basic_Text
+class View
 {
 public:
 
   using size_type = std::size_t;
-  using char_type = T;
+  using char_type = char;
   using string = std::basic_string<char_type>;
   using string_view = std::basic_string_view<char_type>;
   using brk_iter = icu::BreakIterator;
@@ -36,8 +37,9 @@ public:
 
   struct Ctx
   {
-    Ctx(size_type bytes_, size_type cols_, string_view str_) :
+    Ctx(size_type bytes_, size_type tcols_, size_type cols_, string_view str_) :
       bytes {bytes_},
+      tcols {tcols_},
       cols {cols_},
       str {str_}
     {
@@ -61,6 +63,7 @@ public:
     }
 
     size_type bytes {0};
+    size_type tcols {0};
     size_type cols {0};
     string_view str {};
   }; // struct Ctx
@@ -74,28 +77,28 @@ public:
   static auto constexpr iter_end {icu::BreakIterator::DONE};
   static size_type constexpr npos {std::numeric_limits<size_type>::max()};
 
-  Basic_Text() = default;
-  Basic_Text(Basic_Text<T>&&) = default;
-  Basic_Text(Basic_Text<T> const&) = default;
+  View() = default;
+  View(View&&) = default;
+  View(View const&) = default;
 
-  Basic_Text(string_view str)
+  View(string_view str)
   {
     this->str(str);
   }
 
-  ~Basic_Text() = default;
+  ~View() = default;
 
-  Basic_Text& operator=(Basic_Text<T>&&) = default;
-  Basic_Text& operator=(Basic_Text<T> const& obj) = default;
+  View& operator=(View&&) = default;
+  View& operator=(View const&) = default;
 
-  Basic_Text& operator=(string_view str)
+  View& operator=(string_view str)
   {
     this->str(str);
 
     return *this;
   }
 
-  friend std::ostream& operator<<(std::ostream& os, Basic_Text<T> const& obj)
+  friend std::ostream& operator<<(std::ostream& os, View const& obj)
   {
     os << obj.str();
 
@@ -107,19 +110,14 @@ public:
     return string(str());
   }
 
-  bool empty() const
-  {
-    return _str.empty();
-  }
-
-  Basic_Text<T>& str(string_view str)
+  View& str(string_view str)
   {
     _cols = 0;
     _size = 0;
     _bytes = 0;
 
-    _str.clear();
-    _str.shrink_to_fit();
+    _view.clear();
+    _view.shrink_to_fit();
 
     if (str.empty())
     {
@@ -160,7 +158,7 @@ public:
     }
 
     // reserve array size
-    _str.reserve(size);
+    _view.reserve(size);
 
     size = 0;
     UChar32 uch;
@@ -188,14 +186,14 @@ public:
         cols = 1;
       }
 
-      // increase total column count
-      _cols += cols;
-
       // get string size
       size = static_cast<size_type>(end - begin);
 
       // add character context to array
-      _str.emplace_back(_bytes, cols, string_view(str.data() + (_bytes * sizeof(char_type)), size));
+      _view.emplace_back(_bytes, _cols, cols, string_view(str.data() + (_bytes * sizeof(char_type)), size));
+
+      // increase total column count
+      _cols += cols;
 
       // increase total byte count
       _bytes += size;
@@ -210,17 +208,17 @@ public:
 
   string_view str() const
   {
-    if (_str.empty())
+    if (_view.empty())
     {
       return {};
     }
 
-    return string_view(_str.at(0).str.data(), _bytes);
+    return string_view(_view.at(0).str.data(), _bytes);
   }
 
-  value_type const& get() const
+  value_type const& view() const
   {
-    return _str;
+    return _view;
   }
 
   size_type byte_to_char(size_type pos) const
@@ -230,27 +228,69 @@ public:
       return npos;
     }
 
-    auto const it = std::lower_bound(_str.crbegin(), _str.crend(), pos,
+    auto const it = std::lower_bound(_view.crbegin(), _view.crend(), pos,
       [](auto const& lhs, auto const& rhs) {
         return lhs.bytes > rhs;
       });
 
-    if (it != _str.crend())
+    if (it != _view.crend())
     {
-      return static_cast<size_type>(std::distance(_str.cbegin(), it.base()) - 1);
+      return static_cast<size_type>(std::distance(_view.cbegin(), it.base()) - 1);
     }
 
     return npos;
   }
 
+  size_type char_to_byte(size_type pos) const
+  {
+    if (pos >= _size)
+    {
+      return npos;
+    }
+
+    auto const& ctx = _view.at(pos);
+
+    return ctx.bytes;
+  }
+
+  Ctx& operator[](size_type pos)
+  {
+    return _view[pos];
+  }
+
+  Ctx const& operator[](size_type pos) const
+  {
+    return _view[pos];
+  }
+
   Ctx& at(size_type pos)
   {
-    return _str.at(pos);
+    return _view.at(pos);
   }
 
   Ctx const& at(size_type pos) const
   {
-    return _str.at(pos);
+    return _view.at(pos);
+  }
+
+  Ctx& front()
+  {
+    return _view.front();
+  }
+
+  Ctx const& front() const
+  {
+    return _view.front();
+  }
+
+  Ctx& back()
+  {
+    return _view.back();
+  }
+
+  Ctx const& back() const
+  {
+    return _view.back();
   }
 
   string_view substr(size_type pos, size_type size = npos) const
@@ -273,13 +313,13 @@ public:
 
     for (size_type i = pos; i < size && i < _size; ++i)
     {
-      count += _str.at(i).str.size();
+      count += _view.at(i).str.size();
     }
 
-    return string_view(_str.at(pos).str.data(), count);
+    return string_view(_view.at(pos).str.data(), count);
   }
 
-  size_type find(string const& str, size_type pos = npos)
+  size_type find(string const& str, size_type pos = npos) const
   {
     if (pos == npos)
     {
@@ -294,7 +334,7 @@ public:
 
     for (size_type i = pos; i < _size; ++i)
     {
-      if (str == _str.at(i).str)
+      if (str == _view.at(i).str)
       {
         return i;
       }
@@ -303,7 +343,7 @@ public:
     return npos;
   }
 
-  size_type rfind(string const& str, size_type pos = npos)
+  size_type rfind(string const& str, size_type pos = npos) const
   {
     if (pos == npos)
     {
@@ -317,7 +357,7 @@ public:
 
     for (size_type i = pos; i != npos; --i)
     {
-      if (str == _str.at(i).str)
+      if (str == _view.at(i).str)
       {
         return i;
       }
@@ -326,7 +366,7 @@ public:
     return npos;
   }
 
-  size_type find_first_of(Basic_Text<T> const& str, size_type pos = npos)
+  size_type find_first_of(View const& str, size_type pos = npos) const
   {
     if (pos == npos)
     {
@@ -340,7 +380,7 @@ public:
 
     for (size_type i = pos; i < _size; ++i)
     {
-      auto const& lhs = _str.at(i).str;
+      auto const& lhs = _view.at(i).str;
 
       for (size_type j = 0; j < str.size(); ++j)
       {
@@ -354,7 +394,7 @@ public:
     return npos;
   }
 
-  size_type rfind_first_of(Basic_Text<T> const& str, size_type pos = npos)
+  size_type rfind_first_of(View const& str, size_type pos = npos) const
   {
     if (pos == npos)
     {
@@ -368,7 +408,7 @@ public:
 
     for (size_type i = pos; i != npos; --i)
     {
-      auto const& lhs = _str.at(i).str;
+      auto const& lhs = _view.at(i).str;
 
       for (size_type j = 0; j < str.size(); ++j)
       {
@@ -382,9 +422,14 @@ public:
     return npos;
   }
 
-  Basic_Text<T>& clear()
+  bool empty() const
   {
-    _str.clear();
+    return _view.empty();
+  }
+
+  View& clear()
+  {
+    _view.clear();
     _bytes = 0;
     _cols = 0;
     _size = 0;
@@ -392,16 +437,11 @@ public:
     return *this;
   }
 
-  Basic_Text<T>& shrink_to_fit()
+  View& shrink_to_fit()
   {
-    _str.shrink_to_fit();
+    _view.shrink_to_fit();
 
     return *this;
-  }
-
-  size_type cols() const
-  {
-    return _cols;
   }
 
   size_type size() const
@@ -419,147 +459,81 @@ public:
     return _bytes;
   }
 
+  size_type cols() const
+  {
+    return _cols;
+  }
+
+  size_type cols(size_type pos, size_type size = npos) const
+  {
+    if (pos >= _size)
+    {
+      return npos;
+    }
+
+    if (size == npos)
+    {
+      size = _size;
+    }
+    else
+    {
+      size += pos;
+    }
+
+    size_type count {0};
+
+    for (size_type i = pos; i < size && i < _size; ++i)
+    {
+      count += _view.at(i).cols;
+    }
+
+    return count;
+  }
+
   iterator begin()
   {
-    return _str.begin();
+    return _view.begin();
   }
 
   const_iterator cbegin() const
   {
-    return _str.cbegin();
+    return _view.cbegin();
   }
 
   reverse_iterator rbegin()
   {
-    return _str.rbegin();
+    return _view.rbegin();
   }
 
   const_reverse_iterator crbegin() const
   {
-    return _str.crbegin();
+    return _view.crbegin();
   }
 
   iterator end()
   {
-    return _str.end();
+    return _view.end();
   }
 
   const_iterator cend() const
   {
-    return _str.cend();
+    return _view.cend();
   }
 
   reverse_iterator rend()
   {
-    return _str.rend();
+    return _view.rend();
   }
 
   const_reverse_iterator crend() const
   {
-    return _str.crend();
-  }
-
-  static std::int32_t to_int32(string_view str)
-  {
-    UErrorCode ec = U_ZERO_ERROR;
-
-    std::unique_ptr<UText, decltype(&utext_close)> text (
-      utext_openUTF8(nullptr, str.data(), static_cast<std::int64_t>(str.size()), &ec),
-      utext_close);
-
-    if (U_FAILURE(ec))
-    {
-      throw std::runtime_error("failed to create utext");
-    }
-
-    return utext_char32At(text.get(), 0);
-  }
-
-  static bool is_quote(std::int32_t ch)
-  {
-    switch(ch)
-    {
-      case U'"': case U'\'': case U'«': case U'»': case U'‘': case U'’':
-      case U'‚': case U'‛': case U'“': case U'”': case U'„': case U'‟':
-      case U'‹': case U'›': case U'❛': case U'❜': case U'❝': case U'❞':
-      case U'❟': case U'❮': case U'❯': case U'⹂': case U'「': case U'」':
-      case U'『': case U'』': case U'〝': case U'〞': case U'〟': case U'＂':
-        return true;
-
-      default:
-        return false;
-    }
-  }
-
-  static bool is_upper(std::int32_t ch)
-  {
-    return u_isupper(ch);
-  }
-
-  static bool is_lower(std::int32_t ch)
-  {
-    return u_islower(ch);
-  }
-
-  static bool is_punct(std::int32_t ch)
-  {
-    return u_ispunct(ch);
-  }
-
-  static bool is_digit(std::int32_t ch)
-  {
-    return u_isdigit(ch);
-  }
-
-  static bool is_alpha(std::int32_t ch)
-  {
-    return u_isalpha(ch);
-  }
-
-  static bool is_alnum(std::int32_t ch)
-  {
-    return u_isalnum(ch);
-  }
-
-  static bool is_xdigit(std::int32_t ch)
-  {
-    return u_isxdigit(ch);
-  }
-
-  static bool is_blank(std::int32_t ch)
-  {
-    return u_isblank(ch);
-  }
-
-  static bool is_space(std::int32_t ch)
-  {
-    return u_isspace(ch);
-  }
-
-  static bool is_Whitespace(std::int32_t ch)
-  {
-    return u_isWhitespace(ch);
-  }
-
-  static bool is_cntrl(std::int32_t ch)
-  {
-    return u_iscntrl(ch);
-  }
-
-  static bool to_upper(std::int32_t ch)
-  {
-    return u_toupper(ch);
-  }
-
-  static bool to_lower(std::int32_t ch)
-  {
-    return u_tolower(ch);
+    return _view.crend();
   }
 
 private:
 
   // array of contexts mapping the string
-  value_type _str;
+  value_type _view;
 
   // number of columns needed to display the string
   size_type _cols {0};
@@ -569,9 +543,401 @@ private:
 
   // number of bytes in the string
   size_type _bytes {0};
-}; // class Text
+}; // class View
 
-using Text = Basic_Text<char>;
+class String
+{
+public:
+
+  using size_type = std::size_t;
+  using char_type = char;
+  using string = std::basic_string<char_type>;
+  using string_view = std::basic_string_view<char_type>;
+  using Ctx = View::Ctx;
+
+  using iterator = View::iterator;
+  using const_iterator = View::const_iterator;
+  using reverse_iterator = View::reverse_iterator;
+  using const_reverse_iterator = View::const_reverse_iterator;
+
+  static size_type constexpr npos {std::numeric_limits<size_type>::max()};
+
+  String(string const& str = {}):
+    _str {str},
+    _view {_str}
+  {
+  }
+
+  String(String&&) = default;
+  String(String const&) = default;
+  ~String() = default;
+
+  String& operator=(String&&) = default;
+  String& operator=(String const&) = default;
+
+  String& operator=(string_view str)
+  {
+    _str = string(str);
+    sync();
+
+    return *this;
+  }
+
+  String& operator=(string const& str)
+  {
+    _str = str;
+    sync();
+
+    return *this;
+  }
+
+  template<typename T>
+  String& operator<<(T const& obj)
+  {
+    std::ostringstream os;
+    os << obj;
+    append(os.str());
+
+    return *this;
+  }
+
+  friend std::ostream& operator<<(std::ostream& os, String const& obj)
+  {
+    os << obj._str;
+
+    return os;
+  }
+
+  friend std::istream& operator>>(std::istream& is, String& obj)
+  {
+    if (is >> obj._str)
+    {
+      obj.sync();
+    }
+    else
+    {
+      is.setstate(std::ios::failbit);
+    }
+
+    return is;
+  }
+
+  operator string()
+  {
+    return _str;
+  }
+
+  operator string_view()
+  {
+    return string_view(_str.data(), _str.size());
+  }
+
+  operator View()
+  {
+    return _view;
+  }
+
+  string const& str()
+  {
+    return _str;
+  }
+
+  String& str(string_view str)
+  {
+    _str = str;
+    sync();
+
+    return *this;
+  }
+
+  View const& view()
+  {
+    return _view;
+  }
+
+  String& sync()
+  {
+    _view.str(_str);
+
+    return *this;
+  }
+
+  size_type byte_to_char(size_type pos) const
+  {
+    return _view.byte_to_char(pos);
+  }
+
+  size_type char_to_byte(size_type pos) const
+  {
+    return _view.char_to_byte(pos);
+  }
+
+  String& append(string const& val)
+  {
+    _str.append(val);
+    sync();
+
+    return *this;
+  }
+
+  String& insert(size_type pos, string const& val)
+  {
+    pos = _view.char_to_byte(pos);
+    if (pos == npos)
+    {
+      pos = _str.size();
+    }
+
+    _str.insert(pos, val);
+    sync();
+
+    return *this;
+  }
+
+  String& erase(size_type pos, size_type size)
+  {
+    auto const get_pos = ([this, &pos]() {
+      auto const bpos = _view.char_to_byte(pos);
+      if (pos == npos)
+      {
+        return _str.size();
+      }
+      return bpos;
+    })();
+
+    _str.erase(get_pos, _view.substr(pos, size).size());
+    sync();
+
+    return *this;
+  }
+
+  String& replace(size_type pos, size_type size, string const& val)
+  {
+    erase(pos, size);
+    insert(pos, val);
+
+    return *this;
+  }
+
+  char const* data() const
+  {
+    return _str.data();
+  }
+
+  char* data()
+  {
+    return _str.data();
+  }
+
+  char const* c_str() const
+  {
+    return _str.data();
+  }
+
+  String& reserve(size_type size)
+  {
+    _str.reserve(size);
+
+    return *this;
+  }
+
+  size_type capacity() const
+  {
+    return _str.capacity();
+  }
+
+  size_type max_size() const
+  {
+    return _str.max_size();
+  }
+
+  Ctx& operator[](size_type pos)
+  {
+    return _view[pos];
+  }
+
+  Ctx const& operator[](size_type pos) const
+  {
+    return _view[pos];
+  }
+
+  Ctx& at(size_type pos)
+  {
+    return _view.at(pos);
+  }
+
+  Ctx const& at(size_type pos) const
+  {
+    return _view.at(pos);
+  }
+
+  Ctx& front()
+  {
+    return _view.front();
+  }
+
+  Ctx const& front() const
+  {
+    return _view.front();
+  }
+
+  Ctx& back()
+  {
+    return _view.back();
+  }
+
+  Ctx const& back() const
+  {
+    return _view.back();
+  }
+
+  string_view substr(size_type pos, size_type size = npos) const
+  {
+    return _view.substr(pos, size);
+  }
+
+  size_type find(string const& str, size_type pos = npos) const
+  {
+    return _view.find(str, pos);
+  }
+
+  size_type rfind(string const& str, size_type pos = npos) const
+  {
+    return _view.rfind(str, pos);
+  }
+
+  size_type find_first_of(View const& str, size_type pos = npos) const
+  {
+    return _view.find_first_of(str, pos);
+  }
+
+  size_type rfind_first_of(View const& str, size_type pos = npos) const
+  {
+    return _view.rfind_first_of(str, pos);
+  }
+
+  size_type empty() const
+  {
+    return _str.empty();
+  }
+
+  String& clear()
+  {
+    _view.clear();
+    _str.clear();
+
+    return *this;
+  }
+
+  String& shrink_to_fit()
+  {
+    _view.shrink_to_fit();
+    _str.shrink_to_fit();
+
+    return *this;
+  }
+
+  size_type size() const
+  {
+    return _view.size();
+  }
+
+  size_type length() const
+  {
+    return _view.size();
+  }
+
+  size_type bytes() const
+  {
+    return _view.bytes();
+  }
+
+  size_type cols() const
+  {
+    return _view.cols();
+  }
+
+  size_type cols(size_type pos, size_type size = npos) const
+  {
+    return _view.cols(pos, size);
+  }
+
+  iterator begin()
+  {
+    return _view.begin();
+  }
+
+  const_iterator cbegin() const
+  {
+    return _view.cbegin();
+  }
+
+  reverse_iterator rbegin()
+  {
+    return _view.rbegin();
+  }
+
+  const_reverse_iterator crbegin() const
+  {
+    return _view.crbegin();
+  }
+
+  iterator end()
+  {
+    return _view.end();
+  }
+
+  const_iterator cend() const
+  {
+    return _view.cend();
+  }
+
+  reverse_iterator rend()
+  {
+    return _view.rend();
+  }
+
+  const_reverse_iterator crend() const
+  {
+    return _view.crend();
+  }
+
+private:
+
+  string _str;
+  View _view;
+}; // class String
+
+class Char32
+{
+public:
+
+  Char32() = default;
+
+  Char32(char32_t val_, std::string const& str_) :
+    val {val_},
+    str {str_}
+  {
+  }
+
+  friend std::ostream& operator<<(std::ostream& os, Char32 const& obj)
+  {
+    os << obj.str;
+
+    return os;
+  }
+
+  Char32& clear()
+  {
+    val = 0;
+    str.clear();
+
+    return *this;
+  }
+
+  char32_t val {0};
+  std::string str;
+}; // class Char32
 
 class Regex
 {
@@ -616,7 +982,7 @@ public:
   ~Regex() = default;
 
   Regex& operator=(Regex&&) = default;
-  Regex& operator=(Regex const& obj) = default;
+  Regex& operator=(Regex const&) = default;
 
   Regex& match(string_view rx, string_view str)
   {
@@ -809,27 +1175,150 @@ private:
   size_type _size {0};
 }; // class Regex
 
-class UString
+inline std::int32_t to_int32(std::string_view str)
 {
-public:
-
-  UString(std::string const& val = {}):
-    str {val},
-    txt {str}
+  if (str.empty())
   {
+    return 0;
   }
 
-  UString& sync()
+  if ((str.at(0) & 0x80) == 0)
   {
-    txt.str(str);
-
-    return *this;
+    return static_cast<std::int32_t>(str.at(0));
+  }
+  else if ((str.at(0) & 0xE0) == 0xC0 && str.size() == 2)
+  {
+    return (static_cast<std::int32_t>(str[0] & 0x1F) << 6) |
+      static_cast<std::int32_t>(str[1] & 0x3F);
+  }
+  else if ((str.at(0) & 0xF0) == 0xE0 && str.size() == 3)
+  {
+    return (static_cast<std::int32_t>(str[0] & 0x0F) << 12) |
+      (static_cast<std::int32_t>(str[1] & 0x3F) << 6) |
+      static_cast<std::int32_t>(str[2] & 0x3F);
+  }
+  else if ((str.at(0) & 0xF8) == 0xF0 && str.size() == 4)
+  {
+    return (static_cast<std::int32_t>(str[0] & 0x07) << 18) |
+      (static_cast<std::int32_t>(str[1] & 0x3F) << 12) |
+      (static_cast<std::int32_t>(str[2] & 0x3F) << 6) |
+      static_cast<std::int32_t>(str[3] & 0x3F);
   }
 
-  std::string str;
-  Text txt;
-}; // class UString
+  return 0;
+}
 
-} // namespace OB
+inline bool is_quote(std::int32_t ch)
+{
+  switch(ch)
+  {
+    case U'"': case U'\'': case U'«': case U'»': case U'‘': case U'’':
+    case U'‚': case U'‛': case U'“': case U'”': case U'„': case U'‟':
+    case U'‹': case U'›': case U'❛': case U'❜': case U'❝': case U'❞':
+    case U'❟': case U'❮': case U'❯': case U'⹂': case U'「': case U'」':
+    case U'『': case U'』': case U'〝': case U'〞': case U'〟': case U'＂':
+      return true;
+
+    default:
+      return false;
+  }
+}
+
+inline bool is_upper(std::int32_t ch)
+{
+  return u_isupper(ch);
+}
+
+inline bool is_lower(std::int32_t ch)
+{
+  return u_islower(ch);
+}
+
+inline bool is_punct(std::int32_t ch)
+{
+  return u_ispunct(ch);
+}
+
+inline bool is_digit(std::int32_t ch)
+{
+  return u_isdigit(ch);
+}
+
+inline bool is_alpha(std::int32_t ch)
+{
+  return u_isalpha(ch);
+}
+
+inline bool is_alnum(std::int32_t ch)
+{
+  return u_isalnum(ch);
+}
+
+inline bool is_xdigit(std::int32_t ch)
+{
+  return u_isxdigit(ch);
+}
+
+inline bool is_blank(std::int32_t ch)
+{
+  return u_isblank(ch);
+}
+
+inline bool is_space(std::int32_t ch)
+{
+  return u_isspace(ch);
+}
+
+inline bool is_Whitespace(std::int32_t ch)
+{
+  return u_isWhitespace(ch);
+}
+
+inline bool is_ctrl(std::int32_t ch)
+{
+  return u_iscntrl(ch);
+}
+
+inline bool is_title(std::int32_t ch)
+{
+  return u_istitle(ch);
+}
+
+inline bool is_graph(std::int32_t ch)
+{
+  return u_isgraph(ch);
+}
+
+inline bool is_defined(std::int32_t ch)
+{
+  return u_isdefined(ch);
+}
+
+inline bool is_isoctrl(std::int32_t ch)
+{
+  return u_isISOControl(ch);
+}
+
+inline bool is_print(std::int32_t ch)
+{
+  return u_isprint(ch);
+}
+
+inline std::int32_t to_title(std::int32_t ch)
+{
+  return u_totitle(ch);
+}
+
+inline std::int32_t to_upper(std::int32_t ch)
+{
+  return u_toupper(ch);
+}
+
+inline std::int32_t to_lower(std::int32_t ch)
+{
+  return u_tolower(ch);
+}
+
+} // namespace OB::Text
 
 #endif // OB_TEXT_HH
