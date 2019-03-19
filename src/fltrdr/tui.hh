@@ -14,7 +14,6 @@ namespace aec = OB::Term::ANSI_Escape_Codes;
 #include <cstdint>
 #include <cstdlib>
 
-#include <array>
 #include <string>
 #include <vector>
 #include <sstream>
@@ -119,9 +118,9 @@ private:
       std::string mode {"FLTRDR"};
     } status;
 
-    // input char buffer
-    std::array<OB::Text::Char32, 2> chars;
-    std::string keybuf;
+    // input key buffers
+    OB::Text::Char32 key;
+    std::vector<OB::Text::Char32> keys;
 
     // command prompt
     struct Prompt

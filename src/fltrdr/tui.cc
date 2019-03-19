@@ -334,11 +334,6 @@ void Tui::event_loop()
         wait = 0;
       }
 
-      if (_ctx.chars.at(1).val != 0)
-      {
-        _ctx.chars.fill(OB::Text::Char32());
-      }
-
       get_input(wait);
     }
   }
@@ -561,14 +556,28 @@ void Tui::draw_content()
 
 void Tui::draw_keybuf()
 {
+  if (_ctx.keys.empty())
+  {
+    return;
+  }
+
   _ctx.buf
   << aec::cursor_save
   << aec::cursor_set(_ctx.width - 3, _ctx.height)
   << aec::erase_end
   << _ctx.style.secondary
-  << aec::space
-  << _ctx.chars.at(0)
-  << _ctx.chars.at(1)
+  << aec::space;
+
+  for (auto const& e : _ctx.keys)
+  {
+    if (OB::Text::is_print(static_cast<std::int32_t>(e.val)))
+    {
+      _ctx.buf
+      << e.str;
+    }
+  }
+
+  _ctx.buf
   << aec::space
   << aec::clear
   << aec::cursor_load;
@@ -612,7 +621,7 @@ void Tui::draw_prompt_message()
     << aec::cursor_save
     << aec::cursor_set(0, _ctx.height)
     << aec::wrap("?", _ctx.style.prompt)
-    << aec::wrap(_ctx.prompt.str.substr(0, _ctx.width - 2), _ctx.style.prompt_status)
+    << aec::wrap(_ctx.prompt.str.substr(0, _ctx.width - 5), _ctx.style.prompt_status)
     << aec::cursor_load;
   }
 }
@@ -791,26 +800,16 @@ void Tui::set_wait()
 
 void Tui::get_input(int& wait)
 {
-  bool single {true};
-  char32_t key {0};
-  while ((key = OB::Term::get_key(&_ctx.keybuf)) > 0)
+  while ((_ctx.key.val = OB::Term::get_key(&_ctx.key.str)) > 0)
   {
-    // set input char value
-    if (_ctx.chars.at(0).val == 0)
-    {
-      _ctx.chars.at(0) = OB::Text::Char32(key, _ctx.keybuf);
-    }
-    else
-    {
-      _ctx.chars.at(1) = OB::Text::Char32(key, _ctx.keybuf);
-      key = _ctx.chars.at(0).val;
-    }
+    _ctx.keys.emplace_back(_ctx.key);
 
-    switch (key)
+    switch (_ctx.keys.at(0).val)
     {
       case 'q': case 'Q':
       {
         _ctx.is_running = false;
+        _ctx.keys.clear();
 
         return;
       }
@@ -818,6 +817,7 @@ void Tui::get_input(int& wait)
       case OB::Term::ctrl_key('c'):
       {
         _ctx.is_running = false;
+        _ctx.keys.clear();
 
         return;
       }
@@ -827,7 +827,7 @@ void Tui::get_input(int& wait)
         // pause
         pause();
         _ctx.prompt.count = 0;
-        _ctx.chars.fill(OB::Text::Char32());
+        _ctx.keys.clear();
 
         break;
       }
@@ -835,14 +835,14 @@ void Tui::get_input(int& wait)
       // goto beginning
       case 'g':
       {
-        if (_ctx.chars.at(1).val == 'g')
+        if (_ctx.keys.size() < 2)
+        {
+          return;
+        }
+        else if (_ctx.keys.at(1).val == 'g')
         {
           pause();
           _fltrdr.begin();
-        }
-        else
-        {
-          single = false;
         }
 
         break;
@@ -860,6 +860,8 @@ void Tui::get_input(int& wait)
       // toggle play
       case OB::Term::Key::space:
       {
+        _ctx.keys.clear();
+
         if (_ctx.state.play)
         {
           pause();
@@ -867,8 +869,6 @@ void Tui::get_input(int& wait)
         else
         {
           play();
-
-          _ctx.chars.fill(OB::Text::Char32());
           wait = 0;
 
           return;
@@ -1028,7 +1028,7 @@ void Tui::get_input(int& wait)
       {
         pause();
         command_prompt();
-        _ctx.chars.fill(OB::Text::Char32());
+        _ctx.keys.clear();
 
         break;
       }
@@ -1038,7 +1038,7 @@ void Tui::get_input(int& wait)
       {
         pause();
         search_forward();
-        _ctx.chars.fill(OB::Text::Char32());
+        _ctx.keys.clear();
 
         break;
       }
@@ -1048,7 +1048,7 @@ void Tui::get_input(int& wait)
       {
         pause();
         search_backward();
-        _ctx.chars.fill(OB::Text::Char32());
+        _ctx.keys.clear();
 
         break;
       }
@@ -1056,9 +1056,11 @@ void Tui::get_input(int& wait)
       default:
       {
         // ignore
-        _ctx.chars.fill(OB::Text::Char32());
+        draw_keybuf();
+        refresh();
+        _ctx.keys.clear();
 
-        break;
+        return;
       }
     }
 
@@ -1067,11 +1069,7 @@ void Tui::get_input(int& wait)
     clear();
     draw();
     refresh();
-
-    if (single)
-    {
-      _ctx.chars.fill(OB::Text::Char32());
-    }
+    _ctx.keys.clear();
   }
 }
 
