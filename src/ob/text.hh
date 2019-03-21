@@ -844,7 +844,7 @@ public:
 
   size_type length() const
   {
-    return _view.size();
+    return _view.length();
   }
 
   size_type bytes() const
