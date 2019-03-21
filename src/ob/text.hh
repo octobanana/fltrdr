@@ -1269,7 +1269,7 @@ inline bool is_space(std::int32_t ch)
   return u_isspace(ch);
 }
 
-inline bool is_Whitespace(std::int32_t ch)
+inline bool is_whitespace(std::int32_t ch)
 {
   return u_isWhitespace(ch);
 }
