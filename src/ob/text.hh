@@ -516,6 +516,40 @@ public:
     return count;
   }
 
+  string_view colstr(size_type pos, size_type size = npos) const
+  {
+    if (pos >= _size)
+    {
+      return {};
+    }
+
+    if (size == npos)
+    {
+      size = _size;
+    }
+    else
+    {
+      size += pos;
+    }
+
+    size_type count {0};
+
+    for (size_type i = pos, cols = 0; i < _size; ++i)
+    {
+      auto const& ctx = _view.at(i);
+
+      if (cols + ctx.cols > size)
+      {
+        break;
+      }
+
+      cols += ctx.cols;
+      count += ctx.str.size();
+    }
+
+    return string_view(_view.at(pos).str.data(), count);
+  }
+
   iterator begin()
   {
     return _view.begin();
@@ -914,6 +948,11 @@ public:
   size_type cols(size_type pos, size_type size = npos) const
   {
     return _view.cols(pos, size);
+  }
+
+  string_view colstr(size_type pos, size_type size = npos) const
+  {
+    return _view.colstr(pos, size);
   }
 
   iterator begin()
