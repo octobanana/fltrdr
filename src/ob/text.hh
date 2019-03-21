@@ -459,6 +459,32 @@ public:
     return _bytes;
   }
 
+  size_type bytes(size_type pos, size_type size = npos) const
+  {
+    if (pos >= _size)
+    {
+      return npos;
+    }
+
+    if (size == npos)
+    {
+      size = _size;
+    }
+    else
+    {
+      size += pos;
+    }
+
+    size_type count {0};
+
+    for (size_type i = pos; i < size && i < _size; ++i)
+    {
+      count += _view.at(i).str.size();
+    }
+
+    return count;
+  }
+
   size_type cols() const
   {
     return _cols;
@@ -873,6 +899,11 @@ public:
   size_type bytes() const
   {
     return _view.bytes();
+  }
+
+  size_type bytes(size_type pos, size_type size = npos) const
+  {
+    return _view.bytes(pos, size);
   }
 
   size_type cols() const
