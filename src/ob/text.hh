@@ -568,12 +568,35 @@ public:
   {
   }
 
-  String(String&&) = default;
-  String(String const&) = default;
+  String(String&& obj)
+  {
+    _str = std::move(obj._str);
+    sync();
+  }
+
+  String(String const& obj)
+  {
+    _str = obj._str;
+    sync();
+  }
+
   ~String() = default;
 
-  String& operator=(String&&) = default;
-  String& operator=(String const&) = default;
+  String& operator=(String&& obj)
+  {
+    _str = std::move(obj._str);
+    sync();
+
+    return *this;
+  }
+
+  String& operator=(String const& obj)
+  {
+    _str = obj._str;
+    sync();
+
+    return *this;
+  }
 
   String& operator=(string_view str)
   {
