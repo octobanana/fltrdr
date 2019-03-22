@@ -720,7 +720,12 @@ public:
     return _view;
   }
 
-  string const& str()
+  string& str()
+  {
+    return _str;
+  }
+
+  string const& str() const
   {
     return _str;
   }
@@ -733,7 +738,12 @@ public:
     return *this;
   }
 
-  View const& view()
+  View& view()
+  {
+    return _view;
+  }
+
+  View const& view() const
   {
     return _view;
   }
