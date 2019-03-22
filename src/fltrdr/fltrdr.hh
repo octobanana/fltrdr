@@ -108,8 +108,7 @@ private:
     std::size_t prefix_width {0};
 
     // text buffer
-    std::string str;
-    OB::Text::View text;
+    OB::Text::String text;
 
     // current rendered line
     Line line;

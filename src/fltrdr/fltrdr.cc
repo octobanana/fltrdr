@@ -27,9 +27,6 @@ using namespace std::string_literals;
 
 void Fltrdr::init()
 {
-  _ctx.str.clear();
-  _ctx.str.shrink_to_fit();
-
   _ctx.text.clear();
   _ctx.text.shrink_to_fit();
 
@@ -53,29 +50,29 @@ bool Fltrdr::parse(std::istream& input)
     {
       for (auto const& e : word)
       {
-        _ctx.str += " " + std::string(e.str);
+        _ctx.text.str() += " " + std::string(e.str);
         ++word_count;
       }
     }
     else
     {
-      _ctx.str.append(" " + word.str());
+      _ctx.text.str() += " " + word.str();
       ++word_count;
     }
   }
 
   if (word_count == 0)
   {
-    _ctx.str = " fltrdr";
+    _ctx.text.str() = " fltrdr";
     ++word_count;
 
-    _ctx.text.str(_ctx.str);
+    _ctx.text.sync();
     _ctx.index_max = word_count;
 
     return false;
   }
 
-  _ctx.text.str(_ctx.str);
+  _ctx.text.sync();
   _ctx.index_max = word_count;
 
   return true;
@@ -736,7 +733,7 @@ bool Fltrdr::search(std::string const& rx, bool forward)
   {
     _ctx.search.forward = forward;
     _ctx.search.rx = rx;
-    _ctx.search.it.match(_ctx.search.rx, _ctx.str);
+    _ctx.search.it.match(_ctx.search.rx, _ctx.text.str());
 
     return search_next();
   }
