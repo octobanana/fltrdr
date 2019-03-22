@@ -49,8 +49,6 @@ bool Fltrdr::parse(std::istream& input)
 
   while (input >> std::ws >> word)
   {
-    word.sync();
-
     if (word.size() > 1 && word.cols() == word.size() * 2)
     {
       for (auto const& e : word)
