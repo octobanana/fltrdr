@@ -21,7 +21,8 @@ public:
 
   Readline() = default;
 
-  Readline& prompt(std::string const& str, std::vector<std::string> const& style = {});
+  Readline& style(std::string const& style = {});
+  Readline& prompt(std::string const& str, std::string const& style = {});
 
   std::string operator()(bool& is_running);
 
@@ -50,13 +51,18 @@ private:
   std::size_t _width {0};
   std::size_t _height {0};
 
+  struct Style
+  {
+    std::string prompt;
+    std::string input;
+  } _style;
+
   struct Prompt
   {
     std::string lhs;
     std::string rhs;
     std::string fmt;
     std::string str {":"};
-    std::vector<std::string> style;
   } _prompt;
 
   struct Input

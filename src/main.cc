@@ -112,6 +112,8 @@ int program_options(Parg& pg)
       meta style, sets the secondary colour of the program
     text
       meta style, sets the colours of all input text shown in the reader
+    background
+      set the background colour
     countdown
       set the text background colour shown to countdown
       after play is pressed and before the reader begins

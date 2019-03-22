@@ -45,6 +45,7 @@ private:
   void refresh();
 
   void draw();
+  void draw_background();
   void draw_content();
   void draw_border_top();
   void draw_border_bottom();
@@ -140,6 +141,8 @@ private:
 
     struct Style
     {
+      std::string bg {};
+
       std::string primary {aec::fg_black};
       std::string secondary {aec::fg_cyan};
       std::string background {aec::bg_cyan};

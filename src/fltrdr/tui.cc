@@ -364,6 +364,7 @@ void Tui::refresh()
 
 void Tui::draw()
 {
+  draw_background();
   draw_content();
   draw_border_top();
   draw_border_bottom();
@@ -371,6 +372,17 @@ void Tui::draw()
   draw_status();
   draw_prompt_message();
   draw_keybuf();
+}
+
+void Tui::draw_background()
+{
+  _ctx.buf
+  << aec::cursor_save
+  << aec::cursor_home
+  << _ctx.style.bg
+  << OB::String::repeat(_ctx.width * _ctx.height, " ")
+  << aec::clear
+  << aec::cursor_load;
 }
 
 void Tui::draw_content()
@@ -544,6 +556,7 @@ void Tui::draw_content()
   for (auto const& e : buf)
   {
     _ctx.buf
+    << _ctx.style.bg
     << e.before
     << e.value
     << e.after;
@@ -565,6 +578,9 @@ void Tui::draw_keybuf()
   << aec::cursor_save
   << aec::cursor_set(_ctx.width - 3, _ctx.height)
   << aec::erase_end
+  << _ctx.style.bg
+  << "    "
+  << aec::cursor_set(_ctx.width - 3, _ctx.height)
   << _ctx.style.secondary
   << aec::space;
 
@@ -600,10 +616,12 @@ void Tui::draw_progress_bar()
   << aec::cursor_save
   << aec::cursor_set(0, height)
   << aec::erase_line
+  << _ctx.style.bg
   << _ctx.style.progress_bar
   << OB::String::repeat(_ctx.width, _ctx.sym.progress)
   << aec::clear
   << aec::cr
+  << _ctx.style.bg
   << _ctx.style.progress_fill
   << OB::String::repeat((_fltrdr.progress() * _ctx.width) / 100, _ctx.sym.progress)
   << aec::clear
@@ -620,8 +638,11 @@ void Tui::draw_prompt_message()
     _ctx.buf
     << aec::cursor_save
     << aec::cursor_set(0, _ctx.height)
-    << aec::wrap("?", _ctx.style.prompt)
-    << aec::wrap(_ctx.prompt.str.substr(0, _ctx.width - 5), _ctx.style.prompt_status)
+    << _ctx.style.bg
+    << _ctx.style.prompt
+    << ">"
+    << _ctx.style.prompt_status
+    << _ctx.prompt.str.substr(0, _ctx.width - 5)
     << aec::cursor_load;
   }
 }
@@ -645,6 +666,7 @@ void Tui::draw_status()
   << _ctx.status.mode
   << aec::space
   << aec::clear
+  << _ctx.style.bg
   << aec::space;
   int const len_mode {2 + static_cast<int>(_ctx.status.mode.size())};
 
@@ -662,9 +684,9 @@ void Tui::draw_status()
   if (pad_center >= 0)
   {
     _ctx.buf
+    << _ctx.style.bg
     << _ctx.style.secondary
     << _ctx.file.name
-    << aec::clear
     << aec::space;
 
     while (pad_center--)
@@ -674,6 +696,7 @@ void Tui::draw_status()
     }
 
     _ctx.buf
+    << aec::clear
     << _ctx.style.background
     << _ctx.style.primary
     << aec::space
@@ -689,8 +712,8 @@ void Tui::draw_status()
       << _ctx.style.secondary
       << "<"
       << _ctx.file.name.substr(static_cast<std::size_t>(std::abs(len_center)) + 1)
-      << aec::clear
       << aec::space
+      << aec::clear
       << _ctx.style.background
       << _ctx.style.primary
       << aec::space
@@ -749,6 +772,7 @@ void Tui::draw_border_top()
   << aec::cursor_save
   << aec::cursor_set(0, height)
   << aec::erase_line
+  << _ctx.style.bg
   << _ctx.style.border
   << OB::String::repeat(_ctx.width, _ctx.sym.border_top)
   << aec::cursor_set(width, height)
@@ -771,6 +795,7 @@ void Tui::draw_border_bottom()
   << aec::cursor_save
   << aec::cursor_set(0, height)
   << aec::erase_line
+  << _ctx.style.bg
   << _ctx.style.border
   << OB::String::repeat(_ctx.width, _ctx.sym.border_bottom)
   << aec::cursor_set(width, height)
@@ -1270,6 +1295,29 @@ std::optional<std::pair<bool, std::string>> Tui::command(std::string const& inpu
     auto const match = std::move(match_opt.value().at(1));
     auto const bright = ! OB::String::trim(match_opt.value().at(2)).empty();
     _ctx.style.background = aec::str_to_bg_color(match, bright);
+  }
+
+  else if (match_opt = OB::String::match(input,
+    std::regex("^style\\s+background\\s+(#?[0-9a-fA-F]{6})$")))
+  {
+    // 24-bit color
+    auto const match = std::move(match_opt.value().at(1));
+    _ctx.style.bg = aec::bg_true(match);
+  }
+  else if (match_opt = OB::String::match(input,
+    std::regex("^style\\s+background\\s+([0-9]{1,3})$")))
+  {
+    // 8-bit color
+    auto const match = std::move(match_opt.value().at(1));
+    _ctx.style.bg = aec::bg_256(match);
+  }
+  else if (match_opt = OB::String::match(input,
+    std::regex("^style\\s+background\\s+(black|red|green|yellow|blue|magenta|cyan|white)(:?\\s+(bright))?$")))
+  {
+    // 4-bit color
+    auto const match = std::move(match_opt.value().at(1));
+    auto const bright = ! OB::String::trim(match_opt.value().at(2)).empty();
+    _ctx.style.bg = aec::str_to_bg_color(match, bright);
   }
 
   else if (match_opt = OB::String::match(input,
@@ -2007,6 +2055,13 @@ std::optional<std::pair<bool, std::string>> Tui::command(std::string const& inpu
 
 void Tui::command_prompt()
 {
+  // reset prompt message count
+  _ctx.prompt.count = 0;
+
+  // set prompt style
+  _readline.style(_ctx.style.secondary + _ctx.style.bg);
+  _readline.prompt(":", _ctx.style.prompt + _ctx.style.bg);
+
   std::cout
   << aec::cursor_save
   << aec::cursor_set(0, _ctx.height)
@@ -2014,36 +2069,31 @@ void Tui::command_prompt()
   << aec::cursor_show
   << std::flush;
 
-  // reset prompt message count
-  _ctx.prompt.count = 0;
-
   // read user input
-  _readline.prompt(":", std::vector {_ctx.style.prompt});
   auto input = _readline(_ctx.is_running);
 
   std::cout
   << aec::cursor_hide
-  << aec::cr
-  << aec::erase_line
+  << aec::cursor_load
   << std::flush;
 
   if (auto const res = command(input))
   {
     _ctx.style.prompt_status = res.value().first ? _ctx.style.success : _ctx.style.error;
     _ctx.prompt.str = res.value().second;
-    std::cout
-    << aec::wrap(">", _ctx.style.prompt)
-    << aec::wrap(_ctx.prompt.str.substr(0, _ctx.width - 2), _ctx.style.prompt_status);
     _ctx.prompt.count = _ctx.prompt.timeout;
   }
-
-  std::cout
-  << aec::cursor_load
-  << std::flush;
 }
 
 void Tui::search_forward()
 {
+  // reset prompt message count
+  _ctx.prompt.count = 0;
+
+  // set prompt style
+  _readline_search.style(_ctx.style.secondary + _ctx.style.bg);
+  _readline_search.prompt("/", _ctx.style.prompt + _ctx.style.bg);
+
   std::cout
   << aec::cursor_save
   << aec::cursor_set(0, _ctx.height)
@@ -2051,41 +2101,37 @@ void Tui::search_forward()
   << aec::cursor_show
   << std::flush;
 
-  // reset prompt message count
-  _ctx.prompt.count = 0;
-
   // read user input
-  _readline_search.prompt("/", std::vector {_ctx.style.prompt});
   auto input {_readline_search(_ctx.is_running)};
 
   std::cout
   << aec::cursor_hide
-  << aec::cr
-  << aec::erase_line
+  << aec::cursor_load
   << std::flush;
 
   if (! _ctx.is_running)
   {
     _ctx.is_running = false;
+
     return;
   }
-
   else if (! input.empty() && ! _fltrdr.search(input, true))
   {
+    _ctx.style.prompt_status = _ctx.style.error;
     _ctx.prompt.str = input;
-    std::cout
-    << aec::wrap("?", _ctx.style.prompt)
-    << aec::wrap(_ctx.prompt.str.substr(0, _ctx.width - 2), _ctx.style.error);
-    _ctx.prompt.count = _ctx.state.wait / _ctx.input_interval;
+    _ctx.prompt.count = _ctx.prompt.timeout;
   }
-
-  std::cout
-  << aec::cursor_load
-  << std::flush;
 }
 
 void Tui::search_backward()
 {
+  // reset prompt message count
+  _ctx.prompt.count = 0;
+
+  // set prompt style
+  _readline_search.style(_ctx.style.secondary + _ctx.style.bg);
+  _readline_search.prompt("?", _ctx.style.prompt + _ctx.style.bg);
+
   std::cout
   << aec::cursor_save
   << aec::cursor_set(0, _ctx.height)
@@ -2093,37 +2139,26 @@ void Tui::search_backward()
   << aec::cursor_show
   << std::flush;
 
-  // reset prompt message count
-  _ctx.prompt.count = 0;
-
   // read user input
-  _readline_search.prompt("?", std::vector {_ctx.style.prompt});
   auto input {_readline_search(_ctx.is_running)};
 
   std::cout
   << aec::cursor_hide
-  << aec::cr
-  << aec::erase_line
+  << aec::cursor_load
   << std::flush;
 
   if (! _ctx.is_running)
   {
     _ctx.is_running = false;
+
     return;
   }
-
   else if (! input.empty() && ! _fltrdr.search(input, false))
   {
+    _ctx.style.prompt_status = _ctx.style.error;
     _ctx.prompt.str = input;
-    std::cout
-    << aec::wrap("?", _ctx.style.prompt)
-    << aec::wrap(_ctx.prompt.str.substr(0, _ctx.width - 2), _ctx.style.error);
-    _ctx.prompt.count = _ctx.state.wait / _ctx.input_interval;
+    _ctx.prompt.count = _ctx.prompt.timeout;
   }
-
-  std::cout
-  << aec::cursor_load
-  << std::flush;
 }
 
 int Tui::screen_size()

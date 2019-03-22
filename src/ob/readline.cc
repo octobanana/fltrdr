@@ -20,10 +20,17 @@ namespace aec = OB::Term::ANSI_Escape_Codes;
 namespace OB
 {
 
-Readline& Readline::prompt(std::string const& str, std::vector<std::string> const& style)
+Readline& Readline::style(std::string const& style)
+{
+  _style.input = style;
+
+  return *this;
+}
+
+Readline& Readline::prompt(std::string const& str, std::string const& style)
 {
   _prompt.str = str;
-  _prompt.style = style;
+  _style.prompt = style;
   _prompt.fmt = aec::wrap(str, style);
 
   return *this;
@@ -66,7 +73,7 @@ void Readline::refresh()
         _input.cur = 0;
       }
 
-      _prompt.lhs = aec::wrap("<", _prompt.style);
+      _prompt.lhs = aec::wrap("<", _style.prompt);
     }
     else
     {
@@ -89,7 +96,7 @@ void Readline::refresh()
     {
       _prompt.rhs = aec::wrap(
         OB::String::repeat(_width - _input.fmt.cols() - 2, " ") + ">",
-        _prompt.style);
+        _style.prompt);
     }
   }
   else
@@ -107,8 +114,13 @@ void Readline::refresh()
   << aec::cursor_hide
   << aec::cr
   << aec::erase_line
+  << _style.input
+  << OB::String::repeat(_width, " ")
+  << aec::cr
   << _prompt.lhs
+  << _style.input
   << _input.fmt
+  << aec::clear
   << _prompt.rhs
   << aec::cursor_set(_input.cur + 2, _height)
   << aec::cursor_show
@@ -135,6 +147,11 @@ std::string Readline::operator()(bool& is_running)
   auto wait {std::chrono::milliseconds(50)};
 
   std::cout
+  << aec::cr
+  << aec::erase_line
+  << _style.input
+  << OB::String::repeat(_width, " ")
+  << aec::cr
   << _prompt.fmt
   << std::flush;
 
