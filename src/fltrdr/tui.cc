@@ -437,7 +437,6 @@ void Tui::draw_content()
   }
 
   // number of display columns used
-  // reset to 0 for each segment of the line (prev, curr, next)
   std::size_t cols {0};
 
   // add line prev to buf
@@ -450,8 +449,11 @@ void Tui::draw_content()
     cols += val.cols;
     if (cols > prev.size())
     {
+      cols -= val.cols;
+
       // add padding
-      buf.at(i).value = OB::String::repeat(prev.size() - (cols - val.cols), " ");
+      buf.at(i).value = OB::String::repeat(prev.size() - cols, " ");
+      cols = prev.size();
 
       break;
     }
@@ -478,15 +480,16 @@ void Tui::draw_content()
   }
 
   // add line curr to buf
-  cols = 0;
   bool highlight {false};
   for (std::size_t i = 0; i < curr.size(); ++i)
   {
     auto const val = curr.at(i);
 
     cols += val.cols;
-    if (cols > prev.size() + curr.size())
+    if (cols > buf.size())
     {
+      cols -= val.cols;
+
       break;
     }
 
@@ -498,7 +501,7 @@ void Tui::draw_content()
 
     buf.at(it).value = val.str;
 
-    if (! highlight && cols + prev.size() >= width_left)
+    if (! highlight && cols >= width_left)
     {
       highlight = true;
       buf.at(it).before += _ctx.style.word_highlight;
@@ -518,18 +521,24 @@ void Tui::draw_content()
   }
 
   // add line next to buf
-  cols = 0;
   for (std::size_t i = 0; i < next.size(); ++i)
   {
     auto const val = next.at(i);
 
+    auto const it = i + prev.size() + curr.size();
+
     cols += val.cols;
     if (cols > buf.size())
     {
-      break;
-    }
+      cols -= val.cols;
 
-    auto const it = i + prev.size() + curr.size();
+      // add padding
+      buf.at(it).value = OB::String::repeat(buf.size() - cols, " ");
+      cols = buf.size();
+
+      break;
+
+    }
 
     buf.at(it).value = val.str;
 
