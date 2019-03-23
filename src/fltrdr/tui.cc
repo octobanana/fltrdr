@@ -586,7 +586,6 @@ void Tui::draw_keybuf()
   _ctx.buf
   << aec::cursor_save
   << aec::cursor_set(_ctx.width - 3, _ctx.height)
-  << aec::erase_end
   << _ctx.style.bg
   << "    "
   << aec::cursor_set(_ctx.width - 3, _ctx.height)
