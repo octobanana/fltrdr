@@ -1710,23 +1710,19 @@ std::optional<std::pair<bool, std::string>> Tui::command(std::string const& inpu
     if (match.empty())
     {
       _ctx.sym.progress = " ";
-    }
-    else if (match.size() > 1)
-    {
-      for (std::size_t i = 1; i < match.size(); ++i)
-      {
-        if (! (match.at(i) & 0x80))
-        {
-          return std::make_pair(false, "error: invalid symbol '" + match + "'");
-        }
-      }
 
-      _ctx.sym.progress = match;
+      return {};
     }
-    else
+
+    OB::Text::View view {match};
+
+    if (view.size() != 1 || view.cols() > 1 ||
+      ! OB::Text::is_graph(OB::Text::to_int32(view.front())))
     {
-      _ctx.sym.progress = match;
+      return std::make_pair(false, "error: invalid symbol '" + match + "'");
     }
+
+    _ctx.sym.progress = match;
   }
 
   else if (match_opt = OB::String::match(input,
@@ -1737,23 +1733,19 @@ std::optional<std::pair<bool, std::string>> Tui::command(std::string const& inpu
     if (match.empty())
     {
       _ctx.sym.border_top = " ";
-    }
-    else if (match.size() > 1)
-    {
-      for (std::size_t i = 1; i < match.size(); ++i)
-      {
-        if (! (match.at(i) & 0x80))
-        {
-          return std::make_pair(false, "error: invalid symbol '" + match + "'");
-        }
-      }
 
-      _ctx.sym.border_top = match;
+      return {};
     }
-    else
+
+    OB::Text::View view {match};
+
+    if (view.size() != 1 || view.cols() > 1 ||
+      ! OB::Text::is_graph(OB::Text::to_int32(view.front())))
     {
-      _ctx.sym.border_top = match;
+      return std::make_pair(false, "error: invalid symbol '" + match + "'");
     }
+
+    _ctx.sym.border_top = match;
   }
 
   else if (match_opt = OB::String::match(input,
@@ -1764,23 +1756,19 @@ std::optional<std::pair<bool, std::string>> Tui::command(std::string const& inpu
     if (match.empty())
     {
       _ctx.sym.border_top_mark = " ";
-    }
-    else if (match.size() > 1)
-    {
-      for (std::size_t i = 1; i < match.size(); ++i)
-      {
-        if (! (match.at(i) & 0x80))
-        {
-          return std::make_pair(false, "error: invalid symbol '" + match + "'");
-        }
-      }
 
-      _ctx.sym.border_top_mark = match;
+      return {};
     }
-    else
+
+    OB::Text::View view {match};
+
+    if (view.size() != 1 || view.cols() > 1 ||
+      ! OB::Text::is_graph(OB::Text::to_int32(view.front())))
     {
-      _ctx.sym.border_top_mark = match;
+      return std::make_pair(false, "error: invalid symbol '" + match + "'");
     }
+
+    _ctx.sym.border_top_mark = match;
   }
 
   else if (match_opt = OB::String::match(input,
@@ -1791,23 +1779,19 @@ std::optional<std::pair<bool, std::string>> Tui::command(std::string const& inpu
     if (match.empty())
     {
       _ctx.sym.border_bottom = " ";
-    }
-    else if (match.size() > 1)
-    {
-      for (std::size_t i = 1; i < match.size(); ++i)
-      {
-        if (! (match.at(i) & 0x80))
-        {
-          return std::make_pair(false, "error: invalid symbol '" + match + "'");
-        }
-      }
 
-      _ctx.sym.border_bottom = match;
+      return {};
     }
-    else
+
+    OB::Text::View view {match};
+
+    if (view.size() != 1 || view.cols() > 1 ||
+      ! OB::Text::is_graph(OB::Text::to_int32(view.front())))
     {
-      _ctx.sym.border_bottom = match;
+      return std::make_pair(false, "error: invalid symbol '" + match + "'");
     }
+
+    _ctx.sym.border_bottom = match;
   }
 
   else if (match_opt = OB::String::match(input,
@@ -1818,23 +1802,19 @@ std::optional<std::pair<bool, std::string>> Tui::command(std::string const& inpu
     if (match.empty())
     {
       _ctx.sym.border_bottom_mark = " ";
-    }
-    else if (match.size() > 1)
-    {
-      for (std::size_t i = 1; i < match.size(); ++i)
-      {
-        if (! (match.at(i) & 0x80))
-        {
-          return std::make_pair(false, "error: invalid symbol '" + match + "'");
-        }
-      }
 
-      _ctx.sym.border_bottom_mark = match;
+      return {};
     }
-    else
+
+    OB::Text::View view {match};
+
+    if (view.size() != 1 || view.cols() > 1 ||
+      ! OB::Text::is_graph(OB::Text::to_int32(view.front())))
     {
-      _ctx.sym.border_bottom_mark = match;
+      return std::make_pair(false, "error: invalid symbol '" + match + "'");
     }
+
+    _ctx.sym.border_bottom_mark = match;
   }
 
   else if (match_opt = OB::String::match(input,
@@ -1846,25 +1826,20 @@ std::optional<std::pair<bool, std::string>> Tui::command(std::string const& inpu
     {
       _ctx.sym.border_top = " ";
       _ctx.sym.border_top_mark = " ";
-    }
-    else if (match.size() > 1)
-    {
-      for (std::size_t i = 1; i < match.size(); ++i)
-      {
-        if (! (match.at(i) & 0x80))
-        {
-          return std::make_pair(false, "error: invalid symbol '" + match + "'");
-        }
-      }
 
-      _ctx.sym.border_top = match;
-      _ctx.sym.border_top_mark = match;
+      return {};
     }
-    else
+
+    OB::Text::View view {match};
+
+    if (view.size() != 1 || view.cols() > 1 ||
+      ! OB::Text::is_graph(OB::Text::to_int32(view.front())))
     {
-      _ctx.sym.border_top = match;
-      _ctx.sym.border_top_mark = match;
+      return std::make_pair(false, "error: invalid symbol '" + match + "'");
     }
+
+    _ctx.sym.border_top = match;
+    _ctx.sym.border_top_mark = match;
   }
 
   else if (match_opt = OB::String::match(input,
@@ -1876,25 +1851,20 @@ std::optional<std::pair<bool, std::string>> Tui::command(std::string const& inpu
     {
       _ctx.sym.border_bottom = " ";
       _ctx.sym.border_bottom_mark = " ";
-    }
-    else if (match.size() > 1)
-    {
-      for (std::size_t i = 1; i < match.size(); ++i)
-      {
-        if (! (match.at(i) & 0x80))
-        {
-          return std::make_pair(false, "error: invalid symbol '" + match + "'");
-        }
-      }
 
-      _ctx.sym.border_bottom = match;
-      _ctx.sym.border_bottom_mark = match;
+      return {};
     }
-    else
+
+    OB::Text::View view {match};
+
+    if (view.size() != 1 || view.cols() > 1 ||
+      ! OB::Text::is_graph(OB::Text::to_int32(view.front())))
     {
-      _ctx.sym.border_bottom = match;
-      _ctx.sym.border_bottom_mark = match;
+      return std::make_pair(false, "error: invalid symbol '" + match + "'");
     }
+
+    _ctx.sym.border_bottom = match;
+    _ctx.sym.border_bottom_mark = match;
   }
 
   else if (match_opt = OB::String::match(input,
