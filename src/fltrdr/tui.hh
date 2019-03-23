@@ -45,7 +45,6 @@ private:
   void refresh();
 
   void draw();
-  void draw_background();
   void draw_content();
   void draw_border_top();
   void draw_border_bottom();

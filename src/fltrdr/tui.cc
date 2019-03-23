@@ -343,12 +343,24 @@ void Tui::clear()
 {
   // clear screen
   _ctx.buf
-  << aec::cursor_set(0, _ctx.height);
-  OB::Algorithm::for_each(_ctx.height, [&](auto) {
-    _ctx.buf
-    << aec::erase_line
-    << aec::cursor_up;
+  << aec::cursor_save
+  << aec::cursor_home
+  << _ctx.style.bg;
+
+  OB::Algorithm::for_each(_ctx.height,
+  [&](auto) {
+    OB::Algorithm::for_each(_ctx.width, [&](auto) {
+      _ctx.buf << " "; });
+    _ctx.buf << "\n";
+  },
+  [&](auto) {
+    OB::Algorithm::for_each(_ctx.width, [&](auto) {
+      _ctx.buf << " "; });
   });
+
+  _ctx.buf
+  << aec::clear
+  << aec::cursor_load;
 }
 
 void Tui::refresh()
@@ -364,7 +376,6 @@ void Tui::refresh()
 
 void Tui::draw()
 {
-  draw_background();
   draw_content();
   draw_border_top();
   draw_border_bottom();
@@ -372,17 +383,6 @@ void Tui::draw()
   draw_status();
   draw_prompt_message();
   draw_keybuf();
-}
-
-void Tui::draw_background()
-{
-  _ctx.buf
-  << aec::cursor_save
-  << aec::cursor_home
-  << _ctx.style.bg
-  << OB::String::repeat(_ctx.width * _ctx.height, " ")
-  << aec::clear
-  << aec::cursor_load;
 }
 
 void Tui::draw_content()
