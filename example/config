@@ -85,6 +85,10 @@ sym progress ▁
 # <#000000-#ffffff|0-255|Colour>
 # style text f0f0f0
 
+# set the background colour
+# <#000000-#ffffff|0-255|Colour>
+style background 1b1e24
+
 # set the text background colour shown to countdown
 # after play is pressed and before the reader begins
 # <#000000-#ffffff|0-255|Colour>
