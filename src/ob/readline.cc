@@ -477,6 +477,7 @@ void Readline::hist_prev()
     }
     else
     {
+      _input.off = 0;
       _input.idx = _input.str.size();
     }
 
@@ -507,6 +508,7 @@ void Readline::hist_next()
     }
     else
     {
+      _input.off = 0;
       _input.idx = _input.str.size();
     }
 
