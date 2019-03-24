@@ -2152,34 +2152,31 @@ int Tui::screen_size()
       _ctx.buf
       << "Error: width "
       << _ctx.width
-      << " ("
+      << " (min "
       << _ctx.width_min
-      << " min) & height "
+      << ") height "
       << _ctx.height
-      << " ("
+      << " (min "
       << _ctx.height_min
-      << " min)"
-      << "\n";
+      << ")";
     }
     else if (width_invalid)
     {
       _ctx.buf
       << "Error: width "
       << _ctx.width
-      << " ("
+      << " (min "
       << _ctx.width_min
-      << " min)"
-      << "\n";
+      << ")";
     }
     else
     {
       _ctx.buf
       << "Error: height "
       << _ctx.height
-      << " ("
+      << " (min "
       << _ctx.height_min
-      << " min)"
-      << "\n";
+      << ")";
     }
 
     refresh();
