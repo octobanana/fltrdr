@@ -343,7 +343,6 @@ void Tui::clear()
 {
   // clear screen
   _ctx.buf
-  << aec::cursor_save
   << aec::cursor_home
   << _ctx.style.bg;
 
@@ -360,7 +359,7 @@ void Tui::clear()
 
   _ctx.buf
   << aec::clear
-  << aec::cursor_load;
+  << aec::cursor_home;
 }
 
 void Tui::refresh()
