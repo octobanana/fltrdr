@@ -205,6 +205,7 @@ std::string Readline::operator()(bool& is_running)
         }
 
         case OB::Term::Key::down:
+        case OB::Term::ctrl_key('n'):
         {
           hist_next();
 
