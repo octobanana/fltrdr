@@ -142,35 +142,35 @@ private:
     {
       std::string bg {};
 
-      std::string primary {aec::fg_black};
-      std::string secondary {aec::fg_cyan};
-      std::string background {aec::bg_cyan};
+      std::string primary {};
+      std::string secondary {};
+      std::string background {aec::reverse};
 
-      std::string border {aec::fg_cyan};
+      std::string border {aec::fg_white};
 
-      std::string countdown {aec::bg_black};
+      std::string countdown {aec::reverse};
 
-      std::string progress_bar {aec::fg_black};
-      std::string progress_fill {aec::fg_cyan};
+      std::string progress_bar {aec::fg_white};
+      std::string progress_fill {};
 
-      std::string prompt {aec::fg_cyan};
+      std::string prompt {};
       std::string prompt_status {};
       std::string success {aec::fg_green};
       std::string error {aec::fg_red};
 
-      std::string word_primary {aec::fg_white};
-      std::string word_secondary {aec::fg_white};
-      std::string word_highlight {aec::fg_cyan};
-      std::string word_punct {aec::fg_white};
-      std::string word_quote {aec::fg_white};
+      std::string word_primary {};
+      std::string word_secondary {};
+      std::string word_highlight {};
+      std::string word_punct {};
+      std::string word_quote {};
     } style;
 
     struct Sym
     {
-      std::string border_top {"-"};
-      std::string border_top_mark {"-"};
+      std::string border_top {" "};
+      std::string border_top_mark {" "};
 
-      std::string border_bottom {"-"};
+      std::string border_bottom {" "};
       std::string border_bottom_mark {"^"};
 
       std::string progress {"_"};
