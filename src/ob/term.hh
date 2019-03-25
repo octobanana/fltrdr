@@ -54,7 +54,7 @@ enum Key
 
 inline int constexpr ctrl_key(int const c)
 {
-  return (c & 0x1f);
+  return (c & 0x1F);
 }
 
 inline char32_t utf8_to_char32(std::string_view str)
