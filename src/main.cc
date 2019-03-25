@@ -23,7 +23,7 @@ int program_options(Parg& pg)
   pg.name("fltrdr").version("0.1.1 (21.02.2019)");
   pg.description("A TUI text reader for the terminal.");
 
-  pg.usage("[--config=<path>] [<file>]");
+  pg.usage("[--config=<config>] [<file>]");
   pg.usage("[--help|-h]");
   pg.usage("[--version|-v]");
   pg.usage("[--license]");
@@ -179,7 +179,7 @@ int program_options(Parg& pg)
   pg.info("Config File Locations", {
     "${XDG_CONFIG_HOME}/fltrdr/config",
     "${HOME}/.fltrdr/config",
-    "custom path with '--config=<path>'"
+    "custom path with '--config=<config>'"
   });
 
   pg.info("Examples", {
@@ -205,12 +205,12 @@ int program_options(Parg& pg)
   pg.author("Brett Robinson (octobanana) <octobanana.dev@gmail.com>");
 
   // general flags
-  pg.set("help,h", "print the help output");
-  pg.set("version,v", "print the program version");
-  pg.set("license", "print the program license");
+  pg.set("help,h", "Print the help output.");
+  pg.set("version,v", "Print the program version.");
+  pg.set("license", "Print the program license.");
 
   // options
-  pg.set("config", "", "path", "custom path to config file");
+  pg.set("config", "", "config", "Use the commands in the file 'config' for initialization.\n    All other initializations are skipped. To skip all initializations,\n    use the special name 'NONE'.");
 
   pg.set_pos();
 
