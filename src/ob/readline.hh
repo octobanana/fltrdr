@@ -39,6 +39,7 @@ private:
   void curs_right();
 
   void edit_insert(std::string const& str);
+  void edit_clear();
   bool edit_delete();
   bool edit_backspace();
 

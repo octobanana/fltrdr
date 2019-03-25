@@ -188,6 +188,13 @@ std::string Readline::operator()(bool& is_running)
           break;
         }
 
+        case OB::Term::ctrl_key('u'):
+        {
+          edit_clear();
+
+          break;
+        }
+
         case OB::Term::Key::newline:
         {
           // submit the input string
@@ -376,6 +383,19 @@ void Readline::edit_insert(std::string const& str)
   {
     ++_input.off;
   }
+
+  refresh();
+
+  _history.idx = _history.val.size();
+}
+
+void Readline::edit_clear()
+{
+  // clear line
+
+  _input.idx = 0;
+  _input.off = 0;
+  _input.str.clear();
 
   refresh();
 
