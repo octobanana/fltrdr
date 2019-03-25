@@ -221,6 +221,7 @@ std::string Readline::operator()(bool& is_running)
         }
 
         case OB::Term::Key::left:
+        case OB::Term::ctrl_key('b'):
         {
           curs_left();
 
