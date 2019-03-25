@@ -197,6 +197,7 @@ std::string Readline::operator()(bool& is_running)
         }
 
         case OB::Term::Key::up:
+        case OB::Term::ctrl_key('p'):
         {
           hist_prev();
 
