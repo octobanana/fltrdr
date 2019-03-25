@@ -189,7 +189,6 @@ std::string Readline::operator()(bool& is_running)
         }
 
         case OB::Term::Key::newline:
-        case OB::Term::ctrl_key('d'):
         {
           // submit the input string
           loop = false;
@@ -241,6 +240,7 @@ std::string Readline::operator()(bool& is_running)
         }
 
         case OB::Term::Key::delete_:
+        case OB::Term::ctrl_key('d'):
         {
           loop = edit_delete();
 
