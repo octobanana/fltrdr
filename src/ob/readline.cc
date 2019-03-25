@@ -257,7 +257,7 @@ std::string Readline::operator()(bool& is_running)
 
         default:
         {
-          if (ch == OB::Term::Key::space || OB::Text::is_graph(static_cast<std::int32_t>(ch)))
+          if (ch < 0xF0000 && (ch == OB::Term::Key::space || OB::Text::is_graph(static_cast<std::int32_t>(ch))))
           {
             edit_insert(utf8);
           }
