@@ -210,7 +210,7 @@ int program_options(Parg& pg)
   pg.set("license", "Print the program license.");
 
   // options
-  pg.set("config", "", "config", "Use the commands in the file 'config' for initialization.\n    All other initializations are skipped. To skip all initializations,\n    use the special name 'NONE'.");
+  pg.set("config,u", "", "config", "Use the commands in the file 'config' for initialization.\n    All other initializations are skipped. To skip all initializations,\n    use the special name 'NONE'.");
 
   pg.set_pos();
 
