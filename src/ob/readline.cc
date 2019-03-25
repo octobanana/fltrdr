@@ -236,6 +236,7 @@ std::string Readline::operator()(bool& is_running)
           break;
         }
 
+        case OB::Term::Key::home:
         case OB::Term::ctrl_key('a'):
         {
           curs_begin();
