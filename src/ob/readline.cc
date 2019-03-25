@@ -228,6 +228,7 @@ std::string Readline::operator()(bool& is_running)
           break;
         }
 
+        case OB::Term::Key::end:
         case OB::Term::ctrl_key('e'):
         {
           curs_end();
