@@ -31,9 +31,7 @@ It can be used to read text from either a file or stdin.
 * colours can be customized
 * chars/symbols can be customized
 * show/hide parts of the interface
-
-### Future Features
-* 
+* mouse support for play/pause and scrolling text
 
 ## Usage
 View the usage and help output with the `--help` or `-h` flag.
