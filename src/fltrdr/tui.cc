@@ -225,6 +225,7 @@ void Tui::run()
   << aec::cursor_hide
   << aec::screen_clear
   << aec::cursor_home
+  << aec::mouse_enable
   << std::flush;
 
   // set terminal mode to raw
@@ -235,6 +236,7 @@ void Tui::run()
   event_loop();
 
   std::cout
+  << aec::mouse_disable
   << aec::nl
   << aec::screen_pop
   << aec::cursor_show
@@ -891,6 +893,7 @@ void Tui::get_input(int& wait)
 
       // toggle play
       case OB::Term::Key::space:
+      case OB::Term::Mouse::btn3_press:
       {
         _ctx.keys.clear();
 
@@ -979,6 +982,7 @@ void Tui::get_input(int& wait)
 
       // move index backwards
       case 'h': case OB::Term::Key::left:
+      case OB::Term::Mouse::scroll_up:
       {
         pause();
         _fltrdr.prev_word();
@@ -988,6 +992,7 @@ void Tui::get_input(int& wait)
 
       // move index forwards
       case 'l': case OB::Term::Key::right:
+      case OB::Term::Mouse::scroll_down:
       {
         pause();
         _fltrdr.next_word();
@@ -1049,6 +1054,7 @@ void Tui::get_input(int& wait)
 
       // toggle extra words
       case 'v':
+      case OB::Term::Mouse::btn2_press:
       {
         _fltrdr.set_show_line(! _fltrdr.get_show_line());
 

@@ -29,28 +29,48 @@
 namespace OB::Term
 {
 
-enum Key
+namespace Key
 {
-  null = 0,
-  bell = 7,
-  tab = 9,
-  newline = 10,
-  enter = 13,
-  escape = 27,
-  space = 32,
-  backspace = 127,
+  enum
+  {
+    null = 0,
+    bell = 7,
+    tab = 9,
+    newline = 10,
+    enter = 13,
+    escape = 27,
+    space = 32,
+    backspace = 127,
 
-  up = 0xF0000,
-  down,
-  left,
-  right,
-  home,
-  end,
-  delete_,
-  insert,
-  page_up,
-  page_down
-};
+    up = 0xF0000,
+    down,
+    left,
+    right,
+    home,
+    end,
+    delete_,
+    insert,
+    page_up,
+    page_down
+  };
+}
+
+namespace Mouse
+{
+  enum
+  {
+    null = 0,
+    btn_release = 0xF1000,
+    btn1_press,
+    btn1_release,
+    btn2_press,
+    btn2_release,
+    btn3_press,
+    btn3_release,
+    scroll_up,
+    scroll_down
+  };
+}
 
 inline int constexpr ctrl_key(int const c)
 {
@@ -94,9 +114,8 @@ inline char32_t get_key(std::string* str = nullptr)
 {
   // NOTE term mode should be in raw state before call to this func
 
-  char c {0};
-  std::string key;
-  int ec = read(STDIN_FILENO, &c, 1);
+  char key[4] {0};
+  int ec = read(STDIN_FILENO, &key[0], 1);
 
   if ((ec == -1) && (errno != EAGAIN))
   {
@@ -105,59 +124,54 @@ inline char32_t get_key(std::string* str = nullptr)
 
   if (ec == 0)
   {
-    return 0;
+    return Key::null;
   }
 
-  key += c;
-
   // utf-8 multibyte code point
-  if (c & 0x80)
+  if (key[0] & 0x80)
   {
-    int i {1};
+    std::size_t i {1};
+    std::size_t bytes {1};
 
     for (; i < 4; ++i)
     {
-      if (! (c & (0x80 >> i)))
+      if (! (key[0] & (0x80 >> i)))
       {
         break;
       }
     }
 
-    for (; i > 1; --i)
-    {
-      ec = read(STDIN_FILENO, &c, 1);
+    bytes += i;
 
+    if ((ec = read(STDIN_FILENO, &key[1], i)) != static_cast<int>(i))
+    {
       if ((ec == -1) && (errno != EAGAIN))
       {
         throw std::runtime_error("read failed");
       }
 
-      if (ec != 1)
-      {
-        break;
-      }
-
-      key += c;
+      return static_cast<char32_t>(key[0]);
     }
 
     if (str != nullptr)
     {
-      *str = key;
+      str->assign(&key[0], bytes);
     }
 
-    return utf8_to_char32(key);
+    return utf8_to_char32(std::string_view(&key[0], bytes));
   }
 
   // utf-8 single-byte code point
   if (str != nullptr)
   {
-    *str = key;
+    str->assign(&key[0], 1);
   }
 
   // esc / esc sequence
-  if (c == Key::escape)
+  if (key[0] == Key::escape)
   {
-    char seq[3];
+    char seq[3] {0};
+
     if ((ec = read(STDIN_FILENO, &seq[0], 1)) != 1)
     {
       if ((ec == -1) && (errno != EAGAIN))
@@ -165,7 +179,7 @@ inline char32_t get_key(std::string* str = nullptr)
         throw std::runtime_error("read failed");
       }
 
-      return static_cast<char32_t>(c);
+      return static_cast<char32_t>(key[0]);
     }
 
     if ((ec = read(STDIN_FILENO, &seq[1], 1)) != 1)
@@ -175,7 +189,7 @@ inline char32_t get_key(std::string* str = nullptr)
         throw std::runtime_error("read failed");
       }
 
-      return static_cast<char32_t>(c);
+      return static_cast<char32_t>(key[0]);
     }
 
     if (seq[0] == '[')
@@ -189,7 +203,7 @@ inline char32_t get_key(std::string* str = nullptr)
             throw std::runtime_error("read failed");
           }
 
-          return static_cast<char32_t>(c);
+          return static_cast<char32_t>(key[0]);
         }
 
         if (seq[2] == '~')
@@ -228,7 +242,7 @@ inline char32_t get_key(std::string* str = nullptr)
 
             default:
             {
-              return static_cast<char32_t>(c);
+              return static_cast<char32_t>(key[0]);
             }
           }
         }
@@ -257,16 +271,198 @@ inline char32_t get_key(std::string* str = nullptr)
             return Key::left;
           }
 
+          case '<':
+          {
+            // 1000;1006 mouse event
+
+            std::size_t constexpr buf_size {64};
+            char mouse[buf_size] {0};
+
+            for (std::size_t i = 0; i < buf_size; ++i)
+            {
+              if ((ec = read(STDIN_FILENO, &mouse[i], 1)) != 1)
+              {
+                if ((ec == -1) && (errno != EAGAIN))
+                {
+                  throw std::runtime_error("read failed");
+                }
+
+                return static_cast<char32_t>(key[0]);
+              }
+
+              if (mouse[i] >= 0x40 && mouse[i] <= 0x7E)
+              {
+                if (str != nullptr)
+                {
+                  str->assign(mouse, i + 1);
+                }
+
+                switch (mouse[i])
+                {
+                  case 'm':
+                  {
+                    switch (mouse[0])
+                    {
+                      case '0':
+                      {
+                        return Mouse::btn1_release;
+                      }
+
+                      case '1':
+                      {
+                        return Mouse::btn2_release;
+                      }
+
+                      case '2':
+                      {
+                        return Mouse::btn3_release;
+                      }
+
+                      default:
+                      {
+                        break;
+                      }
+                    }
+
+                    break;
+                  }
+
+                  case 'M':
+                  {
+                    switch (mouse[0])
+                    {
+                      case '0':
+                      {
+                        return Mouse::btn1_press;
+                      }
+
+                      case '1':
+                      {
+                        return Mouse::btn2_press;
+                      }
+
+                      case '2':
+                      {
+                        return Mouse::btn3_press;
+                      }
+
+                      case '6':
+                      {
+                        switch (mouse[1])
+                        {
+                          case '4':
+                          {
+                            return Mouse::scroll_up;
+                          }
+
+                          case '5':
+                          {
+                            return Mouse::scroll_down;
+                          }
+
+                          default:
+                          {
+                            break;
+                          }
+                        }
+
+                        break;
+                      }
+
+                      default:
+                      {
+                        break;
+                      }
+                    }
+
+                    break;
+                  }
+
+                  default:
+                  {
+                    break;
+                  }
+                }
+
+                break;
+              }
+            }
+
+            return static_cast<char32_t>(key[0]);
+          }
+
+          case 'M':
+          {
+            // 1000 mouse event
+
+            char mouse[3] {0};
+
+            if ((ec = read(STDIN_FILENO, &mouse[0], 3)) != 3)
+            {
+              if ((ec == -1) && (errno != EAGAIN))
+              {
+                throw std::runtime_error("read failed");
+              }
+
+              return static_cast<char32_t>(key[0]);
+            }
+
+            if (str != nullptr)
+            {
+              str->assign(mouse, 3);
+            }
+
+            switch (mouse[0] & 0x03)
+            {
+              case 0:
+              {
+                if (mouse[0] & 0x40)
+                {
+                  return Mouse::scroll_up;
+                }
+
+                return Mouse::btn1_press;
+              }
+
+              case 1:
+              {
+                if (mouse[0] & 0x40)
+                {
+                  return Mouse::scroll_down;
+                }
+
+                return Mouse::btn2_press;
+              }
+
+              case 2:
+              {
+                return Mouse::btn3_press;
+              }
+
+              case 3:
+              {
+                return Mouse::btn_release;
+              }
+
+              default:
+              {
+                break;
+              }
+            }
+
+            return Mouse::null;
+          }
+
           default:
           {
-            return static_cast<char32_t>(c);
+            return static_cast<char32_t>(key[0]);
           }
         }
       }
     }
   }
 
-  return static_cast<char32_t>(c);
+  return static_cast<char32_t>(key[0]);
 }
 
 class Stdin
@@ -564,6 +760,10 @@ std::string const reset {esc + "c"};
 
 // clear all attributes
 std::string const clear {esc + "[0m"};
+
+// mouse
+std::string const mouse_enable {esc + "[?1000;1006h"};
+std::string const mouse_disable {esc + "[?1000;1006l"};
 
 // style
 std::string const bold {esc + "[1m"};
