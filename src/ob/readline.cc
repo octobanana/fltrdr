@@ -373,15 +373,19 @@ void Readline::edit_insert(std::string const& str)
 {
   // insert or append char to input buffer
 
+  auto size {_input.str.size()};
   _input.str.insert(_input.off + _input.idx, str);
 
-  if (_input.idx + 2 < _width)
+  if (size != _input.str.size())
   {
-    ++_input.idx;
-  }
-  else
-  {
-    ++_input.off;
+    if (_input.idx + 2 < _width)
+    {
+      ++_input.idx;
+    }
+    else
+    {
+      ++_input.off;
+    }
   }
 
   refresh();
