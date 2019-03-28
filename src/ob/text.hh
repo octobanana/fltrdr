@@ -147,7 +147,7 @@ public:
 
     if (U_FAILURE(ec))
     {
-      throw std::runtime_error("failed to create break iterator");
+      throw std::runtime_error("failed to set break iterator text");
     }
 
     // get size of iterator
