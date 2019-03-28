@@ -2153,6 +2153,10 @@ int Tui::screen_size()
   {
     clear();
 
+    _ctx.buf
+    << _ctx.style.bg
+    << _ctx.style.error;
+
     if (width_invalid && height_invalid)
     {
       _ctx.buf
@@ -2184,6 +2188,9 @@ int Tui::screen_size()
       << _ctx.height_min
       << ")";
     }
+
+    _ctx.buf
+    << aec::clear;
 
     refresh();
 
