@@ -5,6 +5,22 @@ A TUI text reader for the terminal.
 
 Click the above picture to view a video of __Fltrdr__ in action.
 
+## Contents
+* [About](#about)
+  * [Features](#features)
+* [Usage](#usage)
+* [Terminal Compatibility](#terminal-compatibility)
+* [Pre-Build](#pre-build)
+  * [Dependencies](#dependencies)
+  * [Linked Libraries](#linked-libraries)
+  * [Included Libraries](#included-libraries)
+  * [Environment](#environment)
+  * [macOS](#macos)
+* [Build](#build)
+* [Install](#install)
+* [Configuration](#configuration)
+* [License](#license)
+
 ## About
 __Fltrdr__, or *flat-reader*, is an interactive text reader for the terminal.
 It is *flat* in the sense that the reader is word-based. It creates a
@@ -38,19 +54,6 @@ View the usage and help output with the `--help` or `-h` flag.
 The help output contains the documentation for the key bindings
 and commands for customization.
 
-## Configuration
-The default config locations are `${XDG_CONFIG_HOME}/fltrdr/config` and `${HOME}/.fltrdr/config`.
-A custom path can also be passed to override the default locations using the `--config` option.
-The config directory and file must be created by the user.
-If the file does not exist, the program continues as normal.
-
-The file, `config`, is a plain text file that can contain any of the commands
-listed in the __Commands__ section of the `--help` output.
-Each command must be on its own line.
-Lines that begin with the `#` character are treated as comments.
-
-An example config file can be found in `./example/config`
-
 ## Terminal Compatibility
 This program uses raw terminal control sequences to manipulate the terminal,
 such as moving the cursor, styling the output text, and clearing the screen.
@@ -66,11 +69,6 @@ and any third party libraries used.
 > Any shell commands using relative paths are expected to be executed in the
 > root directory of this repository.
 
-### Environment
-* __Linux__ (supported)
-* __BSD__ (supported)
-* __macOS__ (supported)
-
 ### Dependencies
 * C++17 compiler/library
 * CMake >= 3.8
@@ -81,9 +79,14 @@ and any third party libraries used.
 * icuuc (libicuuc) part of the ICU library
 * icui18n (libicui18n) part of the ICU library
 
-### Included Libraries:
+### Included Libraries
 * [parg](https://github.com/octobanana/parg):
   for parsing CLI args, included as `./src/ob/parg.hh`
+
+### Environment
+* __Linux__ (supported)
+* __BSD__ (supported)
+* __macOS__ (supported)
 
 ### macOS
 Using a new version of __gcc__ or __llvm__ is __required__, as the default
@@ -119,12 +122,25 @@ The following shell command will install the project in release mode:
 ```
 To install in debug mode, run the script with the `--debug` flag.
 
-## Config
+## Configuration
+The default config locations are `${XDG_CONFIG_HOME}/fltrdr/config` and `${HOME}/.fltrdr/config`.
+A custom path can also be passed to override the default locations using the `--config` option.
+The config directory and file must be created by the user.
+If the file does not exist, the program continues as normal.
+
+The file, `config`, is a plain text file that can contain any of the commands
+listed in the __Commands__ section of the `--help` output.
+Each command must be on its own line.
+Lines that begin with the `#` character are treated as comments.
+
+Several config file examples can be found in the `./config` directory.
+
 The following shell commands will create a config directory in the
-`XDG_CONFIG_HOME` default directory and copy over the example config file:
+`XDG_CONFIG_HOME` default directory and copy over the default example
+config file:
 ```sh
-mkdir -p ~/.config/fltrdr
-cp ./example/config ~/.config/fltrdr/config
+mkdir -pv ~/.config/fltrdr
+cp -uv ./config/default ~/.config/fltrdr/config
 ```
 
 ## License
