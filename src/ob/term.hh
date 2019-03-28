@@ -130,20 +130,17 @@ inline char32_t get_key(std::string* str = nullptr)
   // utf-8 multibyte code point
   if (key[0] & 0x80)
   {
-    std::size_t i {1};
-    std::size_t bytes {1};
+    std::size_t bytes {0};
 
-    for (; i < 4; ++i)
+    for (; bytes < 3; ++bytes)
     {
-      if (! (key[0] & (0x80 >> i)))
+      if (! (key[0] & (0x80 >> (bytes + 1))))
       {
         break;
       }
     }
 
-    bytes += i;
-
-    if ((ec = read(STDIN_FILENO, &key[1], i)) != static_cast<int>(i))
+    if ((ec = read(STDIN_FILENO, &key[1], bytes)) != static_cast<int>(bytes))
     {
       if ((ec == -1) && (errno != EAGAIN))
       {
@@ -152,6 +149,8 @@ inline char32_t get_key(std::string* str = nullptr)
 
       return static_cast<char32_t>(key[0]);
     }
+
+    ++bytes;
 
     if (str != nullptr)
     {
