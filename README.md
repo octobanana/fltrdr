@@ -70,17 +70,17 @@ and any third party libraries used.
 > root directory of this repository.
 
 ### Dependencies
-* C++17 compiler/library
-* CMake >= 3.8
-* ICU >= 62.1
+* __C++17__ compiler/library
+* __CMake__ >= 3.8
+* __ICU__ >= 62.1
 
 ### Linked Libraries
-* stdc++fs (libstdc++fs) included in the C++17 Standard Library
-* icuuc (libicuuc) part of the ICU library
-* icui18n (libicui18n) part of the ICU library
+* __stdc++fs__ (libstdc++fs) included in the C++17 Standard Library
+* __icuuc__ (libicuuc) part of the ICU library
+* __icui18n__ (libicui18n) part of the ICU library
 
 ### Included Libraries
-* [parg](https://github.com/octobanana/parg):
+* [__parg__](https://github.com/octobanana/parg):
   for parsing CLI args, included as `./src/ob/parg.hh`
 
 ### Environment
