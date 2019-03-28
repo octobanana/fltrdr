@@ -1,0 +1,43 @@
+# fltrdr config
+# solarized-light
+#
+# refer to the 'Commands' section of the help output with
+# '--help' or '-h' to view all commands and their descriptions
+
+wpm 250
+prev 1
+next 1
+offset 2
+
+set view off
+set progress on
+set status on
+set border on
+set border-top on
+set border-bottom on
+
+sym border-top ─
+sym border-top-mark ┬
+sym border-bottom ─
+sym border-bottom-mark ┴
+sym progress ▁
+
+style background fdf6e3
+style countdown eee8d5
+style border eee8d5
+style prompt 657b83
+style success 859900
+style error dc322f
+
+style progress-primary 93a1a1
+style progress-secondary 859900
+
+style status-primary 657b83
+style status-secondary d33682
+style status-background eee8d5
+
+style text-primary 002b36
+style text-secondary 073642
+style text-highlight d33682
+style text-punct 2aa198
+style text-quote 6c71c4
