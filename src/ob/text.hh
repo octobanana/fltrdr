@@ -113,7 +113,6 @@ public:
   View& str(string_view str)
   {
     _cols = 0;
-    _size = 0;
     _bytes = 0;
 
     _view.clear();
@@ -169,9 +168,6 @@ public:
 
     while (end != iter_end)
     {
-      // increase total size count
-      ++_size;
-
       // get column width
       uch = utext_char32At(text.get(), begin);
       width = u_getIntPropertyValue(uch, UCHAR_EAST_ASIAN_WIDTH);
@@ -243,7 +239,7 @@ public:
 
   size_type char_to_byte(size_type pos) const
   {
-    if (pos >= _size)
+    if (pos >= _view.size())
     {
       return npos;
     }
@@ -295,14 +291,14 @@ public:
 
   string_view substr(size_type pos, size_type size = npos) const
   {
-    if (pos >= _size)
+    if (pos >= _view.size())
     {
       return {};
     }
 
     if (size == npos)
     {
-      size = _size;
+      size = _view.size();
     }
     else
     {
@@ -311,7 +307,7 @@ public:
 
     size_type count {0};
 
-    for (size_type i = pos; i < size && i < _size; ++i)
+    for (size_type i = pos; i < size && i < _view.size(); ++i)
     {
       count += _view.at(i).str.size();
     }
@@ -326,13 +322,13 @@ public:
       pos = 0;
     }
 
-    if (pos >= _size)
+    if (pos >= _view.size())
     {
       return npos;
     }
 
 
-    for (size_type i = pos; i < _size; ++i)
+    for (size_type i = pos; i < _view.size(); ++i)
     {
       if (str == _view.at(i).str)
       {
@@ -347,10 +343,10 @@ public:
   {
     if (pos == npos)
     {
-      pos = _size - 1;
+      pos = _view.size() - 1;
     }
 
-    if (pos == 0 || pos >= _size)
+    if (pos == 0 || pos >= _view.size())
     {
       return npos;
     }
@@ -373,12 +369,12 @@ public:
       pos = 0;
     }
 
-    if (pos >= _size)
+    if (pos >= _view.size())
     {
       return npos;
     }
 
-    for (size_type i = pos; i < _size; ++i)
+    for (size_type i = pos; i < _view.size(); ++i)
     {
       auto const& lhs = _view.at(i).str;
 
@@ -398,10 +394,10 @@ public:
   {
     if (pos == npos)
     {
-      pos = _size - 1;
+      pos = _view.size() - 1;
     }
 
-    if (pos == 0 || pos >= _size)
+    if (pos == 0 || pos >= _view.size())
     {
       return npos;
     }
@@ -432,7 +428,6 @@ public:
     _view.clear();
     _bytes = 0;
     _cols = 0;
-    _size = 0;
 
     return *this;
   }
@@ -446,12 +441,12 @@ public:
 
   size_type size() const
   {
-    return _size;
+    return _view.size();
   }
 
   size_type length() const
   {
-    return _size;
+    return _view.size();
   }
 
   size_type bytes() const
@@ -461,14 +456,14 @@ public:
 
   size_type bytes(size_type pos, size_type size = npos) const
   {
-    if (pos >= _size)
+    if (pos >= _view.size())
     {
       return npos;
     }
 
     if (size == npos)
     {
-      size = _size;
+      size = _view.size();
     }
     else
     {
@@ -477,7 +472,7 @@ public:
 
     size_type count {0};
 
-    for (size_type i = pos; i < size && i < _size; ++i)
+    for (size_type i = pos; i < size && i < _view.size(); ++i)
     {
       count += _view.at(i).str.size();
     }
@@ -492,14 +487,14 @@ public:
 
   size_type cols(size_type pos, size_type size = npos) const
   {
-    if (pos >= _size)
+    if (pos >= _view.size())
     {
       return npos;
     }
 
     if (size == npos)
     {
-      size = _size;
+      size = _view.size();
     }
     else
     {
@@ -508,7 +503,7 @@ public:
 
     size_type count {0};
 
-    for (size_type i = pos; i < size && i < _size; ++i)
+    for (size_type i = pos; i < size && i < _view.size(); ++i)
     {
       count += _view.at(i).cols;
     }
@@ -518,14 +513,14 @@ public:
 
   string_view colstr(size_type pos, size_type size = npos) const
   {
-    if (pos >= _size)
+    if (pos >= _view.size())
     {
       return {};
     }
 
     if (size == npos)
     {
-      size = _size;
+      size = _view.size();
     }
     else
     {
@@ -534,7 +529,7 @@ public:
 
     size_type count {0};
 
-    for (size_type i = pos, cols = 0; i < _size; ++i)
+    for (size_type i = pos, cols = 0; i < _view.size(); ++i)
     {
       auto const& ctx = _view.at(i);
 
@@ -557,14 +552,14 @@ public:
       return {};
     }
 
-    if (pos >= _size)
+    if (pos >= _view.size())
     {
-      pos = _size - 1;
+      pos = _view.size() - 1;
     }
 
     if (size == npos)
     {
-      size = _size - pos;
+      size = _view.size() - pos;
     }
 
     size_type count {0};
@@ -639,9 +634,6 @@ private:
 
   // number of columns needed to display the string
   size_type _cols {0};
-
-  // number of grapheme clusters in the string
-  size_type _size {0};
 
   // number of bytes in the string
   size_type _bytes {0};
