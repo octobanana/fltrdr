@@ -27,14 +27,14 @@ using namespace std::string_literals;
 
 void Fltrdr::init()
 {
+  _ctx.pos = 0;
+  _ctx.index = 1;
+
   _ctx.text.clear();
   _ctx.text.shrink_to_fit();
 
-  _ctx.pos = 0;
-  _ctx.index = 1;
-  _ctx.wpm_avg = 0;
-  _ctx.wpm_count = 0;
-  _ctx.wpm_total = 0;
+  reset_timer();
+  reset_wpm_avg();
 }
 
 bool Fltrdr::parse(std::istream& input)
