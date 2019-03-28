@@ -20,7 +20,7 @@ int program_options(Parg& pg);
 
 int program_options(Parg& pg)
 {
-  pg.name("fltrdr").version("0.2.0 (27.03.2019)");
+  pg.name("fltrdr").version("0.2.1 (28.03.2019)");
   pg.description("A TUI text reader for the terminal.");
 
   pg.usage("[--config=<config>] [<file>]");
