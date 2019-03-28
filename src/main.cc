@@ -28,6 +28,13 @@ int program_options(Parg& pg)
   pg.usage("[--version|-v]");
   pg.usage("[--license]");
 
+  pg.info("Mouse Bindings", {
+    "middle click\n    toggle view",
+    "right click\n    toggle play/pause",
+    "scroll up\n    goto prev word",
+    "scroll down\n    goto next word",
+  });
+
   pg.info("Key Bindings", {
     "q|Q|<ctrl-c>\n    quit the program",
     ":\n    enter the command prompt",
