@@ -1831,7 +1831,7 @@ std::optional<std::pair<bool, std::string>> Tui::command(std::string const& inpu
   }
 
   else if (match_opt = OB::String::match(input,
-    std::regex("^sym\\s+border\\.top\\.line(:?\\s+(.{0,4}))?$")))
+    std::regex("^sym\\s+border\\-top\\-line(:?\\s+(.{0,4}))?$")))
   {
     auto const match = OB::String::trim(match_opt.value().at(1));
 
@@ -1856,7 +1856,7 @@ std::optional<std::pair<bool, std::string>> Tui::command(std::string const& inpu
   }
 
   else if (match_opt = OB::String::match(input,
-    std::regex("^sym\\s+border\\.bottom\\.line(:?\\s+(.{0,4}))?$")))
+    std::regex("^sym\\s+border\\-bottom\\-line(:?\\s+(.{0,4}))?$")))
   {
     auto const match = OB::String::trim(match_opt.value().at(1));
 
