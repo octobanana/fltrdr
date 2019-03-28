@@ -1128,8 +1128,6 @@ public:
 
   Regex& match(string_view rx, string_view str)
   {
-    _size = 0;
-
     _str.clear();
     _str.shrink_to_fit();
 
@@ -1221,8 +1219,6 @@ public:
       _str.emplace_back(match);
     }
 
-    _size = _str.size();
-
     return *this;
   }
 
@@ -1249,7 +1245,6 @@ public:
   Regex& clear()
   {
     _str.clear();
-    _size = 0;
 
     return *this;
   }
@@ -1263,12 +1258,12 @@ public:
 
   size_type size() const
   {
-    return _size;
+    return _str.size();
   }
 
   size_type length() const
   {
-    return _size;
+    return _str.size();
   }
 
   iterator begin()
@@ -1314,7 +1309,6 @@ public:
 private:
 
   value_type _str;
-  size_type _size {0};
 }; // class Regex
 
 inline std::int32_t to_int32(std::string_view str)
