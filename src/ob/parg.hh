@@ -62,7 +62,7 @@ public:
     argvf(_argv);
   }
 
-  Parg& name(std::string const _name)
+  Parg& name(std::string const& _name)
   {
     name_ = _name;
     return *this;
@@ -73,7 +73,7 @@ public:
     return name_;
   }
 
-  Parg& version(std::string const _version)
+  Parg& version(std::string const& _version)
   {
     version_ = _version;
     return *this;
@@ -84,7 +84,7 @@ public:
     return version_;
   }
 
-  Parg& usage(std::string const _usage)
+  Parg& usage(std::string const& _usage)
   {
     usage_ += "  " + name_ + " " + _usage + "\n";
     return *this;
@@ -95,7 +95,7 @@ public:
     return usage_;
   }
 
-  Parg& description(std::string const _description)
+  Parg& description(std::string const& _description)
   {
     description_ = _description;
     return *this;
@@ -106,13 +106,13 @@ public:
     return description_;
   }
 
-  Parg& info(std::string const _title, std::vector<std::string> const _text)
+  Parg& info(std::string const& _title, std::vector<std::string> const& _text)
   {
     info_.emplace_back(info_pair{_title, _text});
     return *this;
   }
 
-  Parg& author(std::string const _author)
+  Parg& author(std::string const& _author)
   {
     author_ = _author;
     return *this;
@@ -198,7 +198,7 @@ public:
     return status_;
   }
 
-  int parse(std::string str)
+  int parse(std::string const& str)
   {
     auto args = str_to_args(str);
     status_ = parse_args(args.size(), args);
@@ -295,7 +295,7 @@ public:
     return args;
   }
 
-  void set(std::string _name, std::string _info)
+  void set(std::string const& _name, std::string const& _info)
   {
     // sets a flag
     std::string delim {","};
@@ -352,7 +352,8 @@ public:
     modes_.append(out.str());
   }
 
-  void set(std::string _name, std::string _default, std::string _arg, std::string _info)
+  void set(std::string const& _name, std::string const& _default,
+    std::string const& _arg, std::string const& _info)
   {
     // sets an option
     std::string delim {","};
@@ -439,7 +440,7 @@ public:
     return val;
   }
 
-  bool find(std::string const _key) const
+  bool find(std::string const& _key) const
   {
     // key must exist
     if (data_.find(_key) == data_.end()) return false;
@@ -591,7 +592,7 @@ private:
     return -1;
   }
 
-  std::vector<std::string> delimit(const std::string str, const std::string delim) const
+  std::vector<std::string> delimit(std::string const& str, std::string const& delim) const
   {
     std::vector<std::string> vtok;
     std::size_t start {0};
@@ -605,7 +606,7 @@ private:
     return vtok;
   }
 
-  int parse_args(int _argc, std::vector<std::string> _argv)
+  int parse_args(int _argc, std::vector<std::string> const& _argv)
   {
     if (_argc < 1) return 1;
 
