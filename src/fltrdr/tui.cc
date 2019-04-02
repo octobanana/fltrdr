@@ -106,78 +106,30 @@ bool Tui::press_to_continue(std::string const& str, char32_t val)
   return res;
 }
 
-void Tui::config(std::string const& custom_path)
+void Tui::load_config(fs::path const& path)
 {
-  // find if config file exists
-  // custom_path
-  // ${XDG_CONFIG_HOME}/fltrdr/config
-  // ${HOME}/.fltrdr/config
-  // none
-
   // ignore config if path equals "NONE"
-  if (custom_path == "NONE")
+  if (path == "NONE")
   {
     return;
   }
 
-  bool use_default {true};
-  std::string path;
-
-  // custom_path
-  if (! custom_path.empty() && fs::exists(custom_path))
-  {
-    use_default = false;
-    path = custom_path;
-  }
-
-  if (use_default)
-  {
-    std::string home {OB::Term::env_var("HOME")};
-    std::string config_home {OB::Term::env_var("XDG_CONFIG_HOME")};
-    if (config_home.empty())
-    {
-      config_home = home + "/.config/fltrdr/config";
-    }
-    else
-    {
-      config_home += "/fltrdr/config";
-    }
-
-    // ${XDG_CONFIG_HOME}/fltrdr/config
-    if (fs::exists(config_home))
-    {
-      path = config_home;
-    }
-
-    // ${HOME}/.fltrdr/config
-    else if (config_home = home + "/.fltrdr/config"; fs::exists(config_home))
-    {
-      path = config_home;
-    }
-  }
-
   // buffer for error output
-  std::ostringstream buf;
+  std::ostringstream err;
 
-  // custom path passed but does not exist
-  if (use_default && ! custom_path.empty())
-  {
-    buf << "error: could not open config file '" << custom_path << "'\n";
-  }
-
-  if (! path.empty())
+  if (! path.empty() && fs::exists(path))
   {
     std::ifstream file {path};
 
-    if (file && file.is_open())
+    if (file.is_open())
     {
       std::string line;
-      std::size_t num {0};
+      std::size_t lnum {0};
 
       while (std::getline(file, line))
       {
         // increase line number
-        ++num;
+        ++lnum;
 
         // trim leading and trailing whitespace
         line = OB::String::trim(line);
@@ -193,22 +145,20 @@ void Tui::config(std::string const& custom_path)
           if (! res.value().first)
           {
             // source:line: level: info
-            buf << path << ":" << num << ": " << res.value().second << "\n";
+            err << path.string() << ":" << lnum << ": " << res.value().second << "\n";
           }
         }
       }
     }
     else
     {
-      buf << "error: could not open config file '" << path << "'\n";
-      return;
+      err << "error: could not open config file '" << path.string() << "'\n";
     }
   }
 
-  if (! buf.str().empty())
+  if (! err.str().empty())
   {
-    std::cerr
-    << buf.str();
+    std::cerr << err.str();
 
     if (! press_to_continue("ENTER", '\n'))
     {

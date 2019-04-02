@@ -15,6 +15,9 @@ namespace aec = OB::Term::ANSI_Escape_Codes;
 #include <sstream>
 #include <iostream>
 
+#include <filesystem>
+namespace fs = std::filesystem;
+
 // prototypes
 int program_options(Parg& pg);
 
@@ -217,7 +220,8 @@ int program_options(Parg& pg)
   pg.set("license", "Print the program license.");
 
   // options
-  pg.set("config,u", "", "config", "Use the commands in the file 'config' for initialization.\n    All other initializations are skipped. To skip all initializations,\n    use the special name 'NONE'.");
+  pg.set("config,u", "", "file", "Use the commands in the config file 'file' for initialization.\n    All other initializations are skipped. To skip all initializations,\n    use the special name 'NONE'.");
+  pg.set("config-base", "", "dir", "use 'dir' as the base config directory.\n    To skip all initializations,\n    use the special name 'NONE'.");
 
   pg.set_pos();
 
@@ -326,8 +330,22 @@ int main(int argc, char *argv[])
       tui.init();
     }
 
-    // load config file
-    tui.config(pg.get("config"));
+    // load files
+    {
+      // determine base config directory
+      // default to '~/.fltrdr'
+      fs::path base_config_dir {pg.find("config-base") ?
+        pg.get<fs::path>("config-base") :
+        fs::path(OB::Term::env_var("HOME") + "/." + pg.name())};
+
+      if (base_config_dir != "NONE" &&
+        fs::exists(base_config_dir) && fs::is_directory(base_config_dir))
+      {
+        // load config file
+        tui.load_config(pg.find("config") ? pg.get<fs::path>("config") :
+          base_config_dir / fs::path("config"));
+      }
+    }
 
     // start event loop
     tui.run();

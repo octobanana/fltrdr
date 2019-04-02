@@ -29,8 +29,8 @@ public:
 
   Tui();
 
-  void config(std::string const& custom_path = {});
   Tui& init(fs::path const& path = {});
+  void load_config(fs::path const& path);
   void run();
 
 private:
