@@ -121,7 +121,7 @@ public:
     _bytes = 0;
 
     _view.clear();
-    _view.shrink_to_fit();
+    // _view.shrink_to_fit();
 
     if (str.empty())
     {
