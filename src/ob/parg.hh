@@ -818,10 +818,10 @@ private:
       similar_.emplace_back(val);
     }
 
-    size_t const similar__max {3};
-    if (similar_.size() > similar__max)
+    size_t const similar_max {3};
+    if (similar_.size() > similar_max)
     {
-      similar_.erase(similar_.begin() + similar__max, similar_.end());
+      similar_.erase(similar_.begin() + similar_max, similar_.end());
     }
   }
 
