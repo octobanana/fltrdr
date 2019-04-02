@@ -20,14 +20,17 @@ namespace aec = OB::Term::ANSI_Escape_Codes;
 #include <utility>
 #include <optional>
 
+#include <filesystem>
+namespace fs = std::filesystem;
+
 class Tui
 {
 public:
 
   Tui();
 
-  Tui& init(std::string const& file_path = {});
   void config(std::string const& custom_path = {});
+  Tui& init(fs::path const& path = {});
   void run();
 
 private:
@@ -72,7 +75,7 @@ private:
     struct File
     {
       // file to read from
-      std::string path;
+      fs::path path;
 
       // file name
       std::string name;

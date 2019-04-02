@@ -35,13 +35,13 @@ Tui::Tui() :
 {
 }
 
-Tui& Tui::init(std::string const& file_path)
+Tui& Tui::init(fs::path const& path)
 {
   _ctx.file.path.clear();
   _ctx.file.name.clear();
 
   // parse from string
-  if (file_path.empty())
+  if (path.empty())
   {
     std::stringstream ss; ss
     << "fltrdr";
@@ -50,7 +50,7 @@ Tui& Tui::init(std::string const& file_path)
   }
 
   // parse from stdin
-  else if (file_path == "*stdin*")
+  else if (path == "*stdin*")
   {
     if (_fltrdr.parse(std::cin))
     {
@@ -62,21 +62,21 @@ Tui& Tui::init(std::string const& file_path)
   // parse from file
   else
   {
-    if (! fs::exists(file_path))
+    if (! fs::exists(path))
     {
-      throw std::runtime_error("the file does not exist '" + _ctx.file.path + "'");
+      throw std::runtime_error("the file does not exist '" + path.string() + "'");
     }
 
-    std::ifstream ifile {file_path};
+    std::ifstream ifile {path};
     if (! ifile.is_open())
     {
-      throw std::runtime_error("could not open the file '" + file_path + "'");
+      throw std::runtime_error("could not open the file '" + path.string() + "'");
     }
 
     if (_fltrdr.parse(ifile))
     {
-      _ctx.file.path = file_path;
-      _ctx.file.name = fs::path(file_path).lexically_normal().string();
+      _ctx.file.path = path;
+      _ctx.file.name = path.lexically_normal().string();
     }
   }
 
@@ -1980,23 +1980,23 @@ std::optional<std::pair<bool, std::string>> Tui::command(std::string const& inpu
   else if (match_opt = OB::String::match(input,
     std::regex("^open\\s+([^\\r]+)$")))
   {
-    auto const file_path = std::move(match_opt.value().at(1));
+    fs::path const path = std::move(match_opt.value().at(1));
 
-    if (! fs::exists(file_path))
+    if (! fs::exists(path))
     {
-      return std::make_pair(false, "error: could not open file '" + file_path + "'");
+      return std::make_pair(false, "error: could not open file '" + path.string() + "'");
     }
 
-    std::ifstream ifile {file_path};
-    if (! ifile.is_open())
+    std::ifstream file {path};
+    if (! file.is_open())
     {
-      return std::make_pair(false, "error: could not open file '" + file_path + "'");
+      return std::make_pair(false, "error: could not open file '" + path.string() + "'");
     }
 
-    if (_fltrdr.parse(ifile))
+    if (_fltrdr.parse(file))
     {
-      _ctx.file.path = file_path;
-      _ctx.file.name = fs::path(file_path).lexically_normal().string();
+      _ctx.file.path = path;
+      _ctx.file.name = path.lexically_normal().string();
     }
   }
 
