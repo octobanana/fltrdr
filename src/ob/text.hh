@@ -3,9 +3,14 @@
 
 #define U_CHARSET_IS_UTF8 1
 
+#include <unicode/coll.h>
 #include <unicode/regex.h>
 #include <unicode/utext.h>
+#include <unicode/unistr.h>
 #include <unicode/brkiter.h>
+#include <unicode/bytestream.h>
+#include <unicode/stringpiece.h>
+#include <unicode/normalizer2.h>
 
 #include <cstddef>
 #include <cstdint>
@@ -1310,6 +1315,124 @@ private:
 
   value_type _str;
 }; // class Regex
+
+inline std::string lowercase(std::string_view const str)
+{
+  icu::UnicodeString ustr {icu::UnicodeString::fromUTF8(icu::StringPiece(str.data(), str.size()))};
+  std::string res;
+  ustr.toLower().toUTF8String(res);
+
+  return res;
+}
+
+inline std::string uppercase(std::string_view const str)
+{
+  icu::UnicodeString ustr {icu::UnicodeString::fromUTF8(icu::StringPiece(str.data(), str.size()))};
+  std::string res;
+  ustr.toUpper().toUTF8String(res);
+
+  return res;
+}
+
+inline std::string foldcase(std::string_view const str)
+{
+  icu::UnicodeString ustr {icu::UnicodeString::fromUTF8(icu::StringPiece(str.data(), str.size()))};
+  std::string res;
+  ustr.foldCase().toUTF8String(res);
+
+  return res;
+}
+
+inline std::string trim(std::string_view const str)
+{
+  icu::UnicodeString ustr {icu::UnicodeString::fromUTF8(icu::StringPiece(str.data(), str.size()))};
+  std::string res;
+  ustr.trim().toUTF8String(res);
+
+  return res;
+}
+
+inline std::int32_t compare(std::string_view const lhs, std::string_view const rhs)
+{
+  UErrorCode ec = U_ZERO_ERROR;
+
+  std::unique_ptr<icu::Collator> coll {icu::Collator::createInstance(ec)};
+
+  if (U_FAILURE(ec))
+  {
+    throw std::runtime_error("failed to create collator");
+  }
+
+  std::int32_t res {coll->compareUTF8(
+    icu::StringPiece(lhs.data(), lhs.size()),
+    icu::StringPiece(rhs.data(), rhs.size()),
+    ec)};
+
+  if (U_FAILURE(ec))
+  {
+    throw std::runtime_error("failed to collate text");
+  }
+
+  return res;
+}
+
+inline std::string normalize(std::string_view const str)
+{
+  UErrorCode ec = U_ZERO_ERROR;
+
+  auto const norm = icu::Normalizer2::getNFKCInstance(ec);
+
+  if (U_FAILURE(ec))
+  {
+    throw std::runtime_error("failed to create normalizer");
+  }
+
+  std::string res;
+  icu::StringByteSink<std::string> bytesink (&res, str.size());
+
+  norm->normalizeUTF8(
+    0,
+    icu::StringPiece(str.data(), str.size()),
+    bytesink,
+    NULL,
+    ec);
+
+  if (U_FAILURE(ec))
+  {
+    throw std::runtime_error("failed to normalize text");
+  }
+
+  return res;
+}
+
+inline std::string normalize_foldcase(std::string_view const str)
+{
+  UErrorCode ec = U_ZERO_ERROR;
+
+  auto const norm = icu::Normalizer2::getNFKCCasefoldInstance(ec);
+
+  if (U_FAILURE(ec))
+  {
+    throw std::runtime_error("failed to create normalizer");
+  }
+
+  std::string res;
+  icu::StringByteSink<std::string> bytesink (&res, str.size());
+
+  norm->normalizeUTF8(
+    0,
+    icu::StringPiece(str.data(), str.size()),
+    bytesink,
+    NULL,
+    ec);
+
+  if (U_FAILURE(ec))
+  {
+    throw std::runtime_error("failed to normalize text");
+  }
+
+  return res;
+}
 
 inline std::int32_t to_int32(std::string_view str)
 {
