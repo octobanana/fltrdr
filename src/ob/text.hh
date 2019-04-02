@@ -1434,7 +1434,7 @@ inline std::string normalize_foldcase(std::string_view const str)
   return res;
 }
 
-inline std::int32_t to_int32(std::string_view str)
+inline std::int32_t to_int32(std::string_view const str)
 {
   if (str.empty())
   {
@@ -1467,7 +1467,7 @@ inline std::int32_t to_int32(std::string_view str)
   return 0;
 }
 
-inline bool is_quote(std::int32_t ch)
+inline bool is_quote(std::int32_t const ch)
 {
   switch(ch)
   {
@@ -1483,97 +1483,97 @@ inline bool is_quote(std::int32_t ch)
   }
 }
 
-inline bool is_upper(std::int32_t ch)
+inline bool is_upper(std::int32_t const ch)
 {
   return u_isupper(ch);
 }
 
-inline bool is_lower(std::int32_t ch)
+inline bool is_lower(std::int32_t const ch)
 {
   return u_islower(ch);
 }
 
-inline bool is_punct(std::int32_t ch)
+inline bool is_punct(std::int32_t const ch)
 {
   return u_ispunct(ch);
 }
 
-inline bool is_digit(std::int32_t ch)
+inline bool is_digit(std::int32_t const ch)
 {
   return u_isdigit(ch);
 }
 
-inline bool is_alpha(std::int32_t ch)
+inline bool is_alpha(std::int32_t const ch)
 {
   return u_isalpha(ch);
 }
 
-inline bool is_alnum(std::int32_t ch)
+inline bool is_alnum(std::int32_t const ch)
 {
   return u_isalnum(ch);
 }
 
-inline bool is_xdigit(std::int32_t ch)
+inline bool is_xdigit(std::int32_t const ch)
 {
   return u_isxdigit(ch);
 }
 
-inline bool is_blank(std::int32_t ch)
+inline bool is_blank(std::int32_t const ch)
 {
   return u_isblank(ch);
 }
 
-inline bool is_space(std::int32_t ch)
+inline bool is_space(std::int32_t const ch)
 {
   return u_isspace(ch);
 }
 
-inline bool is_whitespace(std::int32_t ch)
+inline bool is_whitespace(std::int32_t const ch)
 {
   return u_isWhitespace(ch);
 }
 
-inline bool is_ctrl(std::int32_t ch)
+inline bool is_ctrl(std::int32_t const ch)
 {
   return u_iscntrl(ch);
 }
 
-inline bool is_title(std::int32_t ch)
+inline bool is_title(std::int32_t const ch)
 {
   return u_istitle(ch);
 }
 
-inline bool is_graph(std::int32_t ch)
+inline bool is_graph(std::int32_t const ch)
 {
   return u_isgraph(ch);
 }
 
-inline bool is_defined(std::int32_t ch)
+inline bool is_defined(std::int32_t const ch)
 {
   return u_isdefined(ch);
 }
 
-inline bool is_isoctrl(std::int32_t ch)
+inline bool is_isoctrl(std::int32_t const ch)
 {
   return u_isISOControl(ch);
 }
 
-inline bool is_print(std::int32_t ch)
+inline bool is_print(std::int32_t const ch)
 {
   return u_isprint(ch);
 }
 
-inline std::int32_t to_title(std::int32_t ch)
+inline std::int32_t to_title(std::int32_t const ch)
 {
   return u_totitle(ch);
 }
 
-inline std::int32_t to_upper(std::int32_t ch)
+inline std::int32_t to_upper(std::int32_t const ch)
 {
   return u_toupper(ch);
 }
 
-inline std::int32_t to_lower(std::int32_t ch)
+inline std::int32_t to_lower(std::int32_t const ch)
 {
   return u_tolower(ch);
 }
