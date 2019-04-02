@@ -181,8 +181,8 @@ std::string Readline::operator()(bool& is_running)
 
         case OB::Term::ctrl_key('c'):
         {
-          // exit the main event loop
-          is_running = false;
+          // exit the command prompt
+          loop = false;
           clear_input = true;
 
           break;
