@@ -43,6 +43,7 @@
 #include <regex>
 #include <algorithm>
 #include <type_traits>
+#include <filesystem>
 
 namespace OB
 {
@@ -407,10 +408,26 @@ public:
     options_.append(out.str());
   }
 
-  template<class T>
-  T get(std::string const _key)
+  template<typename T,
+    std::enable_if_t<
+      std::is_same_v<T, std::string> ||
+      std::is_same_v<T, std::filesystem::path>,
+      int> = 0>
+  T get(std::string const& _key)
   {
-    static_assert(! std::is_same_v<T, std::string>, "use non-template version of function for 'std::string' type");
+    if (data_.find(_key) == data_.end())
+    {
+      throw std::logic_error("parg get '" + _key + "' is not defined");
+    }
+    return data_[_key].value_;
+  }
+
+  template<typename T,
+    std::enable_if_t<
+      std::is_integral_v<T>,
+      int> = 0>
+  T get(std::string const& _key)
+  {
     if (data_.find(_key) == data_.end())
     {
       throw std::logic_error("parg get '" + _key + "' is not defined");
@@ -420,15 +437,6 @@ public:
     T val;
     ss >> val;
     return val;
-  }
-
-  std::string get(std::string const _key)
-  {
-    if (data_.find(_key) == data_.end())
-    {
-      throw std::logic_error("parg get '" + _key + "' is not defined");
-    }
-    return data_[_key].value_;
   }
 
   bool find(std::string const _key) const
