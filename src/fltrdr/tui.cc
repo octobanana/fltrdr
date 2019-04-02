@@ -167,6 +167,16 @@ void Tui::load_config(fs::path const& path)
   }
 }
 
+void Tui::load_hist_command(fs::path const& path)
+{
+  _readline.hist_load(path);
+}
+
+void Tui::load_hist_search(fs::path const& path)
+{
+  _readline_search.hist_load(path);
+}
+
 void Tui::run()
 {
   std::cout

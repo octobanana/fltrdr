@@ -31,6 +31,8 @@ public:
 
   Tui& init(fs::path const& path = {});
   void load_config(fs::path const& path);
+  void load_hist_command(fs::path const& path);
+  void load_hist_search(fs::path const& path);
   void run();
 
 private:

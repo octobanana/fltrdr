@@ -2,15 +2,16 @@
 #define OB_READLINE_HH
 
 #include "ob/text.hh"
-#include "ob/term.hh"
-namespace aec = OB::Term::ANSI_Escape_Codes;
 
-#include <cstdio>
 #include <cstddef>
-#include <cstdlib>
 
+#include <deque>
 #include <string>
-#include <vector>
+#include <limits>
+#include <fstream>
+
+#include <filesystem>
+namespace fs = std::filesystem;
 
 namespace OB
 {
@@ -28,6 +29,7 @@ public:
 
   void hist_push(std::string const& str);
   std::string hist_pop();
+  void hist_load(fs::path const& path);
 
 private:
 
@@ -45,6 +47,10 @@ private:
 
   void hist_prev();
   void hist_next();
+  void hist_reset();
+  void hist_search(std::string const& str);
+  void hist_open(fs::path const& path);
+  void hist_save(std::string const& str);
 
   std::string normalize(std::string const& str) const;
 
@@ -78,8 +84,55 @@ private:
 
   struct History
   {
-    std::vector<std::string> val;
-    std::size_t idx {0};
+    static std::size_t constexpr npos {std::numeric_limits<std::size_t>::max()};
+
+    struct Search
+    {
+      struct Result
+      {
+        Result(std::size_t s, std::size_t i):
+          score {s},
+          idx {i}
+        {
+        }
+
+        std::size_t score {0};
+        std::size_t idx {0};
+      };
+
+      using value_type = std::deque<Result>;
+
+      value_type& operator()()
+      {
+        return val;
+      }
+
+      bool empty()
+      {
+        return val.empty();
+      }
+
+      void clear()
+      {
+        idx = History::npos;
+        val.clear();
+      }
+
+      std::size_t idx {0};
+      value_type val;
+    } search;
+
+    using value_type = std::deque<std::string>;
+
+    value_type& operator()()
+    {
+      return val;
+    }
+
+    value_type val;
+    std::size_t idx {npos};
+
+    std::ofstream file;
   } _history;
 };
 

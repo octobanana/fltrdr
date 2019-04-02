@@ -10,12 +10,17 @@ namespace aec = OB::Term::ANSI_Escape_Codes;
 #include <cstdint>
 #include <cstdlib>
 
+#include <deque>
 #include <string>
 #include <vector>
+#include <fstream>
 #include <iostream>
 #include <chrono>
 #include <thread>
 #include <algorithm>
+
+#include <filesystem>
+namespace fs = std::filesystem;
 
 namespace OB
 {
@@ -284,6 +289,7 @@ std::string Readline::operator()(bool& is_running)
   auto res = normalize(_input.str);
 
   hist_push(res);
+  hist_save(res);
 
   if (clear_input)
   {
@@ -390,7 +396,7 @@ void Readline::edit_insert(std::string const& str)
 
   refresh();
 
-  _history.idx = _history.val.size();
+  hist_reset();
 }
 
 void Readline::edit_clear()
@@ -403,7 +409,7 @@ void Readline::edit_clear()
 
   refresh();
 
-  _history.idx = _history.val.size();
+  hist_reset();
 }
 
 bool Readline::edit_delete()
@@ -430,7 +436,7 @@ bool Readline::edit_delete()
 
     refresh();
 
-    _history.idx = _history.val.size();
+    hist_reset();
   }
   else if (_input.off || _input.idx)
   {
@@ -447,7 +453,7 @@ bool Readline::edit_delete()
 
     refresh();
 
-    _history.idx = _history.val.size();
+    hist_reset();
   }
 
   return true;
@@ -479,7 +485,7 @@ bool Readline::edit_backspace()
 
     refresh();
 
-    _history.idx = _history.val.size();
+    hist_reset();
   }
 
   return true;
@@ -489,15 +495,34 @@ void Readline::hist_prev()
 {
   // cycle backwards in history
 
-  if (_history.idx)
+  bool bounds {_history.search().empty() ?
+    (_history.idx < _history().size() - 1) :
+    (_history.idx < _history.search().size() - 1)};
+
+  if (bounds || _history.idx == History::npos)
   {
-    if (_history.idx == _history.val.size())
+    if (_history.idx == History::npos)
     {
       _input.buf = _input.str;
+
+      if (! _input.buf.empty())
+      {
+        hist_search(_input.buf);
+      }
     }
 
-    --_history.idx;
-    _input.str = _history.val.at(_history.idx);
+    ++_history.idx;
+
+    if (_history.search().empty())
+    {
+      // normal search
+      _input.str = _history().at(_history.idx);
+    }
+    else
+    {
+      // fuzzy search
+      _input.str = _history().at(_history.search().at(_history.idx).idx);
+    }
 
     if (_input.str.size() + 1 >= _width)
     {
@@ -518,16 +543,23 @@ void Readline::hist_next()
 {
   // cycle forwards in history
 
-  if (_history.idx < _history.val.size())
+  if (_history.idx != History::npos)
   {
-    ++_history.idx;
-    if (_history.idx == _history.val.size())
+    --_history.idx;
+
+    if (_history.idx == History::npos)
     {
       _input.str = _input.buf;
     }
+    else if (_history.search().empty())
+    {
+      // normal search
+      _input.str = _history().at(_history.idx);
+    }
     else
     {
-      _input.str = _history.val.at(_history.idx);
+      // fuzzy search
+      _input.str = _history().at(_history.search().at(_history.idx).idx);
     }
 
     if (_input.str.size() + 1 >= _width)
@@ -545,44 +577,180 @@ void Readline::hist_next()
   }
 }
 
-void Readline::hist_push(std::string const& str)
+void Readline::hist_reset()
 {
-  if (! str.empty() && ! (! _history.val.empty() && _history.val.back() == str))
+  _history.search.clear();
+  _history.idx = History::npos;
+}
+
+void Readline::hist_search(std::string const& str)
+{
+  _history.search.clear();
+
+  OB::Text::String input {OB::Text::normalize_foldcase(
+    std::regex_replace(OB::Text::trim(str), std::regex("\\s+"),
+    " ", std::regex_constants::match_not_null))};
+
+  if (input.empty())
   {
-    if (auto pos = std::find(_history.val.begin(), _history.val.end(), str); pos != _history.val.end())
-    {
-      _history.val.erase(pos);
-    }
-    _history.val.emplace_back(str);
+    return;
   }
 
-  _history.idx = _history.val.size();
+  std::size_t idx {0};
+  std::size_t count {0};
+  std::size_t weight {0};
+  std::string prev_hist {" "};
+  std::string prev_input {" "};
+  OB::Text::String hist;
+
+  for (std::size_t i = 0; i < _history().size(); ++i)
+  {
+    hist.str(OB::Text::normalize_foldcase(_history().at(i)));
+
+    if (hist.size() <= input.size())
+    {
+      continue;
+    }
+
+    idx = 0;
+    count = 0;
+    weight = 0;
+    prev_hist = " ";
+    prev_input = " ";
+
+    for (std::size_t j = 0, seq = 0; j < hist.size(); ++j)
+    {
+      if (idx < input.size() &&
+        hist.at(j).str == input.at(idx).str)
+      {
+        ++seq;
+        count += 1 * seq;
+
+        if (prev_hist == " " && prev_input == " ")
+        {
+          count += 2;
+        }
+
+        prev_input = input.at(idx).str;
+        ++idx;
+
+        if (seq == input.size())
+        {
+          break;
+        }
+      }
+      else
+      {
+        seq = 0;
+
+        if (idx == 0)
+        {
+          weight += 2;
+        }
+        else
+        {
+          weight += 1;
+        }
+      }
+
+      prev_hist = hist.at(j).str;
+    }
+
+    if (idx != input.size())
+    {
+      continue;
+    }
+
+    while (count && weight)
+    {
+      --count;
+      --weight;
+    }
+
+    _history.search().emplace_back(weight, i);
+  }
+
+  std::sort(_history.search().begin(), _history.search().end(),
+  [](auto const& lhs, auto const& rhs)
+  {
+    return lhs.score < rhs.score;
+  });
+}
+
+void Readline::hist_push(std::string const& str)
+{
+  if (! str.empty() && ! (! _history().empty() && _history().back() == str))
+  {
+    if (auto pos = std::find(_history().begin(), _history().end(), str); pos != _history().end())
+    {
+      _history().erase(pos);
+    }
+
+    _history().emplace_front(str);
+  }
+
+  hist_reset();
 }
 
 std::string Readline::hist_pop()
 {
-  if (_history.val.empty())
+  if (_history().empty())
   {
     return {};
   }
 
-  auto const res = _history.val.back();
-  _history.val.pop_back();
+  auto const res = _history().front();
+  _history().pop_front();
 
   return res;
 }
 
+void Readline::hist_load(fs::path const& path)
+{
+  if (! path.empty())
+  {
+    std::ifstream ifile {path};
+
+    if (ifile && ifile.is_open())
+    {
+      std::string line;
+
+      while (std::getline(ifile, line))
+      {
+        hist_push(line);
+      }
+    }
+
+    hist_open(path);
+  }
+}
+
+void Readline::hist_save(std::string const& str)
+{
+  if (_history.file.is_open())
+  {
+    _history.file
+    << str << "\n"
+    << std::flush;
+  }
+}
+
+void Readline::hist_open(fs::path const& path)
+{
+  _history.file.open(path, std::ios::app);
+
+  if (! _history.file.is_open())
+  {
+    throw std::runtime_error("could not open file '" + path.string() + "'");
+  }
+}
+
 std::string Readline::normalize(std::string const& str) const
 {
-  // TODO add normalize toggle
-  return OB::String::trim(str);
-
   // trim leading and trailing whitespace
   // collapse sequential whitespace
-  // return OB::String::lowercase(std::regex_replace(
-  //   OB::String::trim(str), std::regex("\\s+"),
-  //   " ", std::regex_constants::match_not_null
-  // ));
+  return std::regex_replace(OB::Text::trim(str), std::regex("\\s+"),
+    " ", std::regex_constants::match_not_null);
 }
 
 } // namespace OB
