@@ -341,13 +341,23 @@ int main(int argc, char *argv[])
       if (base_config_dir != "NONE" &&
         fs::exists(base_config_dir) && fs::is_directory(base_config_dir))
       {
+        // check/create default directories
+
+        fs::path history_dir {base_config_dir / fs::path("history")};
+
+        if (! fs::exists(history_dir) || ! fs::is_directory(history_dir))
+        {
+          fs::create_directory(history_dir);
+        }
+
+        // load history files
+        tui.load_hist_command(history_dir / fs::path("command"));
+        tui.load_hist_search(history_dir / fs::path("search"));
+
         // load config file
         tui.load_config(pg.find("config") ? pg.get<fs::path>("config") :
           base_config_dir / fs::path("config"));
 
-        // load history files
-        tui.load_hist_command(base_config_dir / fs::path("hist_command"));
-        tui.load_hist_search(base_config_dir / fs::path("hist_search"));
       }
     }
 
