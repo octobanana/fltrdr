@@ -1,6 +1,8 @@
 #ifndef OB_TIMER_HH
 #define OB_TIMER_HH
 
+#include "ob/string.hh"
+
 #include <ctime>
 
 #include <chrono>
@@ -16,6 +18,11 @@ class Timer
 public:
 
   Timer() = default;
+
+  operator bool()
+  {
+    return _is_running;
+  }
 
   Timer& start()
   {
@@ -64,9 +71,10 @@ public:
     return seconds_to_string(diff);
   }
 
-  operator bool()
+  void str(std::string const& str)
   {
-    return _is_running;
+    reset();
+    _total = std::chrono::time_point<std::chrono::high_resolution_clock>(string_to_seconds(str));
   }
 
 private:
@@ -81,6 +89,65 @@ private:
     }
 
     _start = stop;
+  }
+
+  std::chrono::seconds string_to_seconds(std::string const& str)
+  {
+    long int constexpr t_second {1};
+    long int constexpr t_minute {t_second * 60};
+    long int constexpr t_hour   {t_minute * 60};
+    long int constexpr t_day    {t_hour * 24};
+    long int constexpr t_week   {t_day * 7};
+    long int constexpr t_month  (t_day * 30.4);
+    long int constexpr t_year   {t_month * 12};
+
+    auto const pstr = OB::String::match(str,
+      std::regex("^(:?(\\d+)Y:)?(:?(\\d+)M:)?(:?(\\d+)W:)?(:?(\\d+)D:)?(:?(\\d+)h:)?(:?(\\d+)m:)?(:?(\\d+)s)$"));
+
+    if (! pstr)
+    {
+      return static_cast<std::chrono::seconds>(0);
+    }
+
+    auto const t = pstr.value();
+    long int sec {0};
+
+    if (! t.at(2).empty())
+    {
+      sec += std::stol(t.at(2)) * t_year;
+    }
+
+    if (! t.at(4).empty())
+    {
+      sec += std::stol(t.at(4)) * t_month;
+    }
+
+    if (! t.at(6).empty())
+    {
+      sec += std::stol(t.at(6)) * t_week;
+    }
+
+    if (! t.at(8).empty())
+    {
+      sec += std::stol(t.at(8)) * t_day;
+    }
+
+    if (! t.at(10).empty())
+    {
+      sec += std::stol(t.at(10)) * t_hour;
+    }
+
+    if (! t.at(12).empty())
+    {
+      sec += std::stol(t.at(12)) * t_minute;
+    }
+
+    if (! t.at(14).empty())
+    {
+      sec += std::stol(t.at(14)) * t_second;
+    }
+
+    return static_cast<std::chrono::seconds>(sec);
   }
 
   std::string seconds_to_string(long int sec)
