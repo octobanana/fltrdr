@@ -1,10 +1,13 @@
 #include "fltrdr/fltrdr.hh"
 
+#include "ob/crypto.hh"
 #include "ob/string.hh"
 #include "ob/timer.hh"
 #include "ob/text.hh"
 #include "ob/term.hh"
 namespace aec = OB::Term::ANSI_Escape_Codes;
+
+#include <openssl/sha.h>
 
 #include <cmath>
 #include <cctype>
@@ -30,6 +33,7 @@ void Fltrdr::init()
   _ctx.pos = 0;
   _ctx.index = 1;
 
+  _ctx.content_id.clear();
   _ctx.text.clear();
   _ctx.text.shrink_to_fit();
 
@@ -68,14 +72,22 @@ bool Fltrdr::parse(std::istream& input)
 
     _ctx.text.sync();
     _ctx.index_max = word_count;
+    _ctx.content_id = OB::Crypto::sha256(_ctx.text.str()).value_or("");
 
     return false;
   }
 
+
   _ctx.text.sync();
   _ctx.index_max = word_count;
+  _ctx.content_id = OB::Crypto::sha256(_ctx.text.str()).value_or("");
 
   return true;
+}
+
+std::string Fltrdr::content_id()
+{
+  return _ctx.content_id;
 }
 
 bool Fltrdr::eof()
@@ -540,6 +552,16 @@ int Fltrdr::get_wait()
   }
 
   return _ctx.ms;
+}
+
+void Fltrdr::set_wpm_avg(int const i)
+{
+  _ctx.wpm_avg = i;
+}
+
+int Fltrdr::get_wpm_avg()
+{
+  return _ctx.wpm_avg;
 }
 
 void Fltrdr::calc_wpm_avg()

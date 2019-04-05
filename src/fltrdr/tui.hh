@@ -30,7 +30,10 @@ public:
   Tui();
 
   Tui& init(fs::path const& path = {});
+  void base_config(fs::path const& path);
   void load_config(fs::path const& path);
+  bool save_state();
+  bool load_state();
   void load_hist_command(fs::path const& path);
   void load_hist_search(fs::path const& path);
   void run();
@@ -62,6 +65,7 @@ private:
   void pause();
 
   void set_wait();
+  void set_status(bool success, std::string const& msg);
 
   void search_forward();
   void search_backward();
@@ -82,6 +86,9 @@ private:
       // file name
       std::string name;
     } file;
+
+    // base config directory
+    fs::path base_config;
 
     // current terminal size
     std::size_t width {0};

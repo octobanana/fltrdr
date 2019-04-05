@@ -29,6 +29,7 @@ public:
 
   void init();
   bool parse(std::istream& input);
+  std::string content_id();
 
   Fltrdr& screen_size(std::size_t const width, std::size_t const height);
 
@@ -54,6 +55,9 @@ public:
   void set_wpm(int const i);
   void inc_wpm();
   void dec_wpm();
+
+  void set_wpm_avg(int const i);
+  int get_wpm_avg();
 
   void calc_wpm_avg();
   std::string get_stats();
@@ -109,6 +113,9 @@ private:
 
     // text buffer
     OB::Text::String text;
+
+    // sha256 hash of the text buffer
+    std::string content_id;
 
     // current rendered line
     Line line;

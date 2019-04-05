@@ -31,6 +31,7 @@ message ("CMAKE_BUILD_TYPE is ${CMAKE_BUILD_TYPE}")
 
 set (SOURCES
   src/main.cc
+  src/ob/crypto.cc
   src/ob/string.cc
   src/ob/readline.cc
   src/fltrdr/tui.cc
@@ -51,6 +52,7 @@ target_include_directories(
 target_link_libraries (
   ${TARGET}
   stdc++fs
+  crypto
   icuuc
   icui18n
 )

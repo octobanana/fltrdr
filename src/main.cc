@@ -341,7 +341,17 @@ int main(int argc, char *argv[])
       if (base_config_dir != "NONE" &&
         fs::exists(base_config_dir) && fs::is_directory(base_config_dir))
       {
+        // set base config directory
+        tui.base_config(base_config_dir);
+
         // check/create default directories
+
+        fs::path state_dir {base_config_dir / fs::path("state")};
+
+        if (! fs::exists(state_dir) || ! fs::is_directory(state_dir))
+        {
+          fs::create_directory(state_dir);
+        }
 
         fs::path history_dir {base_config_dir / fs::path("history")};
 
@@ -358,6 +368,8 @@ int main(int argc, char *argv[])
         tui.load_config(pg.find("config") ? pg.get<fs::path>("config") :
           base_config_dir / fs::path("config"));
 
+        // load content state if available
+        tui.load_state();
       }
     }
 

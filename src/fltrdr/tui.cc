@@ -18,6 +18,7 @@ namespace aec = OB::Term::ANSI_Escape_Codes;
 #include <sstream>
 #include <fstream>
 #include <iostream>
+#include <iomanip>
 #include <vector>
 #include <chrono>
 #include <thread>
@@ -106,6 +107,11 @@ bool Tui::press_to_continue(std::string const& str, char32_t val)
   return res;
 }
 
+void Tui::base_config(fs::path const& path)
+{
+  _ctx.base_config = path;
+}
+
 void Tui::load_config(fs::path const& path)
 {
   // ignore config if path equals "NONE"
@@ -165,6 +171,99 @@ void Tui::load_config(fs::path const& path)
       throw std::runtime_error("aborted by user");
     }
   }
+}
+
+bool Tui::save_state()
+{
+  if (_ctx.base_config.empty())
+  {
+    set_status(false, "empty base config directory");
+
+    return false;
+  }
+
+  auto const content_id = _fltrdr.content_id();
+
+  if (content_id.empty())
+  {
+    set_status(false, "empty content id");
+
+    return false;
+  }
+
+  fs::path path {_ctx.base_config / fs::path("state") / fs::path(_fltrdr.content_id())};
+
+  std::ofstream file {path, std::ios::trunc};
+
+  if (! file.is_open())
+  {
+    set_status(false, "could not open file");
+
+    return false;
+  }
+
+  // timestamp
+  std::time_t t = std::time(0);
+  std::tm tm = *std::localtime(&t);
+
+  // dump current state to file
+  file
+  << "# fltrdr state\n"
+  << "# file: " << _ctx.file.path.string() << "\n"
+  << "# date: " << std::put_time(&tm, "%FT%TZ\n")
+  << "\n"
+  << "goto " << _fltrdr.get_index() << "\n"
+  << "wpm " << _fltrdr.get_wpm() << "\n"
+  << "wpm-avg " << _fltrdr.get_wpm_avg() << "\n"
+  << "timer " << _fltrdr.timer.str() << "\n"
+  << std::flush;
+
+  set_status(true, "saved state");
+
+  return true;
+}
+
+bool Tui::load_state()
+{
+  if (_ctx.base_config.empty())
+  {
+    return false;
+  }
+
+  auto const content_id = _fltrdr.content_id();
+
+  if (content_id.empty())
+  {
+    return false;
+  }
+
+  fs::path path {_ctx.base_config / fs::path("state") / fs::path(_fltrdr.content_id())};
+
+  if (! fs::exists(path))
+  {
+    return false;
+  }
+
+  std::ifstream file {path};
+
+  if (file.is_open())
+  {
+    std::string line;
+    std::size_t lnum {0};
+
+    while (std::getline(file, line))
+    {
+      // ignore empty line or comment
+      if (line.empty() || OB::String::assert_rx(line, std::regex("^#[^\\r]*$")))
+      {
+        continue;
+      }
+
+      command(line);
+    }
+  }
+
+  return true;
 }
 
 void Tui::load_hist_command(fs::path const& path)
@@ -792,6 +891,13 @@ void Tui::set_wait()
   }
 }
 
+void Tui::set_status(bool success, std::string const& msg)
+{
+  _ctx.style.prompt_status = success ? _ctx.style.success : _ctx.style.error;
+  _ctx.prompt.str = msg;
+  _ctx.prompt.count = _ctx.prompt.timeout;
+}
+
 void Tui::get_input(int& wait)
 {
   while ((_ctx.key.val = OB::Term::get_key(&_ctx.key.str)) > 0)
@@ -800,12 +906,22 @@ void Tui::get_input(int& wait)
 
     switch (_ctx.keys.at(0).val)
     {
+      // quit
       case 'q': case 'Q':
       {
         _ctx.is_running = false;
         _ctx.keys.clear();
 
         return;
+      }
+
+      // save state
+      case 'w':
+      {
+        pause();
+        save_state();
+
+        break;
       }
 
       case OB::Term::ctrl_key('c'):
@@ -1129,6 +1245,22 @@ std::optional<std::pair<bool, std::string>> Tui::command(std::string const& inpu
   if (match_opt = OB::String::match(input,
     std::regex("^(q|Q|quit|Quit|exit)$")))
   {
+    _ctx.is_running = false;
+    return {};
+  }
+
+  // save state
+  else if (match_opt = OB::String::match(input,
+    std::regex("^w$")))
+  {
+    save_state();
+  }
+
+  // save state and quit
+  else if (match_opt = OB::String::match(input,
+    std::regex("^wq$")))
+  {
+    save_state();
     _ctx.is_running = false;
     return {};
   }
@@ -1917,22 +2049,17 @@ std::optional<std::pair<bool, std::string>> Tui::command(std::string const& inpu
   }
 
   else if (match_opt = OB::String::match(input,
-    std::regex("^reset(:?\\s+(wpm|timer))?$")))
+    std::regex("^timer\\s+(.+)$")))
   {
     auto const match = OB::String::trim(match_opt.value().at(1));
 
-    if (match.empty())
+    if (match == "clear")
     {
       _fltrdr.reset_timer();
-      _fltrdr.reset_wpm_avg();
     }
-    if (match == "wpm")
+    else
     {
-      _fltrdr.reset_wpm_avg();
-    }
-    else if (match == "timer")
-    {
-      _fltrdr.reset_timer();
+      _fltrdr.timer.str(match);
     }
   }
 
@@ -1958,6 +2085,8 @@ std::optional<std::pair<bool, std::string>> Tui::command(std::string const& inpu
       _ctx.file.path = path;
       _ctx.file.name = path.lexically_normal().string();
     }
+
+    load_state();
   }
 
   // set wpm
@@ -1967,6 +2096,22 @@ std::optional<std::pair<bool, std::string>> Tui::command(std::string const& inpu
     auto const match = std::move(match_opt.value().at(1));
 
     _fltrdr.set_wpm(std::stoi(match));
+  }
+
+  // set wpm-avg
+  else if (match_opt = OB::String::match(input,
+    std::regex("^wpm-avg\\s+([0-9]+|clear)$")))
+  {
+    auto const match = std::move(match_opt.value().at(1));
+
+    if (match == "clear")
+    {
+      _fltrdr.reset_wpm_avg();
+    }
+    else
+    {
+      _fltrdr.set_wpm_avg(std::stoi(match));
+    }
   }
 
   // goto word
@@ -2022,9 +2167,7 @@ void Tui::command_prompt()
 
   if (auto const res = command(input))
   {
-    _ctx.style.prompt_status = res.value().first ? _ctx.style.success : _ctx.style.error;
-    _ctx.prompt.str = res.value().second;
-    _ctx.prompt.count = _ctx.prompt.timeout;
+    set_status(res.value().first, res.value().second);
   }
 }
 
@@ -2060,9 +2203,7 @@ void Tui::search_forward()
   }
   else if (! input.empty() && ! _fltrdr.search(input, true))
   {
-    _ctx.style.prompt_status = _ctx.style.error;
-    _ctx.prompt.str = input;
-    _ctx.prompt.count = _ctx.prompt.timeout;
+    set_status(false, input);
   }
 }
 
@@ -2098,9 +2239,7 @@ void Tui::search_backward()
   }
   else if (! input.empty() && ! _fltrdr.search(input, false))
   {
-    _ctx.style.prompt_status = _ctx.style.error;
-    _ctx.prompt.str = input;
-    _ctx.prompt.count = _ctx.prompt.timeout;
+    set_status(false, input);
   }
 }
 
