@@ -1672,21 +1672,21 @@ std::optional<std::pair<bool, std::string>> Tui::command(std::string const& inpu
   }
 
   else if (match_opt = OB::String::match(input,
-    std::regex("^style\\s+progress\\-primary\\s+(#?[0-9a-fA-F]{6})$")))
+    std::regex("^style\\s+progress\\-bar\\s+(#?[0-9a-fA-F]{6})$")))
   {
     // 24-bit color
     auto const match = std::move(match_opt.value().at(1));
     _ctx.style.progress_bar = aec::fg_true(match);
   }
   else if (match_opt = OB::String::match(input,
-    std::regex("^style\\s+progress\\-primary\\s+([0-9]{1,3})$")))
+    std::regex("^style\\s+progress\\-bar\\s+([0-9]{1,3})$")))
   {
     // 8-bit color
     auto const match = std::move(match_opt.value().at(1));
     _ctx.style.progress_bar = aec::fg_256(match);
   }
   else if (match_opt = OB::String::match(input,
-    std::regex("^style\\s+progress\\-primary\\s+(clear|reverse|black|red|green|yellow|blue|magenta|cyan|white)(?:\\s+(bright))?$")))
+    std::regex("^style\\s+progress\\-bar\\s+(clear|reverse|black|red|green|yellow|blue|magenta|cyan|white)(?:\\s+(bright))?$")))
   {
     auto const match = std::move(match_opt.value().at(1));
 
@@ -1709,21 +1709,21 @@ std::optional<std::pair<bool, std::string>> Tui::command(std::string const& inpu
   }
 
   else if (match_opt = OB::String::match(input,
-    std::regex("^style\\s+progress\\-secondary\\s+(#?[0-9a-fA-F]{6})$")))
+    std::regex("^style\\s+progress\\-fill\\s+(#?[0-9a-fA-F]{6})$")))
   {
     // 24-bit color
     auto const match = std::move(match_opt.value().at(1));
     _ctx.style.progress_fill = aec::fg_true(match);
   }
   else if (match_opt = OB::String::match(input,
-    std::regex("^style\\s+progress\\-secondary\\s+([0-9]{1,3})$")))
+    std::regex("^style\\s+progress\\-fill\\s+([0-9]{1,3})$")))
   {
     // 8-bit color
     auto const match = std::move(match_opt.value().at(1));
     _ctx.style.progress_fill = aec::fg_256(match);
   }
   else if (match_opt = OB::String::match(input,
-    std::regex("^style\\s+progress\\-secondary\\s+(clear|reverse|black|red|green|yellow|blue|magenta|cyan|white)(?:\\s+(bright))?$")))
+    std::regex("^style\\s+progress\\-fill\\s+(clear|reverse|black|red|green|yellow|blue|magenta|cyan|white)(?:\\s+(bright))?$")))
   {
     auto const match = std::move(match_opt.value().at(1));
 
@@ -2102,7 +2102,7 @@ std::optional<std::pair<bool, std::string>> Tui::command(std::string const& inpu
   }
 
   else if (match_opt = OB::String::match(input,
-    std::regex("^sym\\s+progress-bar(?:\\s+(.{0,4}))?$")))
+    std::regex("^sym\\s+progress\\-bar(?:\\s+(.{0,4}))?$")))
   {
     auto const match = match_opt.value().at(1);
 
@@ -2125,7 +2125,7 @@ std::optional<std::pair<bool, std::string>> Tui::command(std::string const& inpu
   }
 
   else if (match_opt = OB::String::match(input,
-    std::regex("^sym\\s+progress-fill(?:\\s+(.{0,4}))?$")))
+    std::regex("^sym\\s+progress\\-fill(?:\\s+(.{0,4}))?$")))
   {
     auto const match = match_opt.value().at(1);
 
