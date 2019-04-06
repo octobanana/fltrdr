@@ -1748,9 +1748,9 @@ std::optional<std::pair<bool, std::string>> Tui::command(std::string const& inpu
   }
 
   else if (match_opt = OB::String::match(input,
-    std::regex("^set\\s+border\\-top(:?\\s+(true|false|t|f|1|0|on|off))?$")))
+    std::regex("^set\\s+border\\-top(?:\\s+(true|false|t|f|1|0|on|off))?$")))
   {
-    auto const match = OB::String::trim(match_opt.value().at(1));
+    auto const match = match_opt.value().at(1);
 
     if (match.empty() || "true" == match || "t" == match || "1" == match || "on" == match)
     {
@@ -1763,9 +1763,9 @@ std::optional<std::pair<bool, std::string>> Tui::command(std::string const& inpu
   }
 
   else if (match_opt = OB::String::match(input,
-    std::regex("^set\\s+border\\-bottom(:?\\s+(true|false|t|f|1|0|on|off))?$")))
+    std::regex("^set\\s+border\\-bottom(?:\\s+(true|false|t|f|1|0|on|off))?$")))
   {
-    auto const match = OB::String::trim(match_opt.value().at(1));
+    auto const match = match_opt.value().at(1);
 
     if (match.empty() || "true" == match || "t" == match || "1" == match || "on" == match)
     {
@@ -1778,9 +1778,9 @@ std::optional<std::pair<bool, std::string>> Tui::command(std::string const& inpu
   }
 
   else if (match_opt = OB::String::match(input,
-    std::regex("^set\\s+progress(:?\\s+(true|false|t|f|1|0|on|off))?$")))
+    std::regex("^set\\s+progress(?:\\s+(true|false|t|f|1|0|on|off))?$")))
   {
-    auto const match = OB::String::trim(match_opt.value().at(1));
+    auto const match = match_opt.value().at(1);
 
     if (match.empty() || "true" == match || "t" == match || "1" == match || "on" == match)
     {
@@ -1793,9 +1793,9 @@ std::optional<std::pair<bool, std::string>> Tui::command(std::string const& inpu
   }
 
   else if (match_opt = OB::String::match(input,
-    std::regex("^set\\s+status(:?\\s+(true|false|t|f|1|0|on|off))?$")))
+    std::regex("^set\\s+status(?:\\s+(true|false|t|f|1|0|on|off))?$")))
   {
-    auto const match = OB::String::trim(match_opt.value().at(1));
+    auto const match = match_opt.value().at(1);
 
     if (match.empty() || "true" == match || "t" == match || "1" == match || "on" == match)
     {
@@ -1808,9 +1808,9 @@ std::optional<std::pair<bool, std::string>> Tui::command(std::string const& inpu
   }
 
   else if (match_opt = OB::String::match(input,
-    std::regex("^sym\\s+progress-bar(:?\\s+(.{0,4}))?$")))
+    std::regex("^sym\\s+progress-bar(?:\\s+(.{0,4}))?$")))
   {
-    auto const match = OB::String::trim(match_opt.value().at(1));
+    auto const match = match_opt.value().at(1);
 
     if (match.empty())
     {
@@ -1831,9 +1831,9 @@ std::optional<std::pair<bool, std::string>> Tui::command(std::string const& inpu
   }
 
   else if (match_opt = OB::String::match(input,
-    std::regex("^sym\\s+progress-fill(:?\\s+(.{0,4}))?$")))
+    std::regex("^sym\\s+progress-fill(?:\\s+(.{0,4}))?$")))
   {
-    auto const match = OB::String::trim(match_opt.value().at(1));
+    auto const match = match_opt.value().at(1);
 
     if (match.empty())
     {
@@ -1854,9 +1854,9 @@ std::optional<std::pair<bool, std::string>> Tui::command(std::string const& inpu
   }
 
   else if (match_opt = OB::String::match(input,
-    std::regex("^sym\\s+border\\-top(:?\\s+(.{0,4}))?$")))
+    std::regex("^sym\\s+border\\-top(?:\\s+(.{0,4}))?$")))
   {
-    auto const match = OB::String::trim(match_opt.value().at(1));
+    auto const match = match_opt.value().at(1);
 
     if (match.empty())
     {
@@ -1877,9 +1877,9 @@ std::optional<std::pair<bool, std::string>> Tui::command(std::string const& inpu
   }
 
   else if (match_opt = OB::String::match(input,
-    std::regex("^sym\\s+border\\-top\\-mark(:?\\s+(.{0,4}))?$")))
+    std::regex("^sym\\s+border\\-top\\-mark(?:\\s+(.{0,4}))?$")))
   {
-    auto const match = OB::String::trim(match_opt.value().at(1));
+    auto const match = match_opt.value().at(1);
 
     if (match.empty())
     {
@@ -1900,9 +1900,9 @@ std::optional<std::pair<bool, std::string>> Tui::command(std::string const& inpu
   }
 
   else if (match_opt = OB::String::match(input,
-    std::regex("^sym\\s+border\\-bottom(:?\\s+(.{0,4}))?$")))
+    std::regex("^sym\\s+border\\-bottom(?:\\s+(.{0,4}))?$")))
   {
-    auto const match = OB::String::trim(match_opt.value().at(1));
+    auto const match = match_opt.value().at(1);
 
     if (match.empty())
     {
@@ -1923,9 +1923,9 @@ std::optional<std::pair<bool, std::string>> Tui::command(std::string const& inpu
   }
 
   else if (match_opt = OB::String::match(input,
-    std::regex("^sym\\s+border\\-bottom\\-mark(:?\\s+(.{0,4}))?$")))
+    std::regex("^sym\\s+border\\-bottom\\-mark(?:\\s+(.{0,4}))?$")))
   {
-    auto const match = OB::String::trim(match_opt.value().at(1));
+    auto const match = match_opt.value().at(1);
 
     if (match.empty())
     {
@@ -1946,9 +1946,9 @@ std::optional<std::pair<bool, std::string>> Tui::command(std::string const& inpu
   }
 
   else if (match_opt = OB::String::match(input,
-    std::regex("^sym\\s+border\\-top\\-line(:?\\s+(.{0,4}))?$")))
+    std::regex("^sym\\s+border\\-top\\-line(?:\\s+(.{0,4}))?$")))
   {
-    auto const match = OB::String::trim(match_opt.value().at(1));
+    auto const match = match_opt.value().at(1);
 
     if (match.empty())
     {
@@ -1971,9 +1971,9 @@ std::optional<std::pair<bool, std::string>> Tui::command(std::string const& inpu
   }
 
   else if (match_opt = OB::String::match(input,
-    std::regex("^sym\\s+border\\-bottom\\-line(:?\\s+(.{0,4}))?$")))
+    std::regex("^sym\\s+border\\-bottom\\-line(?:\\s+(.{0,4}))?$")))
   {
-    auto const match = OB::String::trim(match_opt.value().at(1));
+    auto const match = match_opt.value().at(1);
 
     if (match.empty())
     {
@@ -1996,9 +1996,9 @@ std::optional<std::pair<bool, std::string>> Tui::command(std::string const& inpu
   }
 
   else if (match_opt = OB::String::match(input,
-    std::regex("^set\\s+border(:?\\s+(true|false|t|f|1|0|on|off))?$")))
+    std::regex("^set\\s+border(?:\\s+(true|false|t|f|1|0|on|off))?$")))
   {
-    auto const match = OB::String::trim(match_opt.value().at(1));
+    auto const match = match_opt.value().at(1);
 
     if (match.empty() || "true" == match || "t" == match || "1" == match || "on" == match)
     {
@@ -2013,9 +2013,9 @@ std::optional<std::pair<bool, std::string>> Tui::command(std::string const& inpu
   }
 
   else if (match_opt = OB::String::match(input,
-    std::regex("^set\\s+view(:?\\s+(true|false|t|f|1|0|on|off))?$")))
+    std::regex("^set\\s+view(?:\\s+(true|false|t|f|1|0|on|off))?$")))
   {
-    auto const match = OB::String::trim(match_opt.value().at(1));
+    auto const match = match_opt.value().at(1);
 
     if (match.empty() || "true" == match || "t" == match || "1" == match || "on" == match)
     {
@@ -2028,9 +2028,9 @@ std::optional<std::pair<bool, std::string>> Tui::command(std::string const& inpu
   }
 
   else if (match_opt = OB::String::match(input,
-    std::regex("^prev(:?\\s+([0-9]{1,2}))?$")))
+    std::regex("^prev(?:\\s+([0-9]{1,2}))?$")))
   {
-    auto const match = OB::String::trim(match_opt.value().at(1));
+    auto const match = match_opt.value().at(1);
 
     if (match.empty())
     {
@@ -2050,9 +2050,9 @@ std::optional<std::pair<bool, std::string>> Tui::command(std::string const& inpu
   }
 
   else if (match_opt = OB::String::match(input,
-    std::regex("^next(:?\\s+([0-60]{1}))?$")))
+    std::regex("^next(?:\\s+([0-60]{1}))?$")))
   {
-    auto const match = OB::String::trim(match_opt.value().at(1));
+    auto const match = match_opt.value().at(1);
 
     if (match.empty())
     {

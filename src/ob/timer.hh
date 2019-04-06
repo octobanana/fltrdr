@@ -102,7 +102,7 @@ private:
     long int constexpr t_year   {t_month * 12};
 
     auto const pstr = OB::String::match(str,
-      std::regex("^(:?(\\d+)Y:)?(:?(\\d+)M:)?(:?(\\d+)W:)?(:?(\\d+)D:)?(:?(\\d+)h:)?(:?(\\d+)m:)?(:?(\\d+)s)$"));
+      std::regex("^(?:(\\d+)Y:)?(?:(\\d+)M:)?(?:(\\d+)W:)?(?:(\\d+)D:)?(?:(\\d+)h:)?(?:(\\d+)m:)?(?:(\\d+)s)$"));
 
     if (! pstr)
     {
@@ -112,39 +112,39 @@ private:
     auto const t = pstr.value();
     long int sec {0};
 
+    if (! t.at(1).empty())
+    {
+      sec += std::stol(t.at(1)) * t_year;
+    }
+
     if (! t.at(2).empty())
     {
-      sec += std::stol(t.at(2)) * t_year;
+      sec += std::stol(t.at(2)) * t_month;
+    }
+
+    if (! t.at(3).empty())
+    {
+      sec += std::stol(t.at(3)) * t_week;
     }
 
     if (! t.at(4).empty())
     {
-      sec += std::stol(t.at(4)) * t_month;
+      sec += std::stol(t.at(4)) * t_day;
+    }
+
+    if (! t.at(5).empty())
+    {
+      sec += std::stol(t.at(5)) * t_hour;
     }
 
     if (! t.at(6).empty())
     {
-      sec += std::stol(t.at(6)) * t_week;
+      sec += std::stol(t.at(6)) * t_minute;
     }
 
-    if (! t.at(8).empty())
+    if (! t.at(7).empty())
     {
-      sec += std::stol(t.at(8)) * t_day;
-    }
-
-    if (! t.at(10).empty())
-    {
-      sec += std::stol(t.at(10)) * t_hour;
-    }
-
-    if (! t.at(12).empty())
-    {
-      sec += std::stol(t.at(12)) * t_minute;
-    }
-
-    if (! t.at(14).empty())
-    {
-      sec += std::stol(t.at(14)) * t_second;
+      sec += std::stol(t.at(7)) * t_second;
     }
 
     return static_cast<std::chrono::seconds>(sec);
