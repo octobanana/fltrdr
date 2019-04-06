@@ -692,19 +692,6 @@ void Readline::hist_push(std::string const& str)
   hist_reset();
 }
 
-std::string Readline::hist_pop()
-{
-  if (_history().empty())
-  {
-    return {};
-  }
-
-  auto const res = _history().front();
-  _history().pop_front();
-
-  return res;
-}
-
 void Readline::hist_load(fs::path const& path)
 {
   if (! path.empty())

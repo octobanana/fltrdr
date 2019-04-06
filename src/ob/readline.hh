@@ -28,7 +28,6 @@ public:
   std::string operator()(bool& is_running);
 
   void hist_push(std::string const& str);
-  std::string hist_pop();
   void hist_load(fs::path const& path);
 
 private:
