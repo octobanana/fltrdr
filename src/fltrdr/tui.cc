@@ -686,12 +686,12 @@ void Tui::draw_progress_bar()
   << aec::erase_line
   << _ctx.style.bg
   << _ctx.style.progress_bar
-  << OB::String::repeat(_ctx.width, _ctx.sym.progress)
+  << OB::String::repeat(_ctx.width, _ctx.sym.progress_bar)
   << aec::clear
   << aec::cr
   << _ctx.style.bg
   << _ctx.style.progress_fill
-  << OB::String::repeat((_fltrdr.progress() * _ctx.width) / 100, _ctx.sym.progress)
+  << OB::String::repeat((_fltrdr.progress() * _ctx.width) / 100, _ctx.sym.progress_fill)
   << aec::clear
   << aec::cursor_load;
 }
@@ -1808,13 +1808,13 @@ std::optional<std::pair<bool, std::string>> Tui::command(std::string const& inpu
   }
 
   else if (match_opt = OB::String::match(input,
-    std::regex("^sym\\s+progress(:?\\s+(.{0,4}))?$")))
+    std::regex("^sym\\s+progress-bar(:?\\s+(.{0,4}))?$")))
   {
     auto const match = OB::String::trim(match_opt.value().at(1));
 
     if (match.empty())
     {
-      _ctx.sym.progress = " ";
+      _ctx.sym.progress_bar = " ";
 
       return {};
     }
@@ -1827,7 +1827,30 @@ std::optional<std::pair<bool, std::string>> Tui::command(std::string const& inpu
       return std::make_pair(false, "error: invalid symbol '" + match + "'");
     }
 
-    _ctx.sym.progress = match;
+    _ctx.sym.progress_bar = match;
+  }
+
+  else if (match_opt = OB::String::match(input,
+    std::regex("^sym\\s+progress-fill(:?\\s+(.{0,4}))?$")))
+  {
+    auto const match = OB::String::trim(match_opt.value().at(1));
+
+    if (match.empty())
+    {
+      _ctx.sym.progress_fill = " ";
+
+      return {};
+    }
+
+    OB::Text::View view {match};
+
+    if (view.size() != 1 || view.cols() > 1 ||
+      ! OB::Text::is_graph(OB::Text::to_int32(view.front())))
+    {
+      return std::make_pair(false, "error: invalid symbol '" + match + "'");
+    }
+
+    _ctx.sym.progress_fill = match;
   }
 
   else if (match_opt = OB::String::match(input,

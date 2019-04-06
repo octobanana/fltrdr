@@ -185,7 +185,8 @@ private:
       std::string border_bottom {" "};
       std::string border_bottom_mark {"^"};
 
-      std::string progress {"_"};
+      std::string progress_bar {"_"};
+      std::string progress_fill {"_"};
     } sym;
   } _ctx;
 };
