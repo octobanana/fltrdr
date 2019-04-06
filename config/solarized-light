@@ -20,7 +20,8 @@ sym border-top ─
 sym border-top-mark ┬
 sym border-bottom ─
 sym border-bottom-mark ┴
-sym progress ▁
+sym progress-bar ▁
+sym progress-fill ▁
 
 style background fdf6e3
 style countdown eee8d5
@@ -29,8 +30,8 @@ style prompt 657b83
 style success 859900
 style error dc322f
 
-style progress-primary 93a1a1
-style progress-secondary 859900
+style progress-bar 93a1a1
+style progress-fill 859900
 
 style status-primary 657b83
 style status-secondary d33682

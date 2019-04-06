@@ -14,7 +14,7 @@ prev 1
 
 # set number of words visible to the right of the focused word
 # <0-8>
-next 3
+next 1
 
 # set the offset of the focus point
 # <0-6>
@@ -47,106 +47,110 @@ set border-top on
 set border-bottom on
 
 # border top symbol
-# <char|unicode-char>
+# <char>
 sym border-top ─
 
 # border top mark symbol
-# <char|unicode-char>
+# <char>
 sym border-top-mark ┬
 
 # border top and border top mark symbol
-# <char|unicode-char>
+# <char>
 # sym border-top-line ─
 
 # border bottom symbol
-# <char|unicode-char>
+# <char>
 sym border-bottom ─
 
 # border bottom mark symbol
-# <char|unicode-char>
+# <char>
 sym border-bottom-mark ┴
 
 # border bottom and border bottom mark symbol
-# <char|unicode-char>
+# <char>
 # sym border-bottom-line ─
 
 # progress bar symbol
-# <char|unicode-char>
-sym progress ▁
+# <char>
+sym progress-bar ▁
+
+# progress bar fill symbol
+# <char>
+sym progress-fill ▁
 
 # meta style, sets the primary colour of the program
-# <#000000-#ffffff|0-255|Colour>
+# <#000000-#ffffff|0-255|Colour|reverse|clear>
 # style primary 4feae7
 
 # meta style, sets the secondary colour of the program
-# <#000000-#ffffff|0-255|Colour>
+# <#000000-#ffffff|0-255|Colour|reverse|clear>
 # style secondary 2c323c
 
 # meta style, sets the colours of all input text shown in the reader
-# <#000000-#ffffff|0-255|Colour>
+# <#000000-#ffffff|0-255|Colour|reverse|clear>
 # style text f0f0f0
 
 # set the background colour
-# <#000000-#ffffff|0-255|Colour>
+# <#000000-#ffffff|0-255|Colour|reverse|clear>
 style background 1b1e24
 
 # set the text background colour shown to countdown
 # after play is pressed and before the reader begins
-# <#000000-#ffffff|0-255|Colour>
+# <#000000-#ffffff|0-255|Colour|reverse|clear>
 style countdown 2c323c
 
 # set the colour of the border surrounding the reader
-# <#000000-#ffffff|0-255|Colour>
+# <#000000-#ffffff|0-255|Colour|reverse|clear>
 style border 2c323c
 
 # set the colour of the command prompt symbol shown at the start of the line
-# <#000000-#ffffff|0-255|Colour>
+# <#000000-#ffffff|0-255|Colour|reverse|clear>
 style prompt 2c323c
 
 # set the success status message colour
-# <#000000-#ffffff|0-255|Colour>
+# <#000000-#ffffff|0-255|Colour|reverse|clear>
 style success 55ff00
 
 # set the error status message colour
-# <#000000-#ffffff|0-255|Colour>
+# <#000000-#ffffff|0-255|Colour|reverse|clear>
 style error ff5500
 
-# set the progress bar primary colour
-# <#000000-#ffffff|0-255|Colour>
-style progress-primary 2c323c
+# set the progress bar colour
+# <#000000-#ffffff|0-255|Colour|reverse|clear>
+style progress-bar 2c323c
 
-# set progress bar secondary colour
-# <#000000-#ffffff|0-255|Colour>
-style progress-secondary 4feae7
+# set progress bar fill colour
+# <#000000-#ffffff|0-255|Colour|reverse|clear>
+style progress-fill 4feae7
 
 # set the colour of the text in the status bar
-# <#000000-#ffffff|0-255|Colour>
+# <#000000-#ffffff|0-255|Colour|reverse|clear>
 style status-primary 2c323c
 
 # set the colour of the file path in the status bar
-# <#000000-#ffffff|0-255|Colour>
+# <#000000-#ffffff|0-255|Colour|reverse|clear>
 style status-secondary 4feae7
 
 # set the background colour of the status bar
-# <#000000-#ffffff|0-255|Colour>
+# <#000000-#ffffff|0-255|Colour|reverse|clear>
 style status-background 4feae7
 
 # set the colour of the current word in the reader
-# <#000000-#ffffff|0-255|Colour>
+# <#000000-#ffffff|0-255|Colour|reverse|clear>
 style text-primary f0f0f0
 
 # set the colour of the words shown on either side of the current word
-# <#000000-#ffffff|0-255|Colour>
+# <#000000-#ffffff|0-255|Colour|reverse|clear>
 style text-secondary c0c0c0
 
 # set the colour of the focus point character highlighted in the current word
-# <#000000-#ffffff|0-255|Colour>
+# <#000000-#ffffff|0-255|Colour|reverse|clear>
 style text-highlight 4feae7
 
 # set the colour of the punctuation shown in the reader
-# <#000000-#ffffff|0-255|Colour>
+# <#000000-#ffffff|0-255|Colour|reverse|clear>
 style text-punct 4feae7
 
 # set the colour of the quotes shown in the reader
-# <#000000-#ffffff|0-255|Colour>
+# <#000000-#ffffff|0-255|Colour|reverse|clear>
 style text-quote 4feae7
