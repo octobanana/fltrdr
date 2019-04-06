@@ -26,7 +26,7 @@ int program_options(Parg& pg)
   pg.name("fltrdr").version("0.2.1 (28.03.2019)");
   pg.description("A TUI text reader for the terminal.");
 
-  pg.usage("[--config=<config>] [<file>]");
+  pg.usage("[--config-base <dir>] [--config|-u <file>] [<file>]");
   pg.usage("[--help|-h]");
   pg.usage("[--version|-v]");
   pg.usage("[--license]");
@@ -34,12 +34,27 @@ int program_options(Parg& pg)
   pg.info("Mouse Bindings", {
     "middle click\n    toggle view",
     "right click\n    toggle play/pause",
-    "scroll up\n    goto prev word",
+    "scroll up\n    goto previous word",
     "scroll down\n    goto next word",
+  });
+
+  pg.info("Prompt Bindings", {
+    "<esc>|<ctrl-c>\n    exit the prompt",
+    "<enter>\n    submit the input",
+    "<ctrl-u>\n    clear the prompt",
+    "<up>|<ctrl-p>\n    previous history value based on current input",
+    "<down>|<ctrl-n>\n    next history value based on current input",
+    "<left>|<ctrl-b>\n    move cursor left",
+    "<right>|<ctrl-f>\n    move cursor right",
+    "<home>|<ctrl-a>\n    move cursor to the start of the input",
+    "<end>|<ctrl-e>\n    move cursor to the end of the input",
+    "<delete>|<ctrl-d>\n    delete character under the cursor or delete previous character if cursor is at the end of the input",
+    "<backspace>|<ctrl-h>\n    delete previous character",
   });
 
   pg.info("Key Bindings", {
     "q|Q|<ctrl-c>\n    quit the program",
+    "w\n    save state",
     ":\n    enter the command prompt",
     "/\n    search forwards prompt",
     "?\n    search backwards prompt",
@@ -48,42 +63,51 @@ int program_options(Parg& pg)
     "gg\n    goto beginning",
     "G\n    goto end",
     "v\n    toggle view",
-    "i\n    increase show prev word",
-    "I\n    decrease show prev word",
+    "i\n    increase show previous word",
+    "I\n    decrease show previous word",
     "o\n    increase show next word",
     "O\n    decrease show next word",
     "*\n    search next current word",
-    "#\n    search prev current word",
+    "#\n    search previous current word",
     "n\n    goto next search result",
-    "N\n    goto prev search result",
-    "h|<left>\n    goto prev word",
+    "N\n    goto previous search result",
+    "h|<left>\n    goto previous word",
     "l|<right>\n    goto next word",
-    "H\n    goto prev sentence",
+    "H\n    goto previous sentence",
     "L\n    goto next sentence",
     "j|<down>\n    decrease wpm",
     "k|<up>\n    increase wpm",
-    "J\n    goto prev chapter",
+    "J\n    goto previous chapter",
     "K\n    goto next chapter",
   });
 
   pg.info("Commands", {
-    "quit|exit\n    quit the program",
+    "q|quit|Quit|exit\n    quit the program",
+    "w\n    save state",
+    "wq\n    save state and quit the program",
     "open <path>\n    open file for reading",
     "wpm <60-1200>\n    set wpm value",
-    "goto <int>\n    goto specified word number",
-    "prev <0-60>\n    set number of prev words to show",
+    "goto <\\d+>\n    goto specified word index",
+    "prev <0-60>\n    set number of previous words to show",
     "next <0-60>\n    set number of next words to show",
     "offset <0-6>\n    set offset of focus point from center",
 
     R"RAW(
-  reset <value>
-    wpm
-      reset wpm average
-    timer
-      reset timer
-)RAW",
+  timer <value>
+    clear
+      clear the timer
+    <\d\dY:\d\dM:\d\dW:\d\dD:\d\dh:\d\dm:\d\ds>
+      set the timer value)RAW",
 
-    R"RAW(set <value> <on|off>
+    R"RAW(
+  wpm-avg <value>
+    clear
+      clear the wpm average
+    <\d+>
+      set the wpm average value)RAW",
+
+    R"RAW(
+  set <value> <on|off>
     view
       toggle full text line visibility
     progress
@@ -95,12 +119,14 @@ int program_options(Parg& pg)
     border-top
       toggle border top visibility
     border-bottom
-      toggle border bottom visibility
-)RAW",
+      toggle border bottom visibility)RAW",
 
-    R"RAW(sym <value> <char|unicode-char>
-    progress
+    R"RAW(
+  sym <value> <char>
+    progress-bar
       progress bar symbol
+    progress-fill
+      progress bar fill symbol
     border-top
       border top symbol
     border-top-mark
@@ -112,10 +138,10 @@ int program_options(Parg& pg)
     border-bottom-mark
       border bottom mark symbol
     border-bottom-line
-      border bottom and border bottom mark symbol
-)RAW",
+      border bottom and border bottom mark symbol)RAW",
 
-    R"RAW(style <value> <#000000-#ffffff|0-255|Colour>
+    R"RAW(
+  style <value> <#000000-#ffffff|0-255|Colour|reverse|clear>
     primary
       meta style, sets the primary colour of the program
     secondary
@@ -135,10 +161,10 @@ int program_options(Parg& pg)
       set the success status message colour
     error
       set the error status message colour
-    progress-primary
-      set the progress bar primary colour
-    progress-secondary
-      set progress bar secondary colour
+    progress-bar
+      set the progress bar colour
+    progress-fill
+      set progress bar fill colour
     status-primary
       set the colour of the text in the status bar
     status-secondary
@@ -169,34 +195,29 @@ int program_options(Parg& pg)
   });
 
   pg.info("Configuration", {
-    R"RAW(The default config locations are ${XDG_CONFIG_HOME}/fltrdr/config and
-  ${HOME}/.fltrdr/config. A custom path can also be passed to override
-  the default locations using the --config option. The config directory
-  and file must be created by the user. If the file does not exist, the
-  program continues as normal.
+    R"RAW(Base Config Directory: '${HOME}/.fltrdr'
+  History Directory: '${HOME}/.fltrdr/history'
+  Config File: '${HOME}/.fltrdr/config'
+  Search History File: '${HOME}/.fltrdr/history/search'
+  Command History File: '${HOME}/.fltrdr/history/command'
 
-  The file, 'config', is a plain text file that can contain any of the
-  commands listed in the Commands section of the --help output.
-  Each command must be on its own line. Lines that begin with the '#'
-  character are treated as comments.)RAW"
-  });
+  Use '--config=<file>' to override the default config file.
+  Use '--config-base=<dir>' to override the default base config directory.
 
-  pg.info("Config Directory Locations", {
-    "${XDG_CONFIG_HOME}/fltrdr",
-    "${HOME}/.fltrdr",
-  });
-
-  pg.info("Config File Locations", {
-    "${XDG_CONFIG_HOME}/fltrdr/config",
-    "${HOME}/.fltrdr/config",
-    "custom path with '--config=<config>'"
+  The base config directory and config file must be created by the user.
+  The config file in the base config directory must be named 'config'.
+  It is a plain text file that can contain any of the
+  commands listed in the 'Commands' section of the '--help' output.
+  Each command must be on its own line. Lines that begin with the
+  '#' character are treated as comments.)RAW"
   });
 
   pg.info("Examples", {
     "fltrdr",
     "fltrdr <file>",
     "cat <file> | fltrdr",
-    "fltrdr --config './path/to/config'",
+    "fltrdr --config \"./path/to/config/file\"",
+    "fltrdr --config-base \"~/.config/fltrdr\"",
     "fltrdr --help",
     "fltrdr --version",
     "fltrdr --license",
