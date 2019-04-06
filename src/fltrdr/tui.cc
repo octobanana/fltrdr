@@ -1291,17 +1291,41 @@ std::optional<std::pair<bool, std::string>> Tui::command(std::string const& inpu
     _ctx.style.prompt = aec::fg_256(match);
   }
   else if (match_opt = OB::String::match(input,
-    std::regex("^style\\s+primary\\s+(black|red|green|yellow|blue|magenta|cyan|white)(:?\\s+(bright))?$")))
+    std::regex("^style\\s+primary\\s+(clear|reverse|black|red|green|yellow|blue|magenta|cyan|white)(?:\\s+(bright))?$")))
   {
-    // 4-bit color
     auto const match = std::move(match_opt.value().at(1));
-    auto const bright = ! OB::String::trim(match_opt.value().at(2)).empty();
-    _ctx.style.secondary = aec::str_to_fg_color(match, bright);
-    _ctx.style.background = aec::str_to_bg_color(match, bright);
-    _ctx.style.border = aec::str_to_fg_color(match, bright);
-    _ctx.style.progress_fill = aec::str_to_fg_color(match, bright);
-    _ctx.style.word_primary = aec::str_to_fg_color(match, bright);
-    _ctx.style.prompt = aec::str_to_fg_color(match, bright);
+
+    if (match == "clear")
+    {
+      // clear color
+      _ctx.style.secondary.clear();
+      _ctx.style.background.clear();
+      _ctx.style.border.clear();
+      _ctx.style.progress_fill.clear();
+      _ctx.style.word_primary.clear();
+      _ctx.style.prompt.clear();
+    }
+    else if (match == "reverse")
+    {
+      // reverse color
+      _ctx.style.secondary = aec::reverse;
+      _ctx.style.background = aec::reverse;
+      _ctx.style.border = aec::reverse;
+      _ctx.style.progress_fill = aec::reverse;
+      _ctx.style.word_primary = aec::reverse;
+      _ctx.style.prompt = aec::reverse;
+    }
+    else
+    {
+      // 4-bit color
+      auto const bright = ! match_opt.value().at(2).empty();
+      _ctx.style.secondary = aec::str_to_fg_color(match, bright);
+      _ctx.style.background = aec::str_to_bg_color(match, bright);
+      _ctx.style.border = aec::str_to_fg_color(match, bright);
+      _ctx.style.progress_fill = aec::str_to_fg_color(match, bright);
+      _ctx.style.word_primary = aec::str_to_fg_color(match, bright);
+      _ctx.style.prompt = aec::str_to_fg_color(match, bright);
+    }
   }
 
   // two-tone secondary color
@@ -1330,17 +1354,41 @@ std::optional<std::pair<bool, std::string>> Tui::command(std::string const& inpu
     _ctx.style.word_quote = aec::fg_256(match);
   }
   else if (match_opt = OB::String::match(input,
-    std::regex("^style\\s+secondary\\s+(black|red|green|yellow|blue|magenta|cyan|white)(:?\\s+(bright))?$")))
+    std::regex("^style\\s+secondary\\s+(clear|reverse|black|red|green|yellow|blue|magenta|cyan|white)(?:\\s+(bright))?$")))
   {
-    // 4-bit color
     auto const match = std::move(match_opt.value().at(1));
-    auto const bright = ! OB::String::trim(match_opt.value().at(2)).empty();
-    _ctx.style.primary = aec::str_to_fg_color(match, bright);
-    _ctx.style.progress_bar = aec::str_to_fg_color(match, bright);
-    _ctx.style.word_secondary = aec::str_to_fg_color(match, bright);
-    _ctx.style.word_highlight = aec::str_to_fg_color(match, bright);
-    _ctx.style.word_punct = aec::str_to_fg_color(match, bright);
-    _ctx.style.word_quote = aec::str_to_fg_color(match, bright);
+
+    if (match == "clear")
+    {
+      // clear color
+      _ctx.style.primary.clear();
+      _ctx.style.progress_bar.clear();
+      _ctx.style.word_secondary.clear();
+      _ctx.style.word_highlight.clear();
+      _ctx.style.word_punct.clear();
+      _ctx.style.word_quote.clear();
+    }
+    else if (match == "reverse")
+    {
+      // reverse color
+      _ctx.style.primary = aec::reverse;
+      _ctx.style.progress_bar = aec::reverse;
+      _ctx.style.word_secondary = aec::reverse;
+      _ctx.style.word_highlight = aec::reverse;
+      _ctx.style.word_punct = aec::reverse;
+      _ctx.style.word_quote = aec::reverse;
+    }
+    else
+    {
+      // 4-bit color
+      auto const bright = ! match_opt.value().at(2).empty();
+      _ctx.style.primary = aec::str_to_fg_color(match, bright);
+      _ctx.style.progress_bar = aec::str_to_fg_color(match, bright);
+      _ctx.style.word_secondary = aec::str_to_fg_color(match, bright);
+      _ctx.style.word_highlight = aec::str_to_fg_color(match, bright);
+      _ctx.style.word_punct = aec::str_to_fg_color(match, bright);
+      _ctx.style.word_quote = aec::str_to_fg_color(match, bright);
+    }
   }
 
   // text color
@@ -1367,16 +1415,38 @@ std::optional<std::pair<bool, std::string>> Tui::command(std::string const& inpu
     _ctx.style.word_quote = aec::fg_256(match);
   }
   else if (match_opt = OB::String::match(input,
-    std::regex("^style\\s+text\\s+(black|red|green|yellow|blue|magenta|cyan|white)(:?\\s+(bright))?$")))
+    std::regex("^style\\s+text\\s+(clear|reverse|black|red|green|yellow|blue|magenta|cyan|white)(?:\\s+(bright))?$")))
   {
-    // 4-bit color
     auto const match = std::move(match_opt.value().at(1));
-    auto const bright = ! OB::String::trim(match_opt.value().at(2)).empty();
-    _ctx.style.word_primary = aec::str_to_fg_color(match, bright);
-    _ctx.style.word_secondary = aec::str_to_fg_color(match, bright);
-    _ctx.style.word_highlight = aec::str_to_fg_color(match, bright);
-    _ctx.style.word_punct = aec::str_to_fg_color(match, bright);
-    _ctx.style.word_quote = aec::str_to_fg_color(match, bright);
+
+    if (match == "clear")
+    {
+      // clear color
+      _ctx.style.word_primary.clear();
+      _ctx.style.word_secondary.clear();
+      _ctx.style.word_highlight.clear();
+      _ctx.style.word_punct.clear();
+      _ctx.style.word_quote.clear();
+    }
+    else if (match == "reverse")
+    {
+      // reverse color
+      _ctx.style.word_primary = aec::reverse;
+      _ctx.style.word_secondary = aec::reverse;
+      _ctx.style.word_highlight = aec::reverse;
+      _ctx.style.word_punct = aec::reverse;
+      _ctx.style.word_quote = aec::reverse;
+    }
+    else
+    {
+      // 4-bit color
+      auto const bright = ! match_opt.value().at(2).empty();
+      _ctx.style.word_primary = aec::str_to_fg_color(match, bright);
+      _ctx.style.word_secondary = aec::str_to_fg_color(match, bright);
+      _ctx.style.word_highlight = aec::str_to_fg_color(match, bright);
+      _ctx.style.word_punct = aec::str_to_fg_color(match, bright);
+      _ctx.style.word_quote = aec::str_to_fg_color(match, bright);
+    }
   }
 
   else if (match_opt = OB::String::match(input,
@@ -1394,12 +1464,26 @@ std::optional<std::pair<bool, std::string>> Tui::command(std::string const& inpu
     _ctx.style.background = aec::bg_256(match);
   }
   else if (match_opt = OB::String::match(input,
-    std::regex("^style\\s+status\\-background\\s+(black|red|green|yellow|blue|magenta|cyan|white)(:?\\s+(bright))?$")))
+    std::regex("^style\\s+status\\-background\\s+(clear|reverse|black|red|green|yellow|blue|magenta|cyan|white)(?:\\s+(bright))?$")))
   {
-    // 4-bit color
     auto const match = std::move(match_opt.value().at(1));
-    auto const bright = ! OB::String::trim(match_opt.value().at(2)).empty();
-    _ctx.style.background = aec::str_to_bg_color(match, bright);
+
+    if (match == "clear")
+    {
+      // clear color
+      _ctx.style.background.clear();
+    }
+    else if (match == "reverse")
+    {
+      // reverse color
+      _ctx.style.background = aec::reverse;
+    }
+    else
+    {
+      // 4-bit color
+      auto const bright = ! match_opt.value().at(2).empty();
+      _ctx.style.background = aec::str_to_bg_color(match, bright);
+    }
   }
 
   else if (match_opt = OB::String::match(input,
@@ -1417,12 +1501,26 @@ std::optional<std::pair<bool, std::string>> Tui::command(std::string const& inpu
     _ctx.style.bg = aec::bg_256(match);
   }
   else if (match_opt = OB::String::match(input,
-    std::regex("^style\\s+background\\s+(black|red|green|yellow|blue|magenta|cyan|white)(:?\\s+(bright))?$")))
+    std::regex("^style\\s+background\\s+(clear|reverse|black|red|green|yellow|blue|magenta|cyan|white)(?:\\s+(bright))?$")))
   {
-    // 4-bit color
     auto const match = std::move(match_opt.value().at(1));
-    auto const bright = ! OB::String::trim(match_opt.value().at(2)).empty();
-    _ctx.style.bg = aec::str_to_bg_color(match, bright);
+
+    if (match == "clear")
+    {
+      // clear color
+      _ctx.style.bg.clear();
+    }
+    else if (match == "reverse")
+    {
+      // reverse color
+      _ctx.style.bg = aec::reverse;
+    }
+    else
+    {
+      // 4-bit color
+      auto const bright = ! match_opt.value().at(2).empty();
+      _ctx.style.bg = aec::str_to_bg_color(match, bright);
+    }
   }
 
   else if (match_opt = OB::String::match(input,
@@ -1440,12 +1538,26 @@ std::optional<std::pair<bool, std::string>> Tui::command(std::string const& inpu
     _ctx.style.countdown = aec::bg_256(match);
   }
   else if (match_opt = OB::String::match(input,
-    std::regex("^style\\s+countdown\\s+(black|red|green|yellow|blue|magenta|cyan|white)(:?\\s+(bright))?$")))
+    std::regex("^style\\s+countdown\\s+(clear|reverse|black|red|green|yellow|blue|magenta|cyan|white)(?:\\s+(bright))?$")))
   {
-    // 4-bit color
     auto const match = std::move(match_opt.value().at(1));
-    auto const bright = ! OB::String::trim(match_opt.value().at(2)).empty();
-    _ctx.style.countdown = aec::str_to_bg_color(match, bright);
+
+    if (match == "clear")
+    {
+      // clear color
+      _ctx.style.countdown.clear();
+    }
+    else if (match == "reverse")
+    {
+      // reverse color
+      _ctx.style.countdown = aec::reverse;
+    }
+    else
+    {
+      // 4-bit color
+      auto const bright = ! match_opt.value().at(2).empty();
+      _ctx.style.countdown = aec::str_to_bg_color(match, bright);
+    }
   }
 
   else if (match_opt = OB::String::match(input,
@@ -1463,12 +1575,26 @@ std::optional<std::pair<bool, std::string>> Tui::command(std::string const& inpu
     _ctx.style.primary = aec::fg_256(match);
   }
   else if (match_opt = OB::String::match(input,
-    std::regex("^style\\s+status\\-primary\\s+(black|red|green|yellow|blue|magenta|cyan|white)(:?\\s+(bright))?$")))
+    std::regex("^style\\s+status\\-primary\\s+(clear|reverse|black|red|green|yellow|blue|magenta|cyan|white)(?:\\s+(bright))?$")))
   {
-    // 4-bit color
     auto const match = std::move(match_opt.value().at(1));
-    auto const bright = ! OB::String::trim(match_opt.value().at(2)).empty();
-    _ctx.style.primary = aec::str_to_fg_color(match, bright);
+
+    if (match == "clear")
+    {
+      // clear color
+      _ctx.style.primary.clear();
+    }
+    else if (match == "reverse")
+    {
+      // reverse color
+      _ctx.style.primary = aec::reverse;
+    }
+    else
+    {
+      // 4-bit color
+      auto const bright = ! match_opt.value().at(2).empty();
+      _ctx.style.primary = aec::str_to_fg_color(match, bright);
+    }
   }
 
   else if (match_opt = OB::String::match(input,
@@ -1486,12 +1612,26 @@ std::optional<std::pair<bool, std::string>> Tui::command(std::string const& inpu
     _ctx.style.secondary = aec::fg_256(match);
   }
   else if (match_opt = OB::String::match(input,
-    std::regex("^style\\s+status\\-secondary\\s+(black|red|green|yellow|blue|magenta|cyan|white)(:?\\s+(bright))?$")))
+    std::regex("^style\\s+status\\-secondary\\s+(clear|reverse|black|red|green|yellow|blue|magenta|cyan|white)(?:\\s+(bright))?$")))
   {
-    // 4-bit color
     auto const match = std::move(match_opt.value().at(1));
-    auto const bright = ! OB::String::trim(match_opt.value().at(2)).empty();
-    _ctx.style.secondary = aec::str_to_fg_color(match, bright);
+
+    if (match == "clear")
+    {
+      // clear color
+      _ctx.style.secondary.clear();
+    }
+    else if (match == "reverse")
+    {
+      // reverse color
+      _ctx.style.secondary = aec::reverse;
+    }
+    else
+    {
+      // 4-bit color
+      auto const bright = ! match_opt.value().at(2).empty();
+      _ctx.style.secondary = aec::str_to_fg_color(match, bright);
+    }
   }
 
   else if (match_opt = OB::String::match(input,
@@ -1509,12 +1649,26 @@ std::optional<std::pair<bool, std::string>> Tui::command(std::string const& inpu
     _ctx.style.border = aec::fg_256(match);
   }
   else if (match_opt = OB::String::match(input,
-    std::regex("^style\\s+border\\s+(black|red|green|yellow|blue|magenta|cyan|white)(:?\\s+(bright))?$")))
+    std::regex("^style\\s+border\\s+(clear|reverse|black|red|green|yellow|blue|magenta|cyan|white)(?:\\s+(bright))?$")))
   {
-    // 4-bit color
     auto const match = std::move(match_opt.value().at(1));
-    auto const bright = ! OB::String::trim(match_opt.value().at(2)).empty();
-    _ctx.style.border = aec::str_to_fg_color(match, bright);
+
+    if (match == "clear")
+    {
+      // clear color
+      _ctx.style.border.clear();
+    }
+    else if (match == "reverse")
+    {
+      // reverse color
+      _ctx.style.border = aec::reverse;
+    }
+    else
+    {
+      // 4-bit color
+      auto const bright = ! match_opt.value().at(2).empty();
+      _ctx.style.border = aec::str_to_fg_color(match, bright);
+    }
   }
 
   else if (match_opt = OB::String::match(input,
@@ -1532,12 +1686,26 @@ std::optional<std::pair<bool, std::string>> Tui::command(std::string const& inpu
     _ctx.style.progress_bar = aec::fg_256(match);
   }
   else if (match_opt = OB::String::match(input,
-    std::regex("^style\\s+progress\\-primary\\s+(black|red|green|yellow|blue|magenta|cyan|white)(:?\\s+(bright))?$")))
+    std::regex("^style\\s+progress\\-primary\\s+(clear|reverse|black|red|green|yellow|blue|magenta|cyan|white)(?:\\s+(bright))?$")))
   {
-    // 4-bit color
     auto const match = std::move(match_opt.value().at(1));
-    auto const bright = ! OB::String::trim(match_opt.value().at(2)).empty();
-    _ctx.style.progress_bar = aec::str_to_fg_color(match, bright);
+
+    if (match == "clear")
+    {
+      // clear color
+      _ctx.style.progress_bar.clear();
+    }
+    else if (match == "reverse")
+    {
+      // reverse color
+      _ctx.style.progress_bar = aec::reverse;
+    }
+    else
+    {
+      // 4-bit color
+      auto const bright = ! match_opt.value().at(2).empty();
+      _ctx.style.progress_bar = aec::str_to_fg_color(match, bright);
+    }
   }
 
   else if (match_opt = OB::String::match(input,
@@ -1555,12 +1723,26 @@ std::optional<std::pair<bool, std::string>> Tui::command(std::string const& inpu
     _ctx.style.progress_fill = aec::fg_256(match);
   }
   else if (match_opt = OB::String::match(input,
-    std::regex("^style\\s+progress\\-secondary\\s+(black|red|green|yellow|blue|magenta|cyan|white)(:?\\s+(bright))?$")))
+    std::regex("^style\\s+progress\\-secondary\\s+(clear|reverse|black|red|green|yellow|blue|magenta|cyan|white)(?:\\s+(bright))?$")))
   {
-    // 4-bit color
     auto const match = std::move(match_opt.value().at(1));
-    auto const bright = ! OB::String::trim(match_opt.value().at(2)).empty();
-    _ctx.style.progress_fill = aec::str_to_fg_color(match, bright);
+
+    if (match == "clear")
+    {
+      // clear color
+      _ctx.style.progress_fill.clear();
+    }
+    else if (match == "reverse")
+    {
+      // reverse color
+      _ctx.style.progress_fill = aec::reverse;
+    }
+    else
+    {
+      // 4-bit color
+      auto const bright = ! match_opt.value().at(2).empty();
+      _ctx.style.progress_fill = aec::str_to_fg_color(match, bright);
+    }
   }
 
   else if (match_opt = OB::String::match(input,
@@ -1578,12 +1760,26 @@ std::optional<std::pair<bool, std::string>> Tui::command(std::string const& inpu
     _ctx.style.prompt = aec::fg_256(match);
   }
   else if (match_opt = OB::String::match(input,
-    std::regex("^style\\s+prompt\\s+(black|red|green|yellow|blue|magenta|cyan|white)(:?\\s+(bright))?$")))
+    std::regex("^style\\s+prompt\\s+(clear|reverse|black|red|green|yellow|blue|magenta|cyan|white)(?:\\s+(bright))?$")))
   {
-    // 4-bit color
     auto const match = std::move(match_opt.value().at(1));
-    auto const bright = ! OB::String::trim(match_opt.value().at(2)).empty();
-    _ctx.style.prompt = aec::str_to_fg_color(match, bright);
+
+    if (match == "clear")
+    {
+      // clear color
+      _ctx.style.prompt.clear();
+    }
+    else if (match == "reverse")
+    {
+      // reverse color
+      _ctx.style.prompt = aec::reverse;
+    }
+    else
+    {
+      // 4-bit color
+      auto const bright = ! match_opt.value().at(2).empty();
+      _ctx.style.prompt = aec::str_to_fg_color(match, bright);
+    }
   }
 
   else if (match_opt = OB::String::match(input,
@@ -1601,12 +1797,26 @@ std::optional<std::pair<bool, std::string>> Tui::command(std::string const& inpu
     _ctx.style.success = aec::fg_256(match);
   }
   else if (match_opt = OB::String::match(input,
-    std::regex("^style\\s+success\\s+(black|red|green|yellow|blue|magenta|cyan|white)(:?\\s+(bright))?$")))
+    std::regex("^style\\s+success\\s+(clear|reverse|black|red|green|yellow|blue|magenta|cyan|white)(?:\\s+(bright))?$")))
   {
-    // 4-bit color
     auto const match = std::move(match_opt.value().at(1));
-    auto const bright = ! OB::String::trim(match_opt.value().at(2)).empty();
-    _ctx.style.success = aec::str_to_fg_color(match, bright);
+
+    if (match == "clear")
+    {
+      // clear color
+      _ctx.style.success.clear();
+    }
+    else if (match == "reverse")
+    {
+      // reverse color
+      _ctx.style.success = aec::reverse;
+    }
+    else
+    {
+      // 4-bit color
+      auto const bright = ! match_opt.value().at(2).empty();
+      _ctx.style.success = aec::str_to_fg_color(match, bright);
+    }
   }
 
   else if (match_opt = OB::String::match(input,
@@ -1624,12 +1834,26 @@ std::optional<std::pair<bool, std::string>> Tui::command(std::string const& inpu
     _ctx.style.error = aec::fg_256(match);
   }
   else if (match_opt = OB::String::match(input,
-    std::regex("^style\\s+error\\s+(black|red|green|yellow|blue|magenta|cyan|white)(:?\\s+(bright))?$")))
+    std::regex("^style\\s+error\\s+(clear|reverse|black|red|green|yellow|blue|magenta|cyan|white)(?:\\s+(bright))?$")))
   {
-    // 4-bit color
     auto const match = std::move(match_opt.value().at(1));
-    auto const bright = ! OB::String::trim(match_opt.value().at(2)).empty();
-    _ctx.style.error = aec::str_to_fg_color(match, bright);
+
+    if (match == "clear")
+    {
+      // clear color
+      _ctx.style.error.clear();
+    }
+    else if (match == "reverse")
+    {
+      // reverse color
+      _ctx.style.error = aec::reverse;
+    }
+    else
+    {
+      // 4-bit color
+      auto const bright = ! match_opt.value().at(2).empty();
+      _ctx.style.error = aec::str_to_fg_color(match, bright);
+    }
   }
 
   else if (match_opt = OB::String::match(input,
@@ -1647,12 +1871,26 @@ std::optional<std::pair<bool, std::string>> Tui::command(std::string const& inpu
     _ctx.style.word_primary = aec::fg_256(match);
   }
   else if (match_opt = OB::String::match(input,
-    std::regex("^style\\s+text\\-primary\\s+(black|red|green|yellow|blue|magenta|cyan|white)(:?\\s+(bright))?$")))
+    std::regex("^style\\s+text\\-primary\\s+(clear|reverse|black|red|green|yellow|blue|magenta|cyan|white)(?:\\s+(bright))?$")))
   {
-    // 4-bit color
     auto const match = std::move(match_opt.value().at(1));
-    auto const bright = ! OB::String::trim(match_opt.value().at(2)).empty();
-    _ctx.style.word_primary = aec::str_to_fg_color(match, bright);
+
+    if (match == "clear")
+    {
+      // clear color
+      _ctx.style.word_primary.clear();
+    }
+    else if (match == "reverse")
+    {
+      // reverse color
+      _ctx.style.word_primary = aec::reverse;
+    }
+    else
+    {
+      // 4-bit color
+      auto const bright = ! match_opt.value().at(2).empty();
+      _ctx.style.word_primary = aec::str_to_fg_color(match, bright);
+    }
   }
 
   else if (match_opt = OB::String::match(input,
@@ -1670,12 +1908,26 @@ std::optional<std::pair<bool, std::string>> Tui::command(std::string const& inpu
     _ctx.style.word_secondary = aec::fg_256(match);
   }
   else if (match_opt = OB::String::match(input,
-    std::regex("^style\\s+text\\-secondary\\s+(black|red|green|yellow|blue|magenta|cyan|white)(:?\\s+(bright))?$")))
+    std::regex("^style\\s+text\\-secondary\\s+(clear|reverse|black|red|green|yellow|blue|magenta|cyan|white)(?:\\s+(bright))?$")))
   {
-    // 4-bit color
     auto const match = std::move(match_opt.value().at(1));
-    auto const bright = ! OB::String::trim(match_opt.value().at(2)).empty();
-    _ctx.style.word_secondary = aec::str_to_fg_color(match, bright);
+
+    if (match == "clear")
+    {
+      // clear color
+      _ctx.style.word_secondary.clear();
+    }
+    else if (match == "reverse")
+    {
+      // reverse color
+      _ctx.style.word_secondary = aec::reverse;
+    }
+    else
+    {
+      // 4-bit color
+      auto const bright = ! match_opt.value().at(2).empty();
+      _ctx.style.word_secondary = aec::str_to_fg_color(match, bright);
+    }
   }
 
   else if (match_opt = OB::String::match(input,
@@ -1693,12 +1945,26 @@ std::optional<std::pair<bool, std::string>> Tui::command(std::string const& inpu
     _ctx.style.word_highlight = aec::fg_256(match);
   }
   else if (match_opt = OB::String::match(input,
-    std::regex("^style\\s+text\\-highlight\\s+(black|red|green|yellow|blue|magenta|cyan|white)(:?\\s+(bright))?$")))
+    std::regex("^style\\s+text\\-highlight\\s+(clear|reverse|black|red|green|yellow|blue|magenta|cyan|white)(?:\\s+(bright))?$")))
   {
-    // 4-bit color
     auto const match = std::move(match_opt.value().at(1));
-    auto const bright = ! OB::String::trim(match_opt.value().at(2)).empty();
-    _ctx.style.word_highlight = aec::str_to_fg_color(match, bright);
+
+    if (match == "clear")
+    {
+      // clear color
+      _ctx.style.word_highlight.clear();
+    }
+    else if (match == "reverse")
+    {
+      // reverse color
+      _ctx.style.word_highlight = aec::reverse;
+    }
+    else
+    {
+      // 4-bit color
+      auto const bright = ! match_opt.value().at(2).empty();
+      _ctx.style.word_highlight = aec::str_to_fg_color(match, bright);
+    }
   }
 
   else if (match_opt = OB::String::match(input,
@@ -1716,12 +1982,26 @@ std::optional<std::pair<bool, std::string>> Tui::command(std::string const& inpu
     _ctx.style.word_punct = aec::fg_256(match);
   }
   else if (match_opt = OB::String::match(input,
-    std::regex("^style\\s+text\\-punct\\s+(black|red|green|yellow|blue|magenta|cyan|white)(:?\\s+(bright))?$")))
+    std::regex("^style\\s+text\\-punct\\s+(clear|reverse|black|red|green|yellow|blue|magenta|cyan|white)(?:\\s+(bright))?$")))
   {
-    // 4-bit color
     auto const match = std::move(match_opt.value().at(1));
-    auto const bright = ! OB::String::trim(match_opt.value().at(2)).empty();
-    _ctx.style.word_punct = aec::str_to_fg_color(match, bright);
+
+    if (match == "clear")
+    {
+      // clear color
+      _ctx.style.word_punct.clear();
+    }
+    else if (match == "reverse")
+    {
+      // reverse color
+      _ctx.style.word_punct = aec::reverse;
+    }
+    else
+    {
+      // 4-bit color
+      auto const bright = ! match_opt.value().at(2).empty();
+      _ctx.style.word_punct = aec::str_to_fg_color(match, bright);
+    }
   }
 
   else if (match_opt = OB::String::match(input,
@@ -1739,12 +2019,26 @@ std::optional<std::pair<bool, std::string>> Tui::command(std::string const& inpu
     _ctx.style.word_quote = aec::fg_256(match);
   }
   else if (match_opt = OB::String::match(input,
-    std::regex("^style\\s+text\\-quote\\s+(black|red|green|yellow|blue|magenta|cyan|white)(:?\\s+(bright))?$")))
+    std::regex("^style\\s+text\\-quote\\s+(clear|reverse|black|red|green|yellow|blue|magenta|cyan|white)(?:\\s+(bright))?$")))
   {
-    // 4-bit color
     auto const match = std::move(match_opt.value().at(1));
-    auto const bright = ! OB::String::trim(match_opt.value().at(2)).empty();
-    _ctx.style.word_quote = aec::str_to_fg_color(match, bright);
+
+    if (match == "clear")
+    {
+      // clear color
+      _ctx.style.word_quote.clear();
+    }
+    else if (match == "reverse")
+    {
+      // reverse color
+      _ctx.style.word_quote = aec::reverse;
+    }
+    else
+    {
+      // 4-bit color
+      auto const bright = ! match_opt.value().at(2).empty();
+      _ctx.style.word_quote = aec::str_to_fg_color(match, bright);
+    }
   }
 
   else if (match_opt = OB::String::match(input,
