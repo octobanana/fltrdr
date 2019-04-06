@@ -48,6 +48,10 @@ It can be used to read text from either a file or stdin.
 * chars/symbols can be customized
 * show/hide parts of the interface
 * mouse support for play/pause and scrolling text
+* history file for command prompt inputs
+* history file for search prompt inputs
+* fuzzy search prompt input history based on current prompt input
+* load and save reader state to continue where you last left off
 
 ## Usage
 View the usage and help output with the `--help` or `-h` flag.
@@ -73,9 +77,11 @@ and any third party libraries used.
 * __C++17__ compiler/library
 * __CMake__ >= 3.8
 * __ICU__ >= 62.1
+* __OpenSSL__ >= 1.1.0
 
 ### Linked Libraries
 * __stdc++fs__ (libstdc++fs) included in the C++17 Standard Library
+* __crypto__ (libcrypto) part of the OpenSSL Library
 * __icuuc__ (libicuuc) part of the ICU library
 * __icui18n__ (libicui18n) part of the ICU library
 
@@ -123,25 +129,37 @@ The following shell command will install the project in release mode:
 To install in debug mode, run the script with the `--debug` flag.
 
 ## Configuration
-The default config locations are `${XDG_CONFIG_HOME}/fltrdr/config` and `${HOME}/.fltrdr/config`.
-A custom path can also be passed to override the default locations using the `--config` option.
-The config directory and file must be created by the user.
-If the file does not exist, the program continues as normal.
 
-The file, `config`, is a plain text file that can contain any of the commands
-listed in the __Commands__ section of the `--help` output.
-Each command must be on its own line.
-Lines that begin with the `#` character are treated as comments.
+Base Config Directory: `${HOME}/.fltrdr`  
+History Directory: `${HOME}/.fltrdr/history`  
+Config File: `${HOME}/.fltrdr/config`  
+Search History File: `${HOME}/.fltrdr/history/search`  
+Command History File: `${HOME}/.fltrdr/history/command`
+
+Use `--config=<file>` to override the default config file.  
+Use `--config-base=<dir>` to override the default base config directory.
+
+The base config directory and config file must be created by the user.
+The config file in the base config directory must be named `config`.
+It is a plain text file that can contain any of the
+commands listed in the __Commands__ section of the `--help` output.
+Each command must be on its own line. Lines that begin with the
+`#` character are treated as comments.
+
+If you want to permanently use a different base config directory,
+such as `~/.config/fltrdr`, add the following line to your shell profile:
+```sh
+alias fltrdr="fltrdr --config-base=~/.config/fltrdr"
+```
+
+The following shell commands will create the base config directory
+in the default location and copy over the example config file:
+```sh
+mkdir -pv ~/.fltrdr
+cp -uv ./config/default ~/.fltrdr/config
+```
 
 Several config file examples can be found in the `./config` directory.
-
-The following shell commands will create a config directory in the
-`XDG_CONFIG_HOME` default directory and copy over the default example
-config file:
-```sh
-mkdir -pv ~/.config/fltrdr
-cp -uv ./config/default ~/.config/fltrdr/config
-```
 
 ## License
 This project is licensed under the MIT License.
