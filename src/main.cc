@@ -123,6 +123,8 @@ int program_options(Parg& pg)
 
     R"RAW(
   sym <value> <char>
+    progress
+      progress bar and fill symbol
     progress-bar
       progress bar symbol
     progress-fill

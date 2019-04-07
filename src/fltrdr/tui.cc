@@ -2102,6 +2102,31 @@ std::optional<std::pair<bool, std::string>> Tui::command(std::string const& inpu
   }
 
   else if (match_opt = OB::String::match(input,
+    std::regex("^sym\\s+progress(?:\\s+(.{0,4}))?$")))
+  {
+    auto const match = match_opt.value().at(1);
+
+    if (match.empty())
+    {
+      _ctx.sym.progress_bar = " ";
+      _ctx.sym.progress_fill = " ";
+
+      return {};
+    }
+
+    OB::Text::View view {match};
+
+    if (view.size() != 1 || view.cols() > 1 ||
+      ! OB::Text::is_graph(OB::Text::to_int32(view.front())))
+    {
+      return std::make_pair(false, "error: invalid symbol '" + match + "'");
+    }
+
+    _ctx.sym.progress_bar = match;
+    _ctx.sym.progress_fill = match;
+  }
+
+  else if (match_opt = OB::String::match(input,
     std::regex("^sym\\s+progress\\-bar(?:\\s+(.{0,4}))?$")))
   {
     auto const match = match_opt.value().at(1);
