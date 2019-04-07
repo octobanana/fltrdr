@@ -129,6 +129,8 @@ int program_options(Parg& pg)
       progress bar symbol
     progress-fill
       progress bar fill symbol
+    border
+      border top/bottom line and border top/bottom mark symbol
     border-top
       border top symbol
     border-top-mark
