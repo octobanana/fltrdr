@@ -2181,6 +2181,35 @@ std::optional<std::pair<bool, std::string>> Tui::command(std::string const& inpu
     {
       _ctx.sym.border_top = " ";
       _ctx.sym.border_top_mark = " ";
+      _ctx.sym.border_bottom = " ";
+      _ctx.sym.border_bottom_mark = " ";
+
+      return {};
+    }
+
+    OB::Text::View view {match};
+
+    if (view.size() != 1 || view.cols() > 1 ||
+      ! OB::Text::is_graph(OB::Text::to_int32(view.front())))
+    {
+      return std::make_pair(false, "error: invalid symbol '" + match + "'");
+    }
+
+    _ctx.sym.border_top = match;
+    _ctx.sym.border_top_mark = match;
+    _ctx.sym.border_bottom = match;
+    _ctx.sym.border_bottom_mark = match;
+  }
+
+  else if (match_opt = OB::String::match(input,
+    std::regex("^sym\\s+border\\-top(?:\\s+(.{0,4}))?$")))
+  {
+    auto const match = match_opt.value().at(1);
+
+    if (match.empty())
+    {
+      _ctx.sym.border_top = " ";
+      _ctx.sym.border_top_mark = " ";
 
       return {};
     }
@@ -2198,7 +2227,7 @@ std::optional<std::pair<bool, std::string>> Tui::command(std::string const& inpu
   }
 
   else if (match_opt = OB::String::match(input,
-    std::regex("^sym\\s+border\\-top(?:\\s+(.{0,4}))?$")))
+    std::regex("^sym\\s+border\\-top\\-line(?:\\s+(.{0,4}))?$")))
   {
     auto const match = match_opt.value().at(1);
 
@@ -2251,6 +2280,31 @@ std::optional<std::pair<bool, std::string>> Tui::command(std::string const& inpu
     if (match.empty())
     {
       _ctx.sym.border_bottom = " ";
+      _ctx.sym.border_bottom_mark = " ";
+
+      return {};
+    }
+
+    OB::Text::View view {match};
+
+    if (view.size() != 1 || view.cols() > 1 ||
+      ! OB::Text::is_graph(OB::Text::to_int32(view.front())))
+    {
+      return std::make_pair(false, "error: invalid symbol '" + match + "'");
+    }
+
+    _ctx.sym.border_bottom = match;
+    _ctx.sym.border_bottom_mark = match;
+  }
+
+  else if (match_opt = OB::String::match(input,
+    std::regex("^sym\\s+border\\-bottom\\-line(?:\\s+(.{0,4}))?$")))
+  {
+    auto const match = match_opt.value().at(1);
+
+    if (match.empty())
+    {
+      _ctx.sym.border_bottom = " ";
 
       return {};
     }
@@ -2286,56 +2340,6 @@ std::optional<std::pair<bool, std::string>> Tui::command(std::string const& inpu
       return std::make_pair(false, "error: invalid symbol '" + match + "'");
     }
 
-    _ctx.sym.border_bottom_mark = match;
-  }
-
-  else if (match_opt = OB::String::match(input,
-    std::regex("^sym\\s+border\\-top\\-line(?:\\s+(.{0,4}))?$")))
-  {
-    auto const match = match_opt.value().at(1);
-
-    if (match.empty())
-    {
-      _ctx.sym.border_top = " ";
-      _ctx.sym.border_top_mark = " ";
-
-      return {};
-    }
-
-    OB::Text::View view {match};
-
-    if (view.size() != 1 || view.cols() > 1 ||
-      ! OB::Text::is_graph(OB::Text::to_int32(view.front())))
-    {
-      return std::make_pair(false, "error: invalid symbol '" + match + "'");
-    }
-
-    _ctx.sym.border_top = match;
-    _ctx.sym.border_top_mark = match;
-  }
-
-  else if (match_opt = OB::String::match(input,
-    std::regex("^sym\\s+border\\-bottom\\-line(?:\\s+(.{0,4}))?$")))
-  {
-    auto const match = match_opt.value().at(1);
-
-    if (match.empty())
-    {
-      _ctx.sym.border_bottom = " ";
-      _ctx.sym.border_bottom_mark = " ";
-
-      return {};
-    }
-
-    OB::Text::View view {match};
-
-    if (view.size() != 1 || view.cols() > 1 ||
-      ! OB::Text::is_graph(OB::Text::to_int32(view.front())))
-    {
-      return std::make_pair(false, "error: invalid symbol '" + match + "'");
-    }
-
-    _ctx.sym.border_bottom = match;
     _ctx.sym.border_bottom_mark = match;
   }
 

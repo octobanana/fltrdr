@@ -132,17 +132,17 @@ int program_options(Parg& pg)
     border
       border top/bottom line and border top/bottom mark symbol
     border-top
-      border top symbol
+      border top line and border top mark symbol
     border-top-mark
       border top mark symbol
     border-top-line
-      border top and border top mark symbol
+      border top line symbol
     border-bottom
-      border bottom symbol
+      border bottom line and border bottom mark symbol
     border-bottom-mark
       border bottom mark symbol
     border-bottom-line
-      border bottom and border bottom mark symbol)RAW",
+      border bottom line symbol)RAW",
 
     R"RAW(
   style <value> <#000000-#ffffff|0-255|Colour|reverse|clear>
