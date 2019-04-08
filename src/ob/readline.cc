@@ -627,7 +627,7 @@ void Readline::hist_search(std::string const& str)
 
         if (prev_hist == " " && prev_input == " ")
         {
-          count += 2;
+          count += 1;
         }
 
         prev_input = input.at(idx).str;
@@ -644,11 +644,11 @@ void Readline::hist_search(std::string const& str)
 
         if (idx == 0)
         {
-          weight += 2;
+          weight += 3;
         }
         else
         {
-          weight += 1;
+          weight += 2;
         }
       }
 
