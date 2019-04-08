@@ -130,11 +130,13 @@ To install in debug mode, run the script with the `--debug` flag.
 
 ## Configuration
 
-Base Config Directory: `${HOME}/.fltrdr`  
-History Directory: `${HOME}/.fltrdr/history`  
-Config File: `${HOME}/.fltrdr/config`  
-Search History File: `${HOME}/.fltrdr/history/search`  
-Command History File: `${HOME}/.fltrdr/history/command`
+Base Config Directory (BASE): `${HOME}/.fltrdr`  
+State Directory: `BASE/state`  
+History Directory: `BASE/history`  
+Config File: `BASE/config`  
+State Files: `BASE/state/<content-id>`  
+Search History File: `BASE/history/search`  
+Command History File: `BASE/history/command`
 
 Use `--config=<file>` to override the default config file.  
 Use `--config-base=<dir>` to override the default base config directory.
