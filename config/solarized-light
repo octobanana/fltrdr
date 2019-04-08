@@ -16,12 +16,10 @@ set border on
 set border-top on
 set border-bottom on
 
-sym border-top ─
+sym border ─
 sym border-top-mark ┬
-sym border-bottom ─
 sym border-bottom-mark ┴
-sym progress-bar ▁
-sym progress-fill ▁
+sym progress ▁
 
 style background fdf6e3
 style countdown eee8d5

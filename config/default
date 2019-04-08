@@ -4,6 +4,10 @@
 # refer to the 'Commands' section of the help output with
 # '--help' or '-h' to view all commands and their descriptions
 
+# -----------------------------------------------------------------------------
+# General
+# -----------------------------------------------------------------------------
+
 # set the reader speed in words per minute (wpm)
 # <60-1200>
 wpm 250
@@ -21,6 +25,10 @@ next 1
 # 0 will center the focus point
 # 1-6 will make the focus point increasingly more left-oriented
 offset 2
+
+# -----------------------------------------------------------------------------
+# Toggles
+# -----------------------------------------------------------------------------
 
 # toggle full text line visibility
 # <on|off>
@@ -46,37 +54,53 @@ set border-top on
 # <on|off>
 set border-bottom on
 
-# border top symbol
+# -----------------------------------------------------------------------------
+# Symbols
+# -----------------------------------------------------------------------------
+
+# border top/bottom line and border top/bottom mark symbol
 # <char>
-sym border-top ─
+sym border ─
+
+# border top line and border top mark symbol
+# <char>
+# sym border-top ─
+
+# border top line symbol
+# <char>
+# sym border-top-line ─
 
 # border top mark symbol
 # <char>
 sym border-top-mark ┬
 
-# border top and border top mark symbol
+# border bottom line and border bottom mark symbol
 # <char>
-# sym border-top-line ─
+# sym border-bottom ─
 
-# border bottom symbol
+# border bottom line symbol
 # <char>
-sym border-bottom ─
+# sym border-bottom-line ─
 
 # border bottom mark symbol
 # <char>
 sym border-bottom-mark ┴
 
-# border bottom and border bottom mark symbol
+# progress bar and fill symbol
 # <char>
-# sym border-bottom-line ─
+sym progress ▁
 
 # progress bar symbol
 # <char>
-sym progress-bar ▁
+# sym progress-bar ▁
 
 # progress bar fill symbol
 # <char>
-sym progress-fill ▁
+# sym progress-fill ▁
+
+# -----------------------------------------------------------------------------
+# Styles
+# -----------------------------------------------------------------------------
 
 # meta style, sets the primary colour of the program
 # <#000000-#ffffff|0-255|Colour|reverse|clear>
