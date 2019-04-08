@@ -279,7 +279,6 @@ std::string Readline::operator()(bool& is_running)
             edit_insert(utf8);
           }
 
-
           break;
         }
       }
