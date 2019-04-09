@@ -116,7 +116,7 @@ private:
     {
       bool play {false};
 
-      int count_total {3};
+      int count_total {2};
       int count_down {0};
       bool counting_down {false};
 
