@@ -1238,1151 +1238,46 @@ std::optional<std::pair<bool, std::string>> Tui::command(std::string const& inpu
     return {};
   }
 
+  auto const keys = OB::String::split(input, " ");
+
+  if (keys.empty())
+  {
+    return {};
+  }
+
   // store the matches returned from OB::String::match
   std::optional<std::vector<std::string>> match_opt;
 
   // quit
-  if (match_opt = OB::String::match(input,
-    std::regex("^(q|Q|quit|Quit|exit)$")))
+  if (keys.size() == 1 && (keys.at(0) == "q" || keys.at(0) == "Q" ||
+    keys.at(0) == "quit" || keys.at(0) == "Quit" || keys.at(0) == "exit"))
   {
     _ctx.is_running = false;
     return {};
   }
 
   // save state
-  else if (match_opt = OB::String::match(input,
-    std::regex("^w$")))
+  else if (keys.size() == 1 && keys.at(0) == "w")
   {
     save_state();
   }
 
   // save state and quit
-  else if (match_opt = OB::String::match(input,
-    std::regex("^wq$")))
+  else if (keys.size() == 1 && keys.at(0) == "wq")
   {
     save_state();
     _ctx.is_running = false;
     return {};
   }
 
-  // two-tone primary color
-  else if (match_opt = OB::String::match(input,
-    std::regex("^style\\s+primary\\s+(#?[0-9a-fA-F]{6})$")))
-  {
-    // 24-bit color
-    auto const match = std::move(match_opt.value().at(1));
-    _ctx.style.secondary = aec::fg_true(match);
-    _ctx.style.background = aec::bg_true(match);
-    _ctx.style.border = aec::fg_true(match);
-    _ctx.style.progress_fill = aec::fg_true(match);
-    _ctx.style.word_primary = aec::fg_true(match);
-    _ctx.style.prompt = aec::fg_true(match);
-  }
-  else if (match_opt = OB::String::match(input,
-    std::regex("^style\\s+primary\\s+([0-9]{1,3})$")))
-  {
-    // 8-bit color
-    auto const match = std::move(match_opt.value().at(1));
-    _ctx.style.secondary = aec::fg_256(match);
-    _ctx.style.background = aec::bg_256(match);
-    _ctx.style.border = aec::fg_256(match);
-    _ctx.style.progress_fill = aec::fg_256(match);
-    _ctx.style.word_primary = aec::fg_256(match);
-    _ctx.style.prompt = aec::fg_256(match);
-  }
-  else if (match_opt = OB::String::match(input,
-    std::regex("^style\\s+primary\\s+(clear|reverse|black|red|green|yellow|blue|magenta|cyan|white)(?:\\s+(bright))?$")))
-  {
-    auto const match = std::move(match_opt.value().at(1));
-
-    if (match == "clear")
-    {
-      // clear color
-      _ctx.style.secondary.clear();
-      _ctx.style.background.clear();
-      _ctx.style.border.clear();
-      _ctx.style.progress_fill.clear();
-      _ctx.style.word_primary.clear();
-      _ctx.style.prompt.clear();
-    }
-    else if (match == "reverse")
-    {
-      // reverse color
-      _ctx.style.secondary = aec::reverse;
-      _ctx.style.background = aec::reverse;
-      _ctx.style.border = aec::reverse;
-      _ctx.style.progress_fill = aec::reverse;
-      _ctx.style.word_primary = aec::reverse;
-      _ctx.style.prompt = aec::reverse;
-    }
-    else
-    {
-      // 4-bit color
-      auto const bright = ! match_opt.value().at(2).empty();
-      _ctx.style.secondary = aec::str_to_fg_color(match, bright);
-      _ctx.style.background = aec::str_to_bg_color(match, bright);
-      _ctx.style.border = aec::str_to_fg_color(match, bright);
-      _ctx.style.progress_fill = aec::str_to_fg_color(match, bright);
-      _ctx.style.word_primary = aec::str_to_fg_color(match, bright);
-      _ctx.style.prompt = aec::str_to_fg_color(match, bright);
-    }
-  }
-
-  // two-tone secondary color
-  else if (match_opt = OB::String::match(input,
-    std::regex("^style\\s+secondary\\s+(#?[0-9a-fA-F]{6})$")))
-  {
-    // 24-bit color
-    auto const match = std::move(match_opt.value().at(1));
-    _ctx.style.primary = aec::fg_true(match);
-    _ctx.style.progress_bar = aec::fg_true(match);
-    _ctx.style.word_secondary = aec::fg_true(match);
-    _ctx.style.word_highlight = aec::fg_true(match);
-    _ctx.style.word_punct = aec::fg_true(match);
-    _ctx.style.word_quote = aec::fg_true(match);
-  }
-  else if (match_opt = OB::String::match(input,
-    std::regex("^style\\s+secondary\\s+([0-9]{1,3})$")))
-  {
-    // 8-bit color
-    auto const match = std::move(match_opt.value().at(1));
-    _ctx.style.primary = aec::fg_256(match);
-    _ctx.style.progress_bar = aec::fg_256(match);
-    _ctx.style.word_secondary = aec::fg_256(match);
-    _ctx.style.word_highlight = aec::fg_256(match);
-    _ctx.style.word_punct = aec::fg_256(match);
-    _ctx.style.word_quote = aec::fg_256(match);
-  }
-  else if (match_opt = OB::String::match(input,
-    std::regex("^style\\s+secondary\\s+(clear|reverse|black|red|green|yellow|blue|magenta|cyan|white)(?:\\s+(bright))?$")))
-  {
-    auto const match = std::move(match_opt.value().at(1));
-
-    if (match == "clear")
-    {
-      // clear color
-      _ctx.style.primary.clear();
-      _ctx.style.progress_bar.clear();
-      _ctx.style.word_secondary.clear();
-      _ctx.style.word_highlight.clear();
-      _ctx.style.word_punct.clear();
-      _ctx.style.word_quote.clear();
-    }
-    else if (match == "reverse")
-    {
-      // reverse color
-      _ctx.style.primary = aec::reverse;
-      _ctx.style.progress_bar = aec::reverse;
-      _ctx.style.word_secondary = aec::reverse;
-      _ctx.style.word_highlight = aec::reverse;
-      _ctx.style.word_punct = aec::reverse;
-      _ctx.style.word_quote = aec::reverse;
-    }
-    else
-    {
-      // 4-bit color
-      auto const bright = ! match_opt.value().at(2).empty();
-      _ctx.style.primary = aec::str_to_fg_color(match, bright);
-      _ctx.style.progress_bar = aec::str_to_fg_color(match, bright);
-      _ctx.style.word_secondary = aec::str_to_fg_color(match, bright);
-      _ctx.style.word_highlight = aec::str_to_fg_color(match, bright);
-      _ctx.style.word_punct = aec::str_to_fg_color(match, bright);
-      _ctx.style.word_quote = aec::str_to_fg_color(match, bright);
-    }
-  }
-
-  // text color
-  else if (match_opt = OB::String::match(input,
-    std::regex("^style\\s+text\\s+(#?[0-9a-fA-F]{6})$")))
-  {
-    // 24-bit color
-    auto const match = std::move(match_opt.value().at(1));
-    _ctx.style.word_primary = aec::fg_true(match);
-    _ctx.style.word_secondary = aec::fg_true(match);
-    _ctx.style.word_highlight = aec::fg_true(match);
-    _ctx.style.word_punct = aec::fg_true(match);
-    _ctx.style.word_quote = aec::fg_true(match);
-  }
-  else if (match_opt = OB::String::match(input,
-    std::regex("^style\\s+text\\s+([0-9]{1,3})$")))
-  {
-    // 8-bit color
-    auto const match = std::move(match_opt.value().at(1));
-    _ctx.style.word_primary = aec::fg_256(match);
-    _ctx.style.word_secondary = aec::fg_256(match);
-    _ctx.style.word_highlight = aec::fg_256(match);
-    _ctx.style.word_punct = aec::fg_256(match);
-    _ctx.style.word_quote = aec::fg_256(match);
-  }
-  else if (match_opt = OB::String::match(input,
-    std::regex("^style\\s+text\\s+(clear|reverse|black|red|green|yellow|blue|magenta|cyan|white)(?:\\s+(bright))?$")))
-  {
-    auto const match = std::move(match_opt.value().at(1));
-
-    if (match == "clear")
-    {
-      // clear color
-      _ctx.style.word_primary.clear();
-      _ctx.style.word_secondary.clear();
-      _ctx.style.word_highlight.clear();
-      _ctx.style.word_punct.clear();
-      _ctx.style.word_quote.clear();
-    }
-    else if (match == "reverse")
-    {
-      // reverse color
-      _ctx.style.word_primary = aec::reverse;
-      _ctx.style.word_secondary = aec::reverse;
-      _ctx.style.word_highlight = aec::reverse;
-      _ctx.style.word_punct = aec::reverse;
-      _ctx.style.word_quote = aec::reverse;
-    }
-    else
-    {
-      // 4-bit color
-      auto const bright = ! match_opt.value().at(2).empty();
-      _ctx.style.word_primary = aec::str_to_fg_color(match, bright);
-      _ctx.style.word_secondary = aec::str_to_fg_color(match, bright);
-      _ctx.style.word_highlight = aec::str_to_fg_color(match, bright);
-      _ctx.style.word_punct = aec::str_to_fg_color(match, bright);
-      _ctx.style.word_quote = aec::str_to_fg_color(match, bright);
-    }
-  }
-
-  else if (match_opt = OB::String::match(input,
-    std::regex("^style\\s+status\\-background\\s+(#?[0-9a-fA-F]{6})$")))
-  {
-    // 24-bit color
-    auto const match = std::move(match_opt.value().at(1));
-    _ctx.style.background = aec::bg_true(match);
-  }
-  else if (match_opt = OB::String::match(input,
-    std::regex("^style\\s+status\\-background\\s+([0-9]{1,3})$")))
-  {
-    // 8-bit color
-    auto const match = std::move(match_opt.value().at(1));
-    _ctx.style.background = aec::bg_256(match);
-  }
-  else if (match_opt = OB::String::match(input,
-    std::regex("^style\\s+status\\-background\\s+(clear|reverse|black|red|green|yellow|blue|magenta|cyan|white)(?:\\s+(bright))?$")))
-  {
-    auto const match = std::move(match_opt.value().at(1));
-
-    if (match == "clear")
-    {
-      // clear color
-      _ctx.style.background.clear();
-    }
-    else if (match == "reverse")
-    {
-      // reverse color
-      _ctx.style.background = aec::reverse;
-    }
-    else
-    {
-      // 4-bit color
-      auto const bright = ! match_opt.value().at(2).empty();
-      _ctx.style.background = aec::str_to_bg_color(match, bright);
-    }
-  }
-
-  else if (match_opt = OB::String::match(input,
-    std::regex("^style\\s+background\\s+(#?[0-9a-fA-F]{6})$")))
-  {
-    // 24-bit color
-    auto const match = std::move(match_opt.value().at(1));
-    _ctx.style.bg = aec::bg_true(match);
-  }
-  else if (match_opt = OB::String::match(input,
-    std::regex("^style\\s+background\\s+([0-9]{1,3})$")))
-  {
-    // 8-bit color
-    auto const match = std::move(match_opt.value().at(1));
-    _ctx.style.bg = aec::bg_256(match);
-  }
-  else if (match_opt = OB::String::match(input,
-    std::regex("^style\\s+background\\s+(clear|reverse|black|red|green|yellow|blue|magenta|cyan|white)(?:\\s+(bright))?$")))
-  {
-    auto const match = std::move(match_opt.value().at(1));
-
-    if (match == "clear")
-    {
-      // clear color
-      _ctx.style.bg.clear();
-    }
-    else if (match == "reverse")
-    {
-      // reverse color
-      _ctx.style.bg = aec::reverse;
-    }
-    else
-    {
-      // 4-bit color
-      auto const bright = ! match_opt.value().at(2).empty();
-      _ctx.style.bg = aec::str_to_bg_color(match, bright);
-    }
-  }
-
-  else if (match_opt = OB::String::match(input,
-    std::regex("^style\\s+countdown\\s+(#?[0-9a-fA-F]{6})$")))
-  {
-    // 24-bit color
-    auto const match = std::move(match_opt.value().at(1));
-    _ctx.style.countdown = aec::bg_true(match);
-  }
-  else if (match_opt = OB::String::match(input,
-    std::regex("^style\\s+countdown\\s+([0-9]{1,3})$")))
-  {
-    // 8-bit color
-    auto const match = std::move(match_opt.value().at(1));
-    _ctx.style.countdown = aec::bg_256(match);
-  }
-  else if (match_opt = OB::String::match(input,
-    std::regex("^style\\s+countdown\\s+(clear|reverse|black|red|green|yellow|blue|magenta|cyan|white)(?:\\s+(bright))?$")))
-  {
-    auto const match = std::move(match_opt.value().at(1));
-
-    if (match == "clear")
-    {
-      // clear color
-      _ctx.style.countdown.clear();
-    }
-    else if (match == "reverse")
-    {
-      // reverse color
-      _ctx.style.countdown = aec::reverse;
-    }
-    else
-    {
-      // 4-bit color
-      auto const bright = ! match_opt.value().at(2).empty();
-      _ctx.style.countdown = aec::str_to_bg_color(match, bright);
-    }
-  }
-
-  else if (match_opt = OB::String::match(input,
-    std::regex("^style\\s+status\\-primary\\s+(#?[0-9a-fA-F]{6})$")))
-  {
-    // 24-bit color
-    auto const match = std::move(match_opt.value().at(1));
-    _ctx.style.primary = aec::fg_true(match);
-  }
-  else if (match_opt = OB::String::match(input,
-    std::regex("^style\\s+status\\-primary\\s+([0-9]{1,3})$")))
-  {
-    // 8-bit color
-    auto const match = std::move(match_opt.value().at(1));
-    _ctx.style.primary = aec::fg_256(match);
-  }
-  else if (match_opt = OB::String::match(input,
-    std::regex("^style\\s+status\\-primary\\s+(clear|reverse|black|red|green|yellow|blue|magenta|cyan|white)(?:\\s+(bright))?$")))
-  {
-    auto const match = std::move(match_opt.value().at(1));
-
-    if (match == "clear")
-    {
-      // clear color
-      _ctx.style.primary.clear();
-    }
-    else if (match == "reverse")
-    {
-      // reverse color
-      _ctx.style.primary = aec::reverse;
-    }
-    else
-    {
-      // 4-bit color
-      auto const bright = ! match_opt.value().at(2).empty();
-      _ctx.style.primary = aec::str_to_fg_color(match, bright);
-    }
-  }
-
-  else if (match_opt = OB::String::match(input,
-    std::regex("^style\\s+status\\-secondary\\s+(#?[0-9a-fA-F]{6})$")))
-  {
-    // 24-bit color
-    auto const match = std::move(match_opt.value().at(1));
-    _ctx.style.secondary = aec::fg_true(match);
-  }
-  else if (match_opt = OB::String::match(input,
-    std::regex("^style\\s+status\\-secondary\\s+([0-9]{1,3})$")))
-  {
-    // 8-bit color
-    auto const match = std::move(match_opt.value().at(1));
-    _ctx.style.secondary = aec::fg_256(match);
-  }
-  else if (match_opt = OB::String::match(input,
-    std::regex("^style\\s+status\\-secondary\\s+(clear|reverse|black|red|green|yellow|blue|magenta|cyan|white)(?:\\s+(bright))?$")))
-  {
-    auto const match = std::move(match_opt.value().at(1));
-
-    if (match == "clear")
-    {
-      // clear color
-      _ctx.style.secondary.clear();
-    }
-    else if (match == "reverse")
-    {
-      // reverse color
-      _ctx.style.secondary = aec::reverse;
-    }
-    else
-    {
-      // 4-bit color
-      auto const bright = ! match_opt.value().at(2).empty();
-      _ctx.style.secondary = aec::str_to_fg_color(match, bright);
-    }
-  }
-
-  else if (match_opt = OB::String::match(input,
-    std::regex("^style\\s+border\\s+(#?[0-9a-fA-F]{6})$")))
-  {
-    // 24-bit color
-    auto const match = std::move(match_opt.value().at(1));
-    _ctx.style.border = aec::fg_true(match);
-  }
-  else if (match_opt = OB::String::match(input,
-    std::regex("^style\\s+border\\s+([0-9]{1,3})$")))
-  {
-    // 8-bit color
-    auto const match = std::move(match_opt.value().at(1));
-    _ctx.style.border = aec::fg_256(match);
-  }
-  else if (match_opt = OB::String::match(input,
-    std::regex("^style\\s+border\\s+(clear|reverse|black|red|green|yellow|blue|magenta|cyan|white)(?:\\s+(bright))?$")))
-  {
-    auto const match = std::move(match_opt.value().at(1));
-
-    if (match == "clear")
-    {
-      // clear color
-      _ctx.style.border.clear();
-    }
-    else if (match == "reverse")
-    {
-      // reverse color
-      _ctx.style.border = aec::reverse;
-    }
-    else
-    {
-      // 4-bit color
-      auto const bright = ! match_opt.value().at(2).empty();
-      _ctx.style.border = aec::str_to_fg_color(match, bright);
-    }
-  }
-
-  else if (match_opt = OB::String::match(input,
-    std::regex("^style\\s+progress\\-bar\\s+(#?[0-9a-fA-F]{6})$")))
-  {
-    // 24-bit color
-    auto const match = std::move(match_opt.value().at(1));
-    _ctx.style.progress_bar = aec::fg_true(match);
-  }
-  else if (match_opt = OB::String::match(input,
-    std::regex("^style\\s+progress\\-bar\\s+([0-9]{1,3})$")))
-  {
-    // 8-bit color
-    auto const match = std::move(match_opt.value().at(1));
-    _ctx.style.progress_bar = aec::fg_256(match);
-  }
-  else if (match_opt = OB::String::match(input,
-    std::regex("^style\\s+progress\\-bar\\s+(clear|reverse|black|red|green|yellow|blue|magenta|cyan|white)(?:\\s+(bright))?$")))
-  {
-    auto const match = std::move(match_opt.value().at(1));
-
-    if (match == "clear")
-    {
-      // clear color
-      _ctx.style.progress_bar.clear();
-    }
-    else if (match == "reverse")
-    {
-      // reverse color
-      _ctx.style.progress_bar = aec::reverse;
-    }
-    else
-    {
-      // 4-bit color
-      auto const bright = ! match_opt.value().at(2).empty();
-      _ctx.style.progress_bar = aec::str_to_fg_color(match, bright);
-    }
-  }
-
-  else if (match_opt = OB::String::match(input,
-    std::regex("^style\\s+progress\\-fill\\s+(#?[0-9a-fA-F]{6})$")))
-  {
-    // 24-bit color
-    auto const match = std::move(match_opt.value().at(1));
-    _ctx.style.progress_fill = aec::fg_true(match);
-  }
-  else if (match_opt = OB::String::match(input,
-    std::regex("^style\\s+progress\\-fill\\s+([0-9]{1,3})$")))
-  {
-    // 8-bit color
-    auto const match = std::move(match_opt.value().at(1));
-    _ctx.style.progress_fill = aec::fg_256(match);
-  }
-  else if (match_opt = OB::String::match(input,
-    std::regex("^style\\s+progress\\-fill\\s+(clear|reverse|black|red|green|yellow|blue|magenta|cyan|white)(?:\\s+(bright))?$")))
-  {
-    auto const match = std::move(match_opt.value().at(1));
-
-    if (match == "clear")
-    {
-      // clear color
-      _ctx.style.progress_fill.clear();
-    }
-    else if (match == "reverse")
-    {
-      // reverse color
-      _ctx.style.progress_fill = aec::reverse;
-    }
-    else
-    {
-      // 4-bit color
-      auto const bright = ! match_opt.value().at(2).empty();
-      _ctx.style.progress_fill = aec::str_to_fg_color(match, bright);
-    }
-  }
-
-  else if (match_opt = OB::String::match(input,
-    std::regex("^style\\s+prompt\\s+(#?[0-9a-fA-F]{6})$")))
-  {
-    // 24-bit color
-    auto const match = std::move(match_opt.value().at(1));
-    _ctx.style.prompt = aec::fg_true(match);
-  }
-  else if (match_opt = OB::String::match(input,
-    std::regex("^style\\s+prompt\\s+([0-9]{1,3})$")))
-  {
-    // 8-bit color
-    auto const match = std::move(match_opt.value().at(1));
-    _ctx.style.prompt = aec::fg_256(match);
-  }
-  else if (match_opt = OB::String::match(input,
-    std::regex("^style\\s+prompt\\s+(clear|reverse|black|red|green|yellow|blue|magenta|cyan|white)(?:\\s+(bright))?$")))
-  {
-    auto const match = std::move(match_opt.value().at(1));
-
-    if (match == "clear")
-    {
-      // clear color
-      _ctx.style.prompt.clear();
-    }
-    else if (match == "reverse")
-    {
-      // reverse color
-      _ctx.style.prompt = aec::reverse;
-    }
-    else
-    {
-      // 4-bit color
-      auto const bright = ! match_opt.value().at(2).empty();
-      _ctx.style.prompt = aec::str_to_fg_color(match, bright);
-    }
-  }
-
-  else if (match_opt = OB::String::match(input,
-    std::regex("^style\\s+success\\s+(#?[0-9a-fA-F]{6})$")))
-  {
-    // 24-bit color
-    auto const match = std::move(match_opt.value().at(1));
-    _ctx.style.success = aec::fg_true(match);
-  }
-  else if (match_opt = OB::String::match(input,
-    std::regex("^style\\s+success\\s+([0-9]{1,3})$")))
-  {
-    // 8-bit color
-    auto const match = std::move(match_opt.value().at(1));
-    _ctx.style.success = aec::fg_256(match);
-  }
-  else if (match_opt = OB::String::match(input,
-    std::regex("^style\\s+success\\s+(clear|reverse|black|red|green|yellow|blue|magenta|cyan|white)(?:\\s+(bright))?$")))
-  {
-    auto const match = std::move(match_opt.value().at(1));
-
-    if (match == "clear")
-    {
-      // clear color
-      _ctx.style.success.clear();
-    }
-    else if (match == "reverse")
-    {
-      // reverse color
-      _ctx.style.success = aec::reverse;
-    }
-    else
-    {
-      // 4-bit color
-      auto const bright = ! match_opt.value().at(2).empty();
-      _ctx.style.success = aec::str_to_fg_color(match, bright);
-    }
-  }
-
-  else if (match_opt = OB::String::match(input,
-    std::regex("^style\\s+error\\s+(#?[0-9a-fA-F]{6})$")))
-  {
-    // 24-bit color
-    auto const match = std::move(match_opt.value().at(1));
-    _ctx.style.error = aec::fg_true(match);
-  }
-  else if (match_opt = OB::String::match(input,
-    std::regex("^style\\s+error\\s+([0-9]{1,3})$")))
-  {
-    // 8-bit color
-    auto const match = std::move(match_opt.value().at(1));
-    _ctx.style.error = aec::fg_256(match);
-  }
-  else if (match_opt = OB::String::match(input,
-    std::regex("^style\\s+error\\s+(clear|reverse|black|red|green|yellow|blue|magenta|cyan|white)(?:\\s+(bright))?$")))
-  {
-    auto const match = std::move(match_opt.value().at(1));
-
-    if (match == "clear")
-    {
-      // clear color
-      _ctx.style.error.clear();
-    }
-    else if (match == "reverse")
-    {
-      // reverse color
-      _ctx.style.error = aec::reverse;
-    }
-    else
-    {
-      // 4-bit color
-      auto const bright = ! match_opt.value().at(2).empty();
-      _ctx.style.error = aec::str_to_fg_color(match, bright);
-    }
-  }
-
-  else if (match_opt = OB::String::match(input,
-    std::regex("^style\\s+text\\-primary\\s+(#?[0-9a-fA-F]{6})$")))
-  {
-    // 24-bit color
-    auto const match = std::move(match_opt.value().at(1));
-    _ctx.style.word_primary = aec::fg_true(match);
-  }
-  else if (match_opt = OB::String::match(input,
-    std::regex("^style\\s+text\\-primary\\s+([0-9]{1,3})$")))
-  {
-    // 8-bit color
-    auto const match = std::move(match_opt.value().at(1));
-    _ctx.style.word_primary = aec::fg_256(match);
-  }
-  else if (match_opt = OB::String::match(input,
-    std::regex("^style\\s+text\\-primary\\s+(clear|reverse|black|red|green|yellow|blue|magenta|cyan|white)(?:\\s+(bright))?$")))
-  {
-    auto const match = std::move(match_opt.value().at(1));
-
-    if (match == "clear")
-    {
-      // clear color
-      _ctx.style.word_primary.clear();
-    }
-    else if (match == "reverse")
-    {
-      // reverse color
-      _ctx.style.word_primary = aec::reverse;
-    }
-    else
-    {
-      // 4-bit color
-      auto const bright = ! match_opt.value().at(2).empty();
-      _ctx.style.word_primary = aec::str_to_fg_color(match, bright);
-    }
-  }
-
-  else if (match_opt = OB::String::match(input,
-    std::regex("^style\\s+text\\-secondary\\s+(#?[0-9a-fA-F]{6})$")))
-  {
-    // 24-bit color
-    auto const match = std::move(match_opt.value().at(1));
-    _ctx.style.word_secondary = aec::fg_true(match);
-  }
-  else if (match_opt = OB::String::match(input,
-    std::regex("^style\\s+text\\-secondary\\s+([0-9]{1,3})$")))
-  {
-    // 8-bit color
-    auto const match = std::move(match_opt.value().at(1));
-    _ctx.style.word_secondary = aec::fg_256(match);
-  }
-  else if (match_opt = OB::String::match(input,
-    std::regex("^style\\s+text\\-secondary\\s+(clear|reverse|black|red|green|yellow|blue|magenta|cyan|white)(?:\\s+(bright))?$")))
-  {
-    auto const match = std::move(match_opt.value().at(1));
-
-    if (match == "clear")
-    {
-      // clear color
-      _ctx.style.word_secondary.clear();
-    }
-    else if (match == "reverse")
-    {
-      // reverse color
-      _ctx.style.word_secondary = aec::reverse;
-    }
-    else
-    {
-      // 4-bit color
-      auto const bright = ! match_opt.value().at(2).empty();
-      _ctx.style.word_secondary = aec::str_to_fg_color(match, bright);
-    }
-  }
-
-  else if (match_opt = OB::String::match(input,
-    std::regex("^style\\s+text\\-highlight\\s+(#?[0-9a-fA-F]{6})$")))
-  {
-    // 24-bit color
-    auto const match = std::move(match_opt.value().at(1));
-    _ctx.style.word_highlight = aec::fg_true(match);
-  }
-  else if (match_opt = OB::String::match(input,
-    std::regex("^style\\s+text\\-highlight\\s+([0-9]{1,3})$")))
-  {
-    // 8-bit color
-    auto const match = std::move(match_opt.value().at(1));
-    _ctx.style.word_highlight = aec::fg_256(match);
-  }
-  else if (match_opt = OB::String::match(input,
-    std::regex("^style\\s+text\\-highlight\\s+(clear|reverse|black|red|green|yellow|blue|magenta|cyan|white)(?:\\s+(bright))?$")))
-  {
-    auto const match = std::move(match_opt.value().at(1));
-
-    if (match == "clear")
-    {
-      // clear color
-      _ctx.style.word_highlight.clear();
-    }
-    else if (match == "reverse")
-    {
-      // reverse color
-      _ctx.style.word_highlight = aec::reverse;
-    }
-    else
-    {
-      // 4-bit color
-      auto const bright = ! match_opt.value().at(2).empty();
-      _ctx.style.word_highlight = aec::str_to_fg_color(match, bright);
-    }
-  }
-
-  else if (match_opt = OB::String::match(input,
-    std::regex("^style\\s+text\\-punct\\s+(#?[0-9a-fA-F]{6})$")))
-  {
-    // 24-bit color
-    auto const match = std::move(match_opt.value().at(1));
-    _ctx.style.word_punct = aec::fg_true(match);
-  }
-  else if (match_opt = OB::String::match(input,
-    std::regex("^style\\s+text\\-punct\\s+([0-9]{1,3})$")))
-  {
-    // 8-bit color
-    auto const match = std::move(match_opt.value().at(1));
-    _ctx.style.word_punct = aec::fg_256(match);
-  }
-  else if (match_opt = OB::String::match(input,
-    std::regex("^style\\s+text\\-punct\\s+(clear|reverse|black|red|green|yellow|blue|magenta|cyan|white)(?:\\s+(bright))?$")))
-  {
-    auto const match = std::move(match_opt.value().at(1));
-
-    if (match == "clear")
-    {
-      // clear color
-      _ctx.style.word_punct.clear();
-    }
-    else if (match == "reverse")
-    {
-      // reverse color
-      _ctx.style.word_punct = aec::reverse;
-    }
-    else
-    {
-      // 4-bit color
-      auto const bright = ! match_opt.value().at(2).empty();
-      _ctx.style.word_punct = aec::str_to_fg_color(match, bright);
-    }
-  }
-
-  else if (match_opt = OB::String::match(input,
-    std::regex("^style\\s+text\\-quote\\s+(#?[0-9a-fA-F]{6})$")))
-  {
-    // 24-bit color
-    auto const match = std::move(match_opt.value().at(1));
-    _ctx.style.word_quote = aec::fg_true(match);
-  }
-  else if (match_opt = OB::String::match(input,
-    std::regex("^style\\s+text\\-quote\\s+([0-9]{1,3})$")))
-  {
-    // 8-bit color
-    auto const match = std::move(match_opt.value().at(1));
-    _ctx.style.word_quote = aec::fg_256(match);
-  }
-  else if (match_opt = OB::String::match(input,
-    std::regex("^style\\s+text\\-quote\\s+(clear|reverse|black|red|green|yellow|blue|magenta|cyan|white)(?:\\s+(bright))?$")))
-  {
-    auto const match = std::move(match_opt.value().at(1));
-
-    if (match == "clear")
-    {
-      // clear color
-      _ctx.style.word_quote.clear();
-    }
-    else if (match == "reverse")
-    {
-      // reverse color
-      _ctx.style.word_quote = aec::reverse;
-    }
-    else
-    {
-      // 4-bit color
-      auto const bright = ! match_opt.value().at(2).empty();
-      _ctx.style.word_quote = aec::str_to_fg_color(match, bright);
-    }
-  }
-
-  else if (match_opt = OB::String::match(input,
-    std::regex("^set\\s+border\\-top(?:\\s+(true|false|t|f|1|0|on|off))?$")))
-  {
-    auto const match = match_opt.value().at(1);
-
-    if (match.empty() || "true" == match || "t" == match || "1" == match || "on" == match)
-    {
-      _ctx.show.border_top = true;
-    }
-    else
-    {
-      _ctx.show.border_top = false;
-    }
-  }
-
-  else if (match_opt = OB::String::match(input,
-    std::regex("^set\\s+border\\-bottom(?:\\s+(true|false|t|f|1|0|on|off))?$")))
-  {
-    auto const match = match_opt.value().at(1);
-
-    if (match.empty() || "true" == match || "t" == match || "1" == match || "on" == match)
-    {
-      _ctx.show.border_bottom = true;
-    }
-    else
-    {
-      _ctx.show.border_bottom = false;
-    }
-  }
-
-  else if (match_opt = OB::String::match(input,
-    std::regex("^set\\s+progress(?:\\s+(true|false|t|f|1|0|on|off))?$")))
-  {
-    auto const match = match_opt.value().at(1);
-
-    if (match.empty() || "true" == match || "t" == match || "1" == match || "on" == match)
-    {
-      _ctx.show.progress = true;
-    }
-    else
-    {
-      _ctx.show.progress = false;
-    }
-  }
-
-  else if (match_opt = OB::String::match(input,
-    std::regex("^set\\s+status(?:\\s+(true|false|t|f|1|0|on|off))?$")))
-  {
-    auto const match = match_opt.value().at(1);
-
-    if (match.empty() || "true" == match || "t" == match || "1" == match || "on" == match)
-    {
-      _ctx.show.status = true;
-    }
-    else
-    {
-      _ctx.show.status = false;
-    }
-  }
-
-  else if (match_opt = OB::String::match(input,
-    std::regex("^sym\\s+progress(?:\\s+(.{0,4}))?$")))
+  else if (keys.at(0) == "prev" && (match_opt = OB::String::match(input,
+    std::regex("^prev(?:\\s+([0-9]{1,2}))?$"))))
   {
     auto const match = match_opt.value().at(1);
 
     if (match.empty())
     {
-      _ctx.sym.progress_bar = " ";
-      _ctx.sym.progress_fill = " ";
-
-      return {};
-    }
-
-    OB::Text::View view {match};
-
-    if (view.size() != 1 || view.cols() > 1 ||
-      ! OB::Text::is_graph(OB::Text::to_int32(view.front())))
-    {
-      return std::make_pair(false, "error: invalid symbol '" + match + "'");
-    }
-
-    _ctx.sym.progress_bar = match;
-    _ctx.sym.progress_fill = match;
-  }
-
-  else if (match_opt = OB::String::match(input,
-    std::regex("^sym\\s+progress\\-bar(?:\\s+(.{0,4}))?$")))
-  {
-    auto const match = match_opt.value().at(1);
-
-    if (match.empty())
-    {
-      _ctx.sym.progress_bar = " ";
-
-      return {};
-    }
-
-    OB::Text::View view {match};
-
-    if (view.size() != 1 || view.cols() > 1 ||
-      ! OB::Text::is_graph(OB::Text::to_int32(view.front())))
-    {
-      return std::make_pair(false, "error: invalid symbol '" + match + "'");
-    }
-
-    _ctx.sym.progress_bar = match;
-  }
-
-  else if (match_opt = OB::String::match(input,
-    std::regex("^sym\\s+progress\\-fill(?:\\s+(.{0,4}))?$")))
-  {
-    auto const match = match_opt.value().at(1);
-
-    if (match.empty())
-    {
-      _ctx.sym.progress_fill = " ";
-
-      return {};
-    }
-
-    OB::Text::View view {match};
-
-    if (view.size() != 1 || view.cols() > 1 ||
-      ! OB::Text::is_graph(OB::Text::to_int32(view.front())))
-    {
-      return std::make_pair(false, "error: invalid symbol '" + match + "'");
-    }
-
-    _ctx.sym.progress_fill = match;
-  }
-
-  else if (match_opt = OB::String::match(input,
-    std::regex("^sym\\s+border(?:\\s+(.{0,4}))?$")))
-  {
-    auto const match = match_opt.value().at(1);
-
-    if (match.empty())
-    {
-      _ctx.sym.border_top = " ";
-      _ctx.sym.border_top_mark = " ";
-      _ctx.sym.border_bottom = " ";
-      _ctx.sym.border_bottom_mark = " ";
-
-      return {};
-    }
-
-    OB::Text::View view {match};
-
-    if (view.size() != 1 || view.cols() > 1 ||
-      ! OB::Text::is_graph(OB::Text::to_int32(view.front())))
-    {
-      return std::make_pair(false, "error: invalid symbol '" + match + "'");
-    }
-
-    _ctx.sym.border_top = match;
-    _ctx.sym.border_top_mark = match;
-    _ctx.sym.border_bottom = match;
-    _ctx.sym.border_bottom_mark = match;
-  }
-
-  else if (match_opt = OB::String::match(input,
-    std::regex("^sym\\s+border\\-top(?:\\s+(.{0,4}))?$")))
-  {
-    auto const match = match_opt.value().at(1);
-
-    if (match.empty())
-    {
-      _ctx.sym.border_top = " ";
-      _ctx.sym.border_top_mark = " ";
-
-      return {};
-    }
-
-    OB::Text::View view {match};
-
-    if (view.size() != 1 || view.cols() > 1 ||
-      ! OB::Text::is_graph(OB::Text::to_int32(view.front())))
-    {
-      return std::make_pair(false, "error: invalid symbol '" + match + "'");
-    }
-
-    _ctx.sym.border_top = match;
-    _ctx.sym.border_top_mark = match;
-  }
-
-  else if (match_opt = OB::String::match(input,
-    std::regex("^sym\\s+border\\-top\\-line(?:\\s+(.{0,4}))?$")))
-  {
-    auto const match = match_opt.value().at(1);
-
-    if (match.empty())
-    {
-      _ctx.sym.border_top = " ";
-
-      return {};
-    }
-
-    OB::Text::View view {match};
-
-    if (view.size() != 1 || view.cols() > 1 ||
-      ! OB::Text::is_graph(OB::Text::to_int32(view.front())))
-    {
-      return std::make_pair(false, "error: invalid symbol '" + match + "'");
-    }
-
-    _ctx.sym.border_top = match;
-  }
-
-  else if (match_opt = OB::String::match(input,
-    std::regex("^sym\\s+border\\-top\\-mark(?:\\s+(.{0,4}))?$")))
-  {
-    auto const match = match_opt.value().at(1);
-
-    if (match.empty())
-    {
-      _ctx.sym.border_top_mark = " ";
-
-      return {};
-    }
-
-    OB::Text::View view {match};
-
-    if (view.size() != 1 || view.cols() > 1 ||
-      ! OB::Text::is_graph(OB::Text::to_int32(view.front())))
-    {
-      return std::make_pair(false, "error: invalid symbol '" + match + "'");
-    }
-
-    _ctx.sym.border_top_mark = match;
-  }
-
-  else if (match_opt = OB::String::match(input,
-    std::regex("^sym\\s+border\\-bottom(?:\\s+(.{0,4}))?$")))
-  {
-    auto const match = match_opt.value().at(1);
-
-    if (match.empty())
-    {
-      _ctx.sym.border_bottom = " ";
-      _ctx.sym.border_bottom_mark = " ";
-
-      return {};
-    }
-
-    OB::Text::View view {match};
-
-    if (view.size() != 1 || view.cols() > 1 ||
-      ! OB::Text::is_graph(OB::Text::to_int32(view.front())))
-    {
-      return std::make_pair(false, "error: invalid symbol '" + match + "'");
-    }
-
-    _ctx.sym.border_bottom = match;
-    _ctx.sym.border_bottom_mark = match;
-  }
-
-  else if (match_opt = OB::String::match(input,
-    std::regex("^sym\\s+border\\-bottom\\-line(?:\\s+(.{0,4}))?$")))
-  {
-    auto const match = match_opt.value().at(1);
-
-    if (match.empty())
-    {
-      _ctx.sym.border_bottom = " ";
-
-      return {};
-    }
-
-    OB::Text::View view {match};
-
-    if (view.size() != 1 || view.cols() > 1 ||
-      ! OB::Text::is_graph(OB::Text::to_int32(view.front())))
-    {
-      return std::make_pair(false, "error: invalid symbol '" + match + "'");
-    }
-
-    _ctx.sym.border_bottom = match;
-  }
-
-  else if (match_opt = OB::String::match(input,
-    std::regex("^sym\\s+border\\-bottom\\-mark(?:\\s+(.{0,4}))?$")))
-  {
-    auto const match = match_opt.value().at(1);
-
-    if (match.empty())
-    {
-      _ctx.sym.border_bottom_mark = " ";
-
-      return {};
-    }
-
-    OB::Text::View view {match};
-
-    if (view.size() != 1 || view.cols() > 1 ||
-      ! OB::Text::is_graph(OB::Text::to_int32(view.front())))
-    {
-      return std::make_pair(false, "error: invalid symbol '" + match + "'");
-    }
-
-    _ctx.sym.border_bottom_mark = match;
-  }
-
-  else if (match_opt = OB::String::match(input,
-    std::regex("^set\\s+border(?:\\s+(true|false|t|f|1|0|on|off))?$")))
-  {
-    auto const match = match_opt.value().at(1);
-
-    if (match.empty() || "true" == match || "t" == match || "1" == match || "on" == match)
-    {
-      _ctx.show.border_top = true;
-      _ctx.show.border_bottom = true;
-    }
-    else
-    {
-      _ctx.show.border_top = false;
-      _ctx.show.border_bottom = false;
-    }
-  }
-
-  else if (match_opt = OB::String::match(input,
-    std::regex("^set\\s+view(?:\\s+(true|false|t|f|1|0|on|off))?$")))
-  {
-    auto const match = match_opt.value().at(1);
-
-    if (match.empty() || "true" == match || "t" == match || "1" == match || "on" == match)
-    {
-      _fltrdr.set_show_line(true);
-    }
-    else
-    {
-      _fltrdr.set_show_line(false);
-    }
-  }
-
-  else if (match_opt = OB::String::match(input,
-    std::regex("^prev(?:\\s+([0-9]{1,2}))?$")))
-  {
-    auto const match = match_opt.value().at(1);
-
-    if (match.empty())
-    {
-      _fltrdr.set_show_prev(0);
+      return std::make_pair(true, "prev " + std::to_string(_fltrdr.get_show_prev()));
     }
     else
     {
@@ -2397,14 +1292,14 @@ std::optional<std::pair<bool, std::string>> Tui::command(std::string const& inpu
     }
   }
 
-  else if (match_opt = OB::String::match(input,
-    std::regex("^next(?:\\s+([0-60]{1}))?$")))
+  else if (keys.at(0) == "next" && (match_opt = OB::String::match(input,
+    std::regex("^next(?:\\s+([0-9]{1,2}))?$"))))
   {
     auto const match = match_opt.value().at(1);
 
     if (match.empty())
     {
-      _fltrdr.set_show_next(0);
+      return std::make_pair(true, "next " + std::to_string(_fltrdr.get_show_next()));
     }
     else
     {
@@ -2419,10 +1314,15 @@ std::optional<std::pair<bool, std::string>> Tui::command(std::string const& inpu
     }
   }
 
-  else if (match_opt = OB::String::match(input,
-    std::regex("^timer\\s+(.+)$")))
+  else if (keys.at(0) == "timer" && (match_opt = OB::String::match(input,
+    std::regex("^timer(?:\\s+(clear|(?:(?:\\d+Y:)?(?:\\d+M:)?(?:\\d+W:)?(?:\\d+D:)?(?:\\d+h:)?(?:\\d+m:)?(?:\\d+s))))?$"))))
   {
     auto const match = OB::String::trim(match_opt.value().at(1));
+
+    if (match.empty())
+    {
+      return std::make_pair(true, "timer " + _fltrdr.timer.str());
+    }
 
     if (match == "clear")
     {
@@ -2435,10 +1335,15 @@ std::optional<std::pair<bool, std::string>> Tui::command(std::string const& inpu
   }
 
   // open
-  else if (match_opt = OB::String::match(input,
-    std::regex("^open\\s+([^\\r]+)$")))
+  else if (keys.at(0) == "open" && (match_opt = OB::String::match(input,
+    std::regex("^open(?:\\s+([^\\r]+))?$"))))
   {
     fs::path const path = std::move(match_opt.value().at(1));
+
+    if (path.empty())
+    {
+      return std::make_pair(true, "open " + _ctx.file.name);
+    }
 
     if (! fs::exists(path))
     {
@@ -2461,19 +1366,29 @@ std::optional<std::pair<bool, std::string>> Tui::command(std::string const& inpu
   }
 
   // set wpm
-  else if (match_opt = OB::String::match(input,
-    std::regex("^wpm\\s+([0-9]+)$")))
+  else if (keys.at(0) == "wpm" && (match_opt = OB::String::match(input,
+    std::regex("^wpm(?:\\s+([0-9]+))?$"))))
   {
     auto const match = std::move(match_opt.value().at(1));
+
+    if (match.empty())
+    {
+      return std::make_pair(true, "wpm " + std::to_string(_fltrdr.get_wpm()));
+    }
 
     _fltrdr.set_wpm(std::stoi(match));
   }
 
   // set wpm-avg
-  else if (match_opt = OB::String::match(input,
-    std::regex("^wpm-avg\\s+([0-9]+|clear)$")))
+  else if (keys.at(0) == "wpm-avg" && (match_opt = OB::String::match(input,
+    std::regex("^wpm-avg(?:\\s+([0-9]+|clear))?$"))))
   {
     auto const match = std::move(match_opt.value().at(1));
+
+    if (match.empty())
+    {
+      return std::make_pair(true, "wpm-avg " + std::to_string(_fltrdr.get_wpm_avg()));
+    }
 
     if (match == "clear")
     {
@@ -2486,21 +1401,816 @@ std::optional<std::pair<bool, std::string>> Tui::command(std::string const& inpu
   }
 
   // goto word
-  else if (match_opt = OB::String::match(input,
-    std::regex("^goto\\s+([0-9]+)$")))
+  else if (keys.at(0) == "goto" && (match_opt = OB::String::match(input,
+    std::regex("^goto(?:\\s+([0-9]+))?$"))))
   {
     auto const match = std::move(match_opt.value().at(1));
+
+    if (match.empty())
+    {
+      return std::make_pair(true, "goto " + std::to_string(_fltrdr.get_index()));
+    }
 
     _fltrdr.set_index(std::stoul(match));
   }
 
   // set offset
-  else if (match_opt = OB::String::match(input,
-    std::regex("^offset\\s+([0-6]{1})$")))
+  else if (keys.at(0) == "offset" && (match_opt = OB::String::match(input,
+    std::regex("^offset(?:\\s+([0-6]{1}))?$"))))
   {
     auto const match = std::move(match_opt.value().at(1));
 
+    if (match.empty())
+    {
+      return std::make_pair(true, "offset " + std::to_string(_ctx.offset_value));
+    }
+
     _ctx.offset_value = std::stoi(match);
+  }
+
+  else if (keys.size() >= 2 && keys.at(0) == "style")
+  {
+    // two-tone primary color
+    if (keys.at(1) == "primary")
+    {
+      if (keys.size() < 3)
+      {
+        return std::make_pair(true, "style primary " + _ctx.style.secondary.key());
+      }
+
+      OB::Color color {keys.at(2)};
+
+      if (! color)
+      {
+        return std::make_pair(false, "warning: unknown command '" + input + "'");
+      }
+
+      _ctx.style.secondary = color;
+      _ctx.style.border = color;
+      _ctx.style.progress_fill = color;
+      _ctx.style.word_primary = color;
+      _ctx.style.prompt = color;
+
+      color.bg();
+
+      _ctx.style.background = color;
+    }
+
+    // two-tone secondary color
+    else if (keys.at(1) == "secondary")
+    {
+      if (keys.size() < 3)
+      {
+        return std::make_pair(true, "style secondary " + _ctx.style.primary.key());
+      }
+
+      OB::Color color {keys.at(2)};
+
+      if (! color)
+      {
+        return std::make_pair(false, "warning: unknown command '" + input + "'");
+      }
+
+      _ctx.style.primary = color;
+      _ctx.style.progress_bar = color;
+      _ctx.style.word_secondary = color;
+      _ctx.style.word_highlight = color;
+      _ctx.style.word_punct = color;
+      _ctx.style.word_quote = color;
+    }
+
+    // text color
+    else if (keys.at(1) == "text")
+    {
+      if (keys.size() < 3)
+      {
+        return std::make_pair(true, "style text " + _ctx.style.word_primary.key());
+      }
+
+      OB::Color color {keys.at(2)};
+
+      if (! color)
+      {
+        return std::make_pair(false, "warning: unknown command '" + input + "'");
+      }
+
+      _ctx.style.word_primary = color;
+      _ctx.style.word_secondary = color;
+      _ctx.style.word_highlight = color;
+      _ctx.style.word_punct = color;
+      _ctx.style.word_quote = color;
+    }
+
+    else if (keys.at(1) == "status-background")
+    {
+      if (keys.size() < 3)
+      {
+        return std::make_pair(true, "style status-background " + _ctx.style.background.key());
+      }
+
+      OB::Color color {keys.at(2), OB::Color::Type::bg};
+
+      if (! color)
+      {
+        return std::make_pair(false, "warning: unknown command '" + input + "'");
+      }
+
+      _ctx.style.background = color;
+    }
+
+    else if (keys.at(1) == "background")
+    {
+      if (keys.size() < 3)
+      {
+        return std::make_pair(true, "style background " + _ctx.style.bg.key());
+      }
+
+      OB::Color color {keys.at(2), OB::Color::Type::bg};
+
+      if (! color)
+      {
+        return std::make_pair(false, "warning: unknown command '" + input + "'");
+      }
+
+      _ctx.style.bg = color;
+    }
+
+    else if (keys.at(1) == "countdown")
+    {
+      if (keys.size() < 3)
+      {
+        return std::make_pair(true, "style countdown " + _ctx.style.countdown.key());
+      }
+
+      OB::Color color {keys.at(2), OB::Color::Type::bg};
+
+      if (! color)
+      {
+        return std::make_pair(false, "warning: unknown command '" + input + "'");
+      }
+
+      _ctx.style.countdown = color;
+    }
+
+    else if (keys.at(1) == "status-primary")
+    {
+      if (keys.size() < 3)
+      {
+        return std::make_pair(true, "style status-primary " + _ctx.style.primary.key());
+      }
+
+      OB::Color color {keys.at(2)};
+
+      if (! color)
+      {
+        return std::make_pair(false, "warning: unknown command '" + input + "'");
+      }
+
+      _ctx.style.primary = color;
+    }
+
+    else if (keys.at(1) == "status-secondary")
+    {
+      if (keys.size() < 3)
+      {
+        return std::make_pair(true, "style status-secondary " + _ctx.style.secondary.key());
+      }
+
+      OB::Color color {keys.at(2)};
+
+      if (! color)
+      {
+        return std::make_pair(false, "warning: unknown command '" + input + "'");
+      }
+
+      _ctx.style.secondary = color;
+    }
+
+    else if (keys.at(1) == "border")
+    {
+      if (keys.size() < 3)
+      {
+        return std::make_pair(true, "style border " + _ctx.style.border.key());
+      }
+
+      OB::Color color {keys.at(2)};
+
+      if (! color)
+      {
+        return std::make_pair(false, "warning: unknown command '" + input + "'");
+      }
+
+      _ctx.style.border = color;
+    }
+
+    else if (keys.at(1) == "progress-bar")
+    {
+      if (keys.size() < 3)
+      {
+        return std::make_pair(true, "style progress-bar " + _ctx.style.progress_bar.key());
+      }
+
+      OB::Color color {keys.at(2)};
+
+      if (! color)
+      {
+        return std::make_pair(false, "warning: unknown command '" + input + "'");
+      }
+
+      _ctx.style.progress_bar = color;
+    }
+
+    else if (keys.at(1) == "progress-fill")
+    {
+      if (keys.size() < 3)
+      {
+        return std::make_pair(true, "style progress-fill " + _ctx.style.progress_fill.key());
+      }
+
+      OB::Color color {keys.at(2)};
+
+      if (! color)
+      {
+        return std::make_pair(false, "warning: unknown command '" + input + "'");
+      }
+
+      _ctx.style.progress_fill = color;
+    }
+
+    else if (keys.at(1) == "prompt")
+    {
+      if (keys.size() < 3)
+      {
+        return std::make_pair(true, "style prompt " + _ctx.style.prompt.key());
+      }
+
+      OB::Color color {keys.at(2)};
+
+      if (! color)
+      {
+        return std::make_pair(false, "warning: unknown command '" + input + "'");
+      }
+
+      _ctx.style.prompt = color;
+    }
+
+    else if (keys.at(1) == "success")
+    {
+      if (keys.size() < 3)
+      {
+        return std::make_pair(true, "style success " + _ctx.style.success.key());
+      }
+
+      OB::Color color {keys.at(2)};
+
+      if (! color)
+      {
+        return std::make_pair(false, "warning: unknown command '" + input + "'");
+      }
+
+      _ctx.style.success = color;
+    }
+
+    else if (keys.at(1) == "error")
+    {
+      if (keys.size() < 3)
+      {
+        return std::make_pair(true, "style error " + _ctx.style.error.key());
+      }
+
+      OB::Color color {keys.at(2)};
+
+      if (! color)
+      {
+        return std::make_pair(false, "warning: unknown command '" + input + "'");
+      }
+
+      _ctx.style.error = color;
+    }
+
+    else if (keys.at(1) == "text-primary")
+    {
+      if (keys.size() < 3)
+      {
+        return std::make_pair(true, "style text-primary " + _ctx.style.word_primary.key());
+      }
+
+      OB::Color color {keys.at(2)};
+
+      if (! color)
+      {
+        return std::make_pair(false, "warning: unknown command '" + input + "'");
+      }
+
+      _ctx.style.word_primary = color;
+    }
+
+    else if (keys.at(1) == "text-secondary")
+    {
+      if (keys.size() < 3)
+      {
+        return std::make_pair(true, "style text-secondary " + _ctx.style.word_secondary.key());
+      }
+
+      OB::Color color {keys.at(2)};
+
+      if (! color)
+      {
+        return std::make_pair(false, "warning: unknown command '" + input + "'");
+      }
+
+      _ctx.style.word_secondary = color;
+    }
+
+    else if (keys.at(1) == "text-highlight")
+    {
+      if (keys.size() < 3)
+      {
+        return std::make_pair(true, "style text-highlight " + _ctx.style.word_highlight.key());
+      }
+
+      OB::Color color {keys.at(2)};
+
+      if (! color)
+      {
+        return std::make_pair(false, "warning: unknown command '" + input + "'");
+      }
+
+      _ctx.style.word_highlight = color;
+    }
+
+    else if (keys.at(1) == "text-punct")
+    {
+      if (keys.size() < 3)
+      {
+        return std::make_pair(true, "style text-punct " + _ctx.style.word_punct.key());
+      }
+
+      OB::Color color {keys.at(2)};
+
+      if (! color)
+      {
+        return std::make_pair(false, "warning: unknown command '" + input + "'");
+      }
+
+      _ctx.style.word_punct = color;
+    }
+
+    else if (keys.at(1) == "text-quote")
+    {
+      if (keys.size() < 3)
+      {
+        return std::make_pair(true, "style text-quote " + _ctx.style.word_quote.key());
+      }
+
+      OB::Color color {keys.at(2)};
+
+      if (! color)
+      {
+        return std::make_pair(false, "warning: unknown command '" + input + "'");
+      }
+
+      _ctx.style.word_quote = color;
+    }
+
+    else
+    {
+      return std::make_pair(false, "warning: unknown command '" + input + "'");
+    }
+  }
+
+  else if (keys.size() >= 2 && keys.at(0) == "set")
+  {
+    if (match_opt = OB::String::match(input,
+      std::regex("^set\\s+view(?:\\s+(true|false|t|f|1|0|on|off))?$")))
+    {
+      auto const match = match_opt.value().at(1);
+
+      if (match.empty())
+      {
+        return std::make_pair(true, "set view " + std::to_string(static_cast<int>(_fltrdr.get_show_line())));
+      }
+      else if ("true" == match || "t" == match || "1" == match || "on" == match)
+      {
+        _fltrdr.set_show_line(true);
+      }
+      else
+      {
+        _fltrdr.set_show_line(false);
+      }
+    }
+
+    else if (match_opt = OB::String::match(input,
+      std::regex("^set\\s+progress(?:\\s+(true|false|t|f|1|0|on|off))?$")))
+    {
+      auto const match = match_opt.value().at(1);
+
+      if (match.empty())
+      {
+        return std::make_pair(true, "set progress " + std::to_string(static_cast<int>(_ctx.show.progress)));
+      }
+      else if ("true" == match || "t" == match || "1" == match || "on" == match)
+      {
+        _ctx.show.progress = true;
+      }
+      else
+      {
+        _ctx.show.progress = false;
+      }
+    }
+
+    else if (match_opt = OB::String::match(input,
+      std::regex("^set\\s+status(?:\\s+(true|false|t|f|1|0|on|off))?$")))
+    {
+      auto const match = match_opt.value().at(1);
+
+      if (match.empty())
+      {
+        return std::make_pair(true, "set status " + std::to_string(static_cast<int>(_ctx.show.status)));
+      }
+      else if ("true" == match || "t" == match || "1" == match || "on" == match)
+      {
+        _ctx.show.status = true;
+      }
+      else
+      {
+        _ctx.show.status = false;
+      }
+    }
+
+    else if (match_opt = OB::String::match(input,
+      std::regex("^set\\s+border(?:\\s+(true|false|t|f|1|0|on|off))?$")))
+    {
+      auto const match = match_opt.value().at(1);
+
+      if (match.empty())
+      {
+        return std::make_pair(true, "set border " + std::to_string(static_cast<int>(_ctx.show.border_top && _ctx.show.border_bottom)));
+      }
+      else if ("true" == match || "t" == match || "1" == match || "on" == match)
+      {
+        _ctx.show.border_top = true;
+        _ctx.show.border_bottom = true;
+      }
+      else
+      {
+        _ctx.show.border_top = false;
+        _ctx.show.border_bottom = false;
+      }
+    }
+
+    else if (match_opt = OB::String::match(input,
+      std::regex("^set\\s+border\\-top(?:\\s+(true|false|t|f|1|0|on|off))?$")))
+    {
+      auto const match = match_opt.value().at(1);
+
+      if (match.empty())
+      {
+        return std::make_pair(true, "set border-top " + std::to_string(static_cast<int>(_ctx.show.border_top)));
+      }
+      else if ("true" == match || "t" == match || "1" == match || "on" == match)
+      {
+        _ctx.show.border_top = true;
+      }
+      else
+      {
+        _ctx.show.border_top = false;
+      }
+    }
+
+    else if (match_opt = OB::String::match(input,
+      std::regex("^set\\s+border\\-bottom(?:\\s+(true|false|t|f|1|0|on|off))?$")))
+    {
+      auto const match = match_opt.value().at(1);
+
+      if (match.empty())
+      {
+        return std::make_pair(true, "set border-bottom " + std::to_string(static_cast<int>(_ctx.show.border_bottom)));
+      }
+      else if ("true" == match || "t" == match || "1" == match || "on" == match)
+      {
+        _ctx.show.border_bottom = true;
+      }
+      else
+      {
+        _ctx.show.border_bottom = false;
+      }
+    }
+
+    else
+    {
+      return std::make_pair(false, "warning: unknown command '" + input + "'");
+    }
+  }
+
+  else if (keys.size() >= 2 && keys.at(0) == "sym")
+  {
+    if (match_opt = OB::String::match(input,
+      std::regex("^sym\\s+progress(?:\\s+(.{0,4}))?$")))
+    {
+      auto const match = match_opt.value().at(1);
+
+      if (match.empty())
+      {
+        return std::make_pair(true, "sym progress " +
+          (_ctx.sym.progress_bar == " " ? "clear" : _ctx.sym.progress_bar));
+      }
+
+      if (match == "clear")
+      {
+        _ctx.sym.progress_bar = " ";
+        _ctx.sym.progress_fill = " ";
+
+        return {};
+      }
+
+      OB::Text::View view {match};
+
+      if (view.size() != 1 || view.cols() > 1 ||
+        ! OB::Text::is_graph(OB::Text::to_int32(view.front())))
+      {
+        return std::make_pair(false, "error: invalid symbol '" + match + "'");
+      }
+
+      _ctx.sym.progress_bar = match;
+      _ctx.sym.progress_fill = match;
+    }
+
+    else if (match_opt = OB::String::match(input,
+      std::regex("^sym\\s+progress\\-bar(?:\\s+(.{0,4}))?$")))
+    {
+      auto const match = match_opt.value().at(1);
+
+      if (match.empty())
+      {
+        return std::make_pair(true, "sym progress-bar " +
+          (_ctx.sym.progress_bar == " " ? "clear" : _ctx.sym.progress_bar));
+      }
+
+      if (match == "clear")
+      {
+        _ctx.sym.progress_bar = " ";
+
+        return {};
+      }
+
+      OB::Text::View view {match};
+
+      if (view.size() != 1 || view.cols() > 1 ||
+        ! OB::Text::is_graph(OB::Text::to_int32(view.front())))
+      {
+        return std::make_pair(false, "error: invalid symbol '" + match + "'");
+      }
+
+      _ctx.sym.progress_bar = match;
+    }
+
+    else if (match_opt = OB::String::match(input,
+      std::regex("^sym\\s+progress\\-fill(?:\\s+(.{0,4}))?$")))
+    {
+      auto const match = match_opt.value().at(1);
+
+      if (match.empty())
+      {
+        return std::make_pair(true, "sym progress-fill " +
+          (_ctx.sym.progress_fill == " " ? "clear" : _ctx.sym.progress_fill));
+      }
+
+      if (match == "clear")
+      {
+        _ctx.sym.progress_fill = " ";
+
+        return {};
+      }
+
+      OB::Text::View view {match};
+
+      if (view.size() != 1 || view.cols() > 1 ||
+        ! OB::Text::is_graph(OB::Text::to_int32(view.front())))
+      {
+        return std::make_pair(false, "error: invalid symbol '" + match + "'");
+      }
+
+      _ctx.sym.progress_fill = match;
+    }
+
+    else if (match_opt = OB::String::match(input,
+      std::regex("^sym\\s+border(?:\\s+(.{0,4}))?$")))
+    {
+      auto const match = match_opt.value().at(1);
+
+      if (match.empty())
+      {
+        return std::make_pair(true, "sym border " +
+          (_ctx.sym.border_top == " " ? "clear" : _ctx.sym.border_top));
+      }
+
+      if (match == "clear")
+      {
+        _ctx.sym.border_top = " ";
+        _ctx.sym.border_top_mark = " ";
+        _ctx.sym.border_bottom = " ";
+        _ctx.sym.border_bottom_mark = " ";
+
+        return {};
+      }
+
+      OB::Text::View view {match};
+
+      if (view.size() != 1 || view.cols() > 1 ||
+        ! OB::Text::is_graph(OB::Text::to_int32(view.front())))
+      {
+        return std::make_pair(false, "error: invalid symbol '" + match + "'");
+      }
+
+      _ctx.sym.border_top = match;
+      _ctx.sym.border_top_mark = match;
+      _ctx.sym.border_bottom = match;
+      _ctx.sym.border_bottom_mark = match;
+    }
+
+    else if (match_opt = OB::String::match(input,
+      std::regex("^sym\\s+border\\-top(?:\\s+(.{0,4}))?$")))
+    {
+      auto const match = match_opt.value().at(1);
+
+      if (match.empty())
+      {
+        return std::make_pair(true, "sym border-top " +
+          (_ctx.sym.border_top == " " ? "clear" : _ctx.sym.border_top));
+      }
+
+      if (match == "clear")
+      {
+        _ctx.sym.border_top = " ";
+        _ctx.sym.border_top_mark = " ";
+
+        return {};
+      }
+
+      OB::Text::View view {match};
+
+      if (view.size() != 1 || view.cols() > 1 ||
+        ! OB::Text::is_graph(OB::Text::to_int32(view.front())))
+      {
+        return std::make_pair(false, "error: invalid symbol '" + match + "'");
+      }
+
+      _ctx.sym.border_top = match;
+      _ctx.sym.border_top_mark = match;
+    }
+
+    else if (match_opt = OB::String::match(input,
+      std::regex("^sym\\s+border\\-top\\-line(?:\\s+(.{0,4}))?$")))
+    {
+      auto const match = match_opt.value().at(1);
+
+      if (match.empty())
+      {
+        return std::make_pair(true, "sym border-top " +
+          (_ctx.sym.border_top == " " ? "clear" : _ctx.sym.border_top));
+      }
+
+      if (match == "clear")
+      {
+        _ctx.sym.border_top = " ";
+
+        return {};
+      }
+
+      OB::Text::View view {match};
+
+      if (view.size() != 1 || view.cols() > 1 ||
+        ! OB::Text::is_graph(OB::Text::to_int32(view.front())))
+      {
+        return std::make_pair(false, "error: invalid symbol '" + match + "'");
+      }
+
+      _ctx.sym.border_top = match;
+    }
+
+    else if (match_opt = OB::String::match(input,
+      std::regex("^sym\\s+border\\-top\\-mark(?:\\s+(.{0,4}))?$")))
+    {
+      auto const match = match_opt.value().at(1);
+
+      if (match.empty())
+      {
+        return std::make_pair(true, "sym border-top-mark " +
+          (_ctx.sym.border_top_mark == " " ? "clear" : _ctx.sym.border_top_mark));
+      }
+
+      if (match == "clear")
+      {
+        _ctx.sym.border_top_mark = " ";
+
+        return {};
+      }
+
+      OB::Text::View view {match};
+
+      if (view.size() != 1 || view.cols() > 1 ||
+        ! OB::Text::is_graph(OB::Text::to_int32(view.front())))
+      {
+        return std::make_pair(false, "error: invalid symbol '" + match + "'");
+      }
+
+      _ctx.sym.border_top_mark = match;
+    }
+
+    else if (match_opt = OB::String::match(input,
+      std::regex("^sym\\s+border\\-bottom(?:\\s+(.{0,4}))?$")))
+    {
+      auto const match = match_opt.value().at(1);
+
+      if (match.empty())
+      {
+        return std::make_pair(true, "sym border-bottom " +
+          (_ctx.sym.border_bottom == " " ? "clear" : _ctx.sym.border_bottom));
+      }
+
+      if (match == "clear")
+      {
+        _ctx.sym.border_bottom = " ";
+        _ctx.sym.border_bottom_mark = " ";
+
+        return {};
+      }
+
+      OB::Text::View view {match};
+
+      if (view.size() != 1 || view.cols() > 1 ||
+        ! OB::Text::is_graph(OB::Text::to_int32(view.front())))
+      {
+        return std::make_pair(false, "error: invalid symbol '" + match + "'");
+      }
+
+      _ctx.sym.border_bottom = match;
+      _ctx.sym.border_bottom_mark = match;
+    }
+
+    else if (match_opt = OB::String::match(input,
+      std::regex("^sym\\s+border\\-bottom\\-line(?:\\s+(.{0,4}))?$")))
+    {
+      auto const match = match_opt.value().at(1);
+
+      if (match.empty())
+      {
+        return std::make_pair(true, "sym border-bottom-line " +
+          (_ctx.sym.border_bottom == " " ? "clear" : _ctx.sym.border_bottom));
+      }
+
+      if (match == "clear")
+      {
+        _ctx.sym.border_bottom = " ";
+
+        return {};
+      }
+
+      OB::Text::View view {match};
+
+      if (view.size() != 1 || view.cols() > 1 ||
+        ! OB::Text::is_graph(OB::Text::to_int32(view.front())))
+      {
+        return std::make_pair(false, "error: invalid symbol '" + match + "'");
+      }
+
+      _ctx.sym.border_bottom = match;
+    }
+
+    else if (match_opt = OB::String::match(input,
+      std::regex("^sym\\s+border\\-bottom\\-mark(?:\\s+(.{0,4}))?$")))
+    {
+      auto const match = match_opt.value().at(1);
+
+      if (match.empty())
+      {
+        return std::make_pair(true, "sym border-bottom-mark " +
+          (_ctx.sym.border_bottom_mark == " " ? "clear" : _ctx.sym.border_bottom_mark));
+      }
+
+      if (match == "clear")
+      {
+        _ctx.sym.border_bottom_mark = " ";
+
+        return {};
+      }
+
+      OB::Text::View view {match};
+
+      if (view.size() != 1 || view.cols() > 1 ||
+        ! OB::Text::is_graph(OB::Text::to_int32(view.front())))
+      {
+        return std::make_pair(false, "error: invalid symbol '" + match + "'");
+      }
+
+      _ctx.sym.border_bottom_mark = match;
+    }
+
+    else
+    {
+      return std::make_pair(false, "warning: unknown command '" + input + "'");
+    }
   }
 
   // unknown
@@ -2518,8 +2228,8 @@ void Tui::command_prompt()
   _ctx.prompt.count = 0;
 
   // set prompt style
-  _readline.style(_ctx.style.secondary + _ctx.style.bg);
-  _readline.prompt(":", _ctx.style.prompt + _ctx.style.bg);
+  _readline.style(_ctx.style.secondary.value() + _ctx.style.bg.value());
+  _readline.prompt(":", _ctx.style.prompt.value() + _ctx.style.bg.value());
 
   std::cout
   << aec::cursor_save
@@ -2548,8 +2258,8 @@ void Tui::search_forward()
   _ctx.prompt.count = 0;
 
   // set prompt style
-  _readline_search.style(_ctx.style.secondary + _ctx.style.bg);
-  _readline_search.prompt("/", _ctx.style.prompt + _ctx.style.bg);
+  _readline_search.style(_ctx.style.secondary.value() + _ctx.style.bg.value());
+  _readline_search.prompt("/", _ctx.style.prompt.value() + _ctx.style.bg.value());
 
   std::cout
   << aec::cursor_save
@@ -2584,8 +2294,8 @@ void Tui::search_backward()
   _ctx.prompt.count = 0;
 
   // set prompt style
-  _readline_search.style(_ctx.style.secondary + _ctx.style.bg);
-  _readline_search.prompt("?", _ctx.style.prompt + _ctx.style.bg);
+  _readline_search.style(_ctx.style.secondary.value() + _ctx.style.bg.value());
+  _readline_search.prompt("?", _ctx.style.prompt.value() + _ctx.style.bg.value());
 
   std::cout
   << aec::cursor_save

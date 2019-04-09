@@ -122,7 +122,7 @@ int program_options(Parg& pg)
       toggle border bottom visibility)RAW",
 
     R"RAW(
-  sym <value> <char>
+  sym <value> <char|clear>
     progress
       progress bar and fill symbol
     progress-bar
@@ -145,7 +145,7 @@ int program_options(Parg& pg)
       border bottom line symbol)RAW",
 
     R"RAW(
-  style <value> <#000000-#ffffff|0-255|Colour|reverse|clear>
+  style <value> <#000-#fff|#000000-#ffffff|0-255|Colour|reverse|clear>
     primary
       meta style, sets the primary colour of the program
     secondary

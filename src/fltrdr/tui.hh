@@ -3,6 +3,7 @@
 
 #include "fltrdr/fltrdr.hh"
 
+#include "ob/color.hh"
 #include "ob/readline.hh"
 #include "ob/string.hh"
 #include "ob/text.hh"
@@ -152,29 +153,29 @@ private:
 
     struct Style
     {
-      std::string bg {};
+      OB::Color bg {OB::Color::Type::bg};
 
-      std::string primary {};
-      std::string secondary {};
-      std::string background {aec::reverse};
+      OB::Color primary {OB::Color::Type::fg};
+      OB::Color secondary {OB::Color::Type::fg};
+      OB::Color background {"reverse", OB::Color::Type::bg};
 
-      std::string border {aec::fg_white};
+      OB::Color border {"white", OB::Color::Type::fg};
 
-      std::string countdown {aec::reverse};
+      OB::Color countdown {"reverse", OB::Color::Type::bg};
 
-      std::string progress_bar {aec::fg_white};
-      std::string progress_fill {};
+      OB::Color progress_bar {"white", OB::Color::Type::fg};
+      OB::Color progress_fill {OB::Color::Type::fg};
 
-      std::string prompt {};
-      std::string prompt_status {};
-      std::string success {aec::fg_green};
-      std::string error {aec::fg_red};
+      OB::Color prompt {OB::Color::Type::fg};
+      OB::Color prompt_status {OB::Color::Type::fg};
+      OB::Color success {"green", OB::Color::Type::fg};
+      OB::Color error {"red", OB::Color::Type::fg};
 
-      std::string word_primary {};
-      std::string word_secondary {};
-      std::string word_highlight {};
-      std::string word_punct {};
-      std::string word_quote {};
+      OB::Color word_primary {OB::Color::Type::fg};
+      OB::Color word_secondary {OB::Color::Type::fg};
+      OB::Color word_highlight {OB::Color::Type::fg};
+      OB::Color word_punct {OB::Color::Type::fg};
+      OB::Color word_quote {OB::Color::Type::fg};
     } style;
 
     struct Sym
