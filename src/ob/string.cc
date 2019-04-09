@@ -13,6 +13,25 @@
 namespace OB::String
 {
 
+std::vector<std::string> split(std::string const& str,
+  std::string const& delim, std::size_t size)
+{
+  std::vector<std::string> vtok;
+  std::size_t start {0};
+  auto end = str.find(delim);
+
+  while ((size-- > 0) && (end != std::string::npos))
+  {
+    vtok.emplace_back(str.substr(start, end - start));
+    start = end + delim.size();
+    end = str.find(delim, start);
+  }
+
+  vtok.emplace_back(str.substr(start, end));
+
+  return vtok;
+}
+
 std::string lowercase(std::string const& str)
 {
   auto const to_lower = [](char& c)

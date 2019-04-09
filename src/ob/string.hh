@@ -6,9 +6,14 @@
 #include <string>
 #include <optional>
 #include <regex>
+#include <limits>
+#include <vector>
 
 namespace OB::String
 {
+
+std::vector<std::string> split(std::string const& str, std::string const& delim,
+  std::size_t size = std::numeric_limits<std::size_t>::max());
 
 std::string lowercase(std::string const& str);
 
