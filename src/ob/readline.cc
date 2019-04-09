@@ -623,7 +623,12 @@ void Readline::hist_search(std::string const& str)
         hist.at(j).str == input.at(idx).str)
       {
         ++seq;
-        count += 1 * seq;
+        count += 1;
+
+        if (seq > 1)
+        {
+          count += 1;
+        }
 
         if (prev_hist == " " && prev_input == " ")
         {
@@ -633,7 +638,9 @@ void Readline::hist_search(std::string const& str)
         prev_input = input.at(idx).str;
         ++idx;
 
-        if (seq == input.size())
+        // short circuit to keep history order
+        // comment out to search according to closest match
+        if (idx == input.size())
         {
           break;
         }
@@ -641,14 +648,11 @@ void Readline::hist_search(std::string const& str)
       else
       {
         seq = 0;
+        weight += 2;
 
-        if (idx == 0)
+        if (prev_input == " ")
         {
-          weight += 3;
-        }
-        else
-        {
-          weight += 2;
+          weight += 1;
         }
       }
 
@@ -672,7 +676,8 @@ void Readline::hist_search(std::string const& str)
   std::sort(_history.search().begin(), _history.search().end(),
   [](auto const& lhs, auto const& rhs)
   {
-    return lhs.score < rhs.score;
+    // default to history order if score is equal
+    return lhs.score == rhs.score ? lhs.idx < rhs.idx : lhs.score < rhs.score;
   });
 }
 
