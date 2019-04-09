@@ -21,22 +21,22 @@ sym border-top-mark ┬
 sym border-bottom-mark ┴
 sym progress ▁
 
-style background 002b36
-style countdown 073642
-style border 073642
-style prompt 839496
-style success 859900
-style error dc322f
+style background #002b36
+style countdown #073642
+style border #073642
+style prompt #839496
+style success #859900
+style error #dc322f
 
-style progress-bar 586e75
-style progress-fill 859900
+style progress-bar #586e75
+style progress-fill #859900
 
-style status-primary 839496
-style status-secondary d33682
-style status-background 073642
+style status-primary #839496
+style status-secondary #d33682
+style status-background #073642
 
-style text-primary fdf6e3
-style text-secondary eee8d5
-style text-highlight d33682
-style text-punct 2aa198
-style text-quote 6c71c4
+style text-primary #fdf6e3
+style text-secondary #eee8d5
+style text-highlight #d33682
+style text-punct #2aa198
+style text-quote #6c71c4
