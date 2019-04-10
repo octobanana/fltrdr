@@ -1,9 +1,9 @@
 # Fltrdr
 A TUI text reader for the terminal.
 
-[![fltrdr](https://raw.githubusercontent.com/octobanana/fltrdr/master/assets/fltrdr.png)](https://octobanana.com/software/fltrdr/blob/assets/fltrdr.mp4#file)
+[![fltrdr](https://raw.githubusercontent.com/octobanana/fltrdr/master/assets/fltrdr.gif)](https://octobanana.com/software/fltrdr/blob/assets/fltrdr.mp4#file)
 
-Click the above picture to view a video of __Fltrdr__ in action.
+Click the above gif to view a video of __Fltrdr__ in action.
 
 ## Contents
 * [About](#about)
