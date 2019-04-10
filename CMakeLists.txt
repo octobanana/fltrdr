@@ -15,11 +15,11 @@ set (CMAKE_CXX_STANDARD_REQUIRED ON)
 
 set (CMAKE_CXX_FLAGS "-std=c++17 -fdiagnostics-color=auto")
 
-set (DEBUG_FLAGS "-g -Wpedantic -Wall -Wextra -Wcast-align -Wcast-qual -Wctor-dtor-privacy -Wdisabled-optimization -Wformat=2 -Winit-self -Wlogical-op -Wmissing-declarations -Wmissing-include-dirs -Wnoexcept -Wold-style-cast -Woverloaded-virtual -Wredundant-decls -Wshadow -Wsign-conversion -Wsign-promo -Wstrict-null-sentinel -Wstrict-overflow=5 -Wswitch-default -Wundef -Wno-unused")
+set (DEBUG_FLAGS "-g -Og -Wpedantic -Wall -Wextra -Wcast-align -Wcast-qual -Wctor-dtor-privacy -Wdisabled-optimization -Wformat=2 -Winit-self -Wlogical-op -Wmissing-declarations -Wmissing-include-dirs -Wnoexcept -Wold-style-cast -Woverloaded-virtual -Wredundant-decls -Wshadow -Wsign-conversion -Wsign-promo -Wstrict-null-sentinel -Wstrict-overflow=5 -Wswitch-default -Wundef -Wno-unused")
 set (DEBUG_LINK_FLAGS "-fprofile-arcs -ftest-coverage")
 
-set (RELEASE_FLAGS "-s -O3")
-set (RELEASE_LINK_FLAGS "-flto")
+set (RELEASE_FLAGS "-O3 -flto")
+set (RELEASE_LINK_FLAGS "-s -O3 -flto")
 
 set (CMAKE_CXX_FLAGS_DEBUG ${DEBUG_FLAGS})
 set (CMAKE_EXE_LINKER_FLAGS_DEBUG ${DEBUG_LINK_FLAGS})
