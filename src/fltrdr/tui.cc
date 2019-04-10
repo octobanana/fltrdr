@@ -1450,10 +1450,7 @@ std::optional<std::pair<bool, std::string>> Tui::command(std::string const& inpu
       _ctx.style.progress_fill = color;
       _ctx.style.word_primary = color;
       _ctx.style.prompt = color;
-
-      color.bg();
-
-      _ctx.style.background = color;
+      _ctx.style.background = color.bg();
     }
 
     // two-tone secondary color

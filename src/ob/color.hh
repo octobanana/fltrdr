@@ -84,6 +84,7 @@ public:
 
   Color& operator=(std::string const& k)
   {
+    clear();
     key(k);
 
     return *this;
@@ -127,24 +128,22 @@ public:
 
   Color& fg()
   {
-    if (! _fg && _key != "clear")
+    if (! _fg)
     {
+      _fg = true;
       key(_key);
     }
-
-    _fg = true;
 
     return *this;
   }
 
   Color& bg()
   {
-    if (_fg && _key != "clear")
+    if (_fg)
     {
+      _fg = false;
       key(_key);
     }
-
-    _fg = false;
 
     return *this;
   }
@@ -166,18 +165,18 @@ public:
 
   bool key(std::string const& k)
   {
-    _key = "clear";
-    _value.clear();
-    _valid = false;
-
     if (! k.empty())
     {
       if (k == "clear")
       {
+        // clear
+        _key = k;
+        _value = "";
         _valid = true;
       }
       else if (k == "reverse")
       {
+        // reverse
         _key = k;
         _value = "\x1b[7m";
         _valid = true;
