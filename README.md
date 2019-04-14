@@ -151,7 +151,7 @@ Each command must be on its own line. Lines that begin with the
 If you want to permanently use a different base config directory,
 such as `~/.config/fltrdr`, add the following line to your shell profile:
 ```sh
-alias fltrdr="fltrdr --config-base=~/.config/fltrdr"
+alias fltrdr="fltrdr --config-base ~/.config/fltrdr"
 ```
 
 The following shell commands will create the base config directory
