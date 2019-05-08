@@ -1238,7 +1238,7 @@ std::optional<std::pair<bool, std::string>> Tui::command(std::string const& inpu
     return {};
   }
 
-  auto const keys = OB::String::split(input, " ");
+  auto const keys = OB::String::split(input, " ", 2);
 
   if (keys.empty())
   {
