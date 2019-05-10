@@ -148,6 +148,7 @@ std::string Readline::operator()(bool& is_running)
   std::string utf8;
 
   bool loop {true};
+  bool save_input {true};
   bool clear_input {false};
   auto wait {std::chrono::milliseconds(50)};
 
@@ -188,6 +189,7 @@ std::string Readline::operator()(bool& is_running)
         {
           // exit the command prompt
           loop = false;
+          save_input = false;
           clear_input = true;
 
           break;
@@ -287,8 +289,11 @@ std::string Readline::operator()(bool& is_running)
 
   auto res = normalize(_input.str);
 
-  hist_push(res);
-  hist_save(res);
+  if (save_input)
+  {
+    hist_push(res);
+    hist_save(res);
+  }
 
   if (clear_input)
   {
