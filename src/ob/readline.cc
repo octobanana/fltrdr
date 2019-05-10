@@ -499,6 +499,11 @@ void Readline::hist_prev()
 {
   // cycle backwards in history
 
+  if (_history().empty() && _history.search().empty())
+  {
+    return;
+  }
+
   bool bounds {_history.search().empty() ?
     (_history.idx < _history().size() - 1) :
     (_history.idx < _history.search().size() - 1)};
